@@ -215,6 +215,8 @@
 
     function changeLanguage() {
         currentLang = document.getElementById('language').value;
+        // 👇 新增這一行：把選擇的語言存進瀏覽器的記憶裡
+        localStorage.setItem('mySiteLang', currentLang);
         const t = translations[currentLang];
         
         document.getElementById('text-title').innerText = t.title;
