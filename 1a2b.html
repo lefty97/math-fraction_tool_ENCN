@@ -5,7 +5,6 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>1A2B Logic Game</title>
     <style>
-        /* 沿用原本的風格 */
         body {
             font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
             background-color: #f0f8ff;
@@ -24,8 +23,8 @@
         .nav-bar a {
             color: white;
             text-decoration: none;
-            font-size: 1.2rem;
-            margin: 0 15px;
+            font-size: 1.1rem;
+            margin: 0 10px;
             padding: 5px 10px;
             border-radius: 5px;
             transition: background 0.3s;
@@ -77,16 +76,9 @@
             cursor: pointer;
             transition: 0.2s;
         }
-        button:hover {
-            background-color: #1f618d;
-        }
-        button.reset-btn {
-            background-color: #e74c3c;
-        }
-        button.reset-btn:hover {
-            background-color: #c0392b;
-        }
-        /* 歷史紀錄表格 */
+        button:hover { background-color: #1f618d; }
+        button.reset-btn { background-color: #e74c3c; }
+        button.reset-btn:hover { background-color: #c0392b; }
         table {
             width: 100%;
             max-width: 500px;
@@ -111,7 +103,7 @@
 
 <div class="nav-bar">
     <a href="index.html">🍕 Fractions</a>
-    <a href="1a2b.html" class="active">🔢 1A2B Game</a> 
+    <a href="1a2b.html" class="active">🔢 1A2B Game</a>
     <a href="angles.html">📐 Angle Explorer</a>
 </div>
 
@@ -157,8 +149,7 @@
                 <th id="text-th-result">Result</th>
             </tr>
         </thead>
-        <tbody id="history-body">
-            </tbody>
+        <tbody id="history-body"></tbody>
     </table>
 </div>
 
@@ -215,10 +206,9 @@
 
     function changeLanguage() {
         currentLang = document.getElementById('language').value;
-        // 👇 新增這一行：把選擇的語言存進瀏覽器的記憶裡
         localStorage.setItem('mySiteLang', currentLang);
-        const t = translations[currentLang];
         
+        const t = translations[currentLang];
         document.getElementById('text-title').innerText = t.title;
         document.getElementById('text-subtitle').innerText = t.subtitle;
         document.getElementById('text-digits').innerText = t.digits;
@@ -229,7 +219,6 @@
         document.getElementById('text-th-result').innerText = t.thResult;
         document.getElementById('guess-input').placeholder = t.placeholder;
 
-        // 如果遊戲已經贏了，重新翻譯贏的訊息
         if (isGameOver) {
             document.getElementById('message').innerText = t.win.replace("{n}", attempts);
         }
@@ -244,17 +233,14 @@
 
         for (let i = 0; i < length; i++) {
             if (allowRepeat) {
-                // 允許重複：直接隨機取0-9
                 secretCode += Math.floor(Math.random() * 10).toString();
             } else {
-                // 不允許重複：從陣列中抽走一個數字
                 const idx = Math.floor(Math.random() * availableDigits.length);
                 secretCode += availableDigits[idx];
                 availableDigits.splice(idx, 1);
             }
         }
 
-        // 初始化 UI
         attempts = 0;
         isGameOver = false;
         document.getElementById('history-body').innerHTML = "";
@@ -263,13 +249,9 @@
         const input = document.getElementById('guess-input');
         input.disabled = false;
         input.value = "";
-        input.maxLength = length; // 動態設定輸入框長度
+        input.maxLength = length; 
         document.getElementById('btn-guess').disabled = false;
-        
         input.focus();
-        
-        // 為了教學或開發方便，你可以在 Console 看到答案
-        console.log("Secret Code (shhh!):", secretCode); 
     }
 
     function handleEnter(e) {
@@ -286,7 +268,6 @@
         const length = secretCode.length;
         const t = translations[currentLang];
 
-        // 檢查輸入合法性
         if (!/^\d+$/.test(guess)) {
             alert(t.errNumber);
             return;
@@ -297,16 +278,11 @@
         }
 
         attempts++;
-
-        // 計算 A 和 B (考慮數字可能重複的複雜情況)
         let aCount = 0;
         let bCount = 0;
-        
-        // 用陣列來追蹤哪些位置已經配對過，避免重複計算
         let secretUsed = new Array(length).fill(false);
         let guessUsed = new Array(length).fill(false);
 
-        // 先找 A (位置對、數字對)
         for (let i = 0; i < length; i++) {
             if (guess[i] === secretCode[i]) {
                 aCount++;
@@ -315,30 +291,26 @@
             }
         }
 
-        // 再找 B (數字對、位置錯)
         for (let i = 0; i < length; i++) {
             if (!guessUsed[i]) {
                 for (let j = 0; j < length; j++) {
                     if (!secretUsed[j] && guess[i] === secretCode[j]) {
                         bCount++;
                         secretUsed[j] = true;
-                        break; // 找到一個配對就跳出內層迴圈
+                        break;
                     }
                 }
             }
         }
 
-        // 更新歷史紀錄表格
         const tbody = document.getElementById('history-body');
         const row = document.createElement('tr');
         row.innerHTML = `<td><strong>${guess}</strong></td><td>${aCount}A ${bCount}B</td>`;
-        // 把最新的猜測放在最上面
         tbody.insertBefore(row, tbody.firstChild);
 
         inputEl.value = "";
         inputEl.focus();
 
-        // 判斷輸贏
         if (aCount === length) {
             isGameOver = true;
             document.getElementById('message').innerText = t.win.replace("{n}", attempts);
@@ -347,18 +319,13 @@
         }
     }
 
-    // 初始設定語言
-    // 👇 新增這段：網頁一打開時，先去檢查有沒有存過語言記憶
     window.onload = function() {
         const savedLang = localStorage.getItem('mySiteLang');
         if (savedLang) {
-            // 如果有記憶，就把下拉選單自動切換過去
             document.getElementById('language').value = savedLang;
         }
-        // 最後再執行語言更新與畫面初始化
         changeLanguage();
     };
 </script>
-
 </body>
 </html>
