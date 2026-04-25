@@ -1,0 +1,219 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Angle Explorer</title>
+    <style>
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            background-color: #f0f8ff;
+            color: #333;
+            text-align: center;
+            padding: 0 20px 20px 20px;
+            margin: 0;
+        }
+        .nav-bar {
+            background-color: #34495e;
+            padding: 15px;
+            text-align: center;
+            margin-bottom: 20px;
+            border-radius: 0 0 10px 10px;
+        }
+        .nav-bar a {
+            color: white;
+            text-decoration: none;
+            font-size: 1.1rem;
+            margin: 0 10px;
+            padding: 5px 10px;
+            border-radius: 5px;
+            transition: background 0.3s;
+        }
+        .nav-bar a:hover, .nav-bar a.active {
+            background-color: #e67e22;
+        }
+        .container {
+            background-color: white;
+            max-width: 850px;
+            margin: 0 auto;
+            padding: 30px;
+            border-radius: 15px;
+            box-shadow: 0 4px 8px rgba(0,0,0,0.1);
+            position: relative;
+        }
+        .lang-switch {
+            position: absolute;
+            top: 20px;
+            right: 20px;
+        }
+        .lang-switch select {
+            font-size: 1rem;
+            padding: 5px 10px;
+            border-radius: 5px;
+        }
+        .control-panel {
+            background-color: #fef9e7;
+            padding: 20px;
+            border-radius: 10px;
+            margin: 20px 0;
+        }
+        input[type="range"] {
+            width: 80%;
+            margin: 20px 0;
+        }
+        .equation {
+            font-size: 2rem;
+            font-weight: bold;
+            color: #d35400;
+            margin-top: 20px;
+            padding: 15px;
+            background-color: #fff9c4;
+            border-radius: 10px;
+        }
+        .visual-box {
+            background-color: #fff;
+            border: 2px solid #ecf0f1;
+            border-radius: 10px;
+            padding: 20px;
+            margin-top: 20px;
+        }
+        .type-label {
+            font-weight: bold;
+            padding: 2px 8px;
+            border-radius: 4px;
+            background: #eee;
+            margin: 0 5px;
+        }
+    </style>
+</head>
+<body>
+
+<div class="nav-bar">
+    <a href="index.html">🍕 Fractions</a>
+    <a href="1a2b.html">🔢 1A2B Game</a>
+    <a href="angles.html" class="active">📐 Angle Explorer</a>
+</div>
+
+<div class="container">
+    <div class="lang-switch">
+        <select id="language" onchange="changeLanguage()">
+            <option value="en" selected>English</option>
+            <option value="zh">繁體中文</option>
+            <option value="ja">日本語</option>
+        </select>
+    </div>
+
+    <h2 id="text-title">📐 Angle Explorer</h2>
+    <p id="text-subtitle">Drag the slider to see how Angle A and B change on a straight line (180°).</p>
+    
+    <div class="control-panel">
+        <label><span id="text-label-a">Angle A:</span> <span id="val-a">60</span>°</label>
+        <br>
+        <input type="range" id="angle-slider" min="0" max="180" value="60">
+    </div>
+
+    <div class="visual-box">
+        <svg viewBox="0 0 400 200" width="100%" height="250">
+            <line x1="50" y1="150" x2="350" y2="150" stroke="#34495e" stroke-width="4" />
+            <circle cx="200" cy="150" r="5" fill="#e74c3c" />
+            <line id="ray" x1="200" y1="150" x2="300" y2="50" stroke="#e67e22" stroke-width="4" stroke-linecap="round" />
+            
+            <text x="280" y="175" id="label-a-text" font-weight="bold">A</text>
+            <text x="100" y="175" id="label-b-text" font-weight="bold">B</text>
+            
+            <text x="300" y="130" id="type-a" font-size="14" fill="#666"></text>
+            <text x="50" y="130" id="type-b" font-size="14" fill="#666"></text>
+        </svg>
+    </div>
+
+    <div class="equation" id="equation">60° + 120° = 180°</div>
+</div>
+
+<script>
+    const translations = {
+        en: {
+            title: "📐 Angle Explorer",
+            subtitle: "Drag the slider to see how Angle A and B change on a straight line (180°).",
+            labelA: "Angle A:",
+            acute: "Acute",
+            right: "Right",
+            obtuse: "Obtuse",
+            straight: "Straight",
+            zero: "Zero",
+            and: " and "
+        },
+        zh: {
+            title: "📐 角度探險家",
+            subtitle: "拖曳滑桿來觀察直線上的角 A 與角 B 如何變化（相加為 180°）。",
+            labelA: "角度 A：",
+            acute: "銳角",
+            right: "直角",
+            obtuse: "鈍角",
+            straight: "平角",
+            zero: "零角",
+            and: " 與 "
+        },
+        ja: {
+            title: "📐 角度エクスプローラー",
+            subtitle: "スライダーを動かして、直線上の角Aと角Bがどのように変化するか見てみよう（合計180°）。",
+            labelA: "角度 A：",
+            acute: "鋭角",
+            right: "直角",
+            obtuse: "鈍角",
+            straight: "平角",
+            zero: "零角",
+            and: " と "
+        }
+    };
+
+    let currentLang = 'en';
+
+    function changeLanguage() {
+        currentLang = document.getElementById('language').value;
+        const t = translations[currentLang];
+        document.getElementById('text-title').innerText = t.title;
+        document.getElementById('text-subtitle').innerText = t.subtitle;
+        document.getElementById('text-label-a').innerText = t.labelA;
+        update();
+    }
+
+    function getAngleType(deg) {
+        const t = translations[currentLang];
+        if (deg === 0) return t.zero;
+        if (deg < 90) return t.acute;
+        if (deg === 90) return t.right;
+        if (deg < 180) return t.obtuse;
+        return t.straight;
+    }
+
+    function update() {
+        const a = parseInt(document.getElementById('angle-slider').value);
+        const b = 180 - a;
+        const t = translations[currentLang];
+
+        document.getElementById('val-a').innerText = a;
+        
+        // 更新射線位置
+        const rad = (a * Math.PI) / 180;
+        const length = 120;
+        const x2 = 200 + length * Math.cos(-rad);
+        const y2 = 150 + length * Math.sin(-rad);
+        
+        const ray = document.getElementById('ray');
+        ray.setAttribute('x2', x2);
+        ray.setAttribute('y2', y2);
+
+        // 更新分類文字
+        document.getElementById('type-a').textContent = `角 A: ${getAngleType(a)}`;
+        document.getElementById('type-b').textContent = `角 B: ${getAngleType(b)}`;
+
+        // 更新算式
+        document.getElementById('equation').innerText = `${a}° + ${b}° = 180°`;
+    }
+
+    document.getElementById('angle-slider').oninput = update;
+    changeLanguage();
+</script>
+
+</body>
+</html>
