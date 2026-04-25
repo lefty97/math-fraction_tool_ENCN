@@ -112,14 +112,11 @@
         <svg viewBox="0 0 400 200" width="100%" height="250">
             <path id="arc-a" fill="rgba(230, 126, 34, 0.25)" stroke="#d35400" stroke-width="1.5" />
             <path id="arc-b" fill="rgba(52, 152, 219, 0.25)" stroke="#2980b9" stroke-width="1.5" />
-
             <line x1="30" y1="150" x2="370" y2="150" stroke="#34495e" stroke-width="4" />
             <circle cx="200" cy="150" r="5" fill="#e74c3c" />
             <line id="ray" x1="200" y1="150" x2="300" y2="50" stroke="#e67e22" stroke-width="4" stroke-linecap="round" />
-            
             <text x="280" y="175" font-weight="bold" font-size="18" fill="#d35400">A</text>
             <text x="110" y="175" font-weight="bold" font-size="18" fill="#2980b9">B</text>
-            
             <text x="300" y="130" id="type-a" font-size="15" fill="#d35400" font-weight="bold" text-anchor="middle"></text>
             <text x="100" y="130" id="type-b" font-size="15" fill="#2980b9" font-weight="bold" text-anchor="middle"></text>
         </svg>
@@ -172,14 +169,12 @@
 
     function changeLanguage() {
         currentLang = document.getElementById('language').value;
-        // 👇 新增這一行：把選擇的語言存進瀏覽器的記憶裡
         localStorage.setItem('mySiteLang', currentLang);
-        const t = translations[currentLang];
         
+        const t = translations[currentLang];
         document.getElementById('text-title').innerText = t.title;
         document.getElementById('text-subtitle').innerText = t.subtitle;
         document.getElementById('text-label-a').innerText = t.labelA;
-        
         update();
     }
 
@@ -198,68 +193,45 @@
         const t = translations[currentLang];
 
         document.getElementById('val-a').innerText = a;
-        
-        // 數學常數設定
-        const cx = 200; // 中心點 X
-        const cy = 150; // 中心點 Y
-        const rayLen = 120; // 射線長度
-        const arcRadius = 45; // 標示角度的弧線半徑
-        
-        // 計算射線終點座標 (注意 SVG 的 Y 軸是往下遞增，所以角度要加負號)
+        const cx = 200, cy = 150, rayLen = 120, arcRadius = 45; 
         const rad = (a * Math.PI) / 180;
         const x2 = cx + rayLen * Math.cos(-rad);
         const y2 = cy + rayLen * Math.sin(-rad);
         
-        // 更新射線
         const ray = document.getElementById('ray');
         ray.setAttribute('x2', x2);
         ray.setAttribute('y2', y2);
 
-        // --- 繪製角 A 弧線 (橘色) ---
-        // 從右側 (0度) 開始，畫到射線位置
         const arcAx = cx + arcRadius * Math.cos(-rad);
         const arcAy = cy + arcRadius * Math.sin(-rad);
-        // SVG Path 指令: M 移動到圓心 -> L 畫線到右側起點 -> A 畫弧線到射線交點 -> Z 封閉回到圓心
         const pathA = `M ${cx} ${cy} L ${cx + arcRadius} ${cy} A ${arcRadius} ${arcRadius} 0 0 0 ${arcAx} ${arcAy} Z`;
-        
-        // --- 繪製角 B 弧線 (藍色) ---
-        // 從左側 (180度) 開始，畫到射線位置
-        // SVG Path 指令: M 移動到圓心 -> L 畫線到左側起點 -> A 畫弧線到射線交點 -> Z 封閉回到圓心
-        // sweep-flag 設為 1 (順著時鐘方向畫回去找射線)
         const pathB = `M ${cx} ${cy} L ${cx - arcRadius} ${cy} A ${arcRadius} ${arcRadius} 0 0 1 ${arcAx} ${arcAy} Z`;
 
-        // 特殊情況處理：當角度是 0 或 180 時，避免 SVG 弧線指令出錯，手動設定為完整的半圓
         if (a === 0) {
-            document.getElementById('arc-a').setAttribute('d', ''); // A 是空的
-            document.getElementById('arc-b').setAttribute('d', `M ${cx} ${cy} L ${cx - arcRadius} ${cy} A ${arcRadius} ${arcRadius} 0 0 1 ${cx + arcRadius} ${cy} Z`); // B 是半圓
+            document.getElementById('arc-a').setAttribute('d', ''); 
+            document.getElementById('arc-b').setAttribute('d', `M ${cx} ${cy} L ${cx - arcRadius} ${cy} A ${arcRadius} ${arcRadius} 0 0 1 ${cx + arcRadius} ${cy} Z`); 
         } else if (a === 180) {
-            document.getElementById('arc-a').setAttribute('d', `M ${cx} ${cy} L ${cx + arcRadius} ${cy} A ${arcRadius} ${arcRadius} 0 0 0 ${cx - arcRadius} ${cy} Z`); // A 是半圓
-            document.getElementById('arc-b').setAttribute('d', ''); // B 是空的
+            document.getElementById('arc-a').setAttribute('d', `M ${cx} ${cy} L ${cx + arcRadius} ${cy} A ${arcRadius} ${arcRadius} 0 0 0 ${cx - arcRadius} ${cy} Z`); 
+            document.getElementById('arc-b').setAttribute('d', ''); 
         } else {
             document.getElementById('arc-a').setAttribute('d', pathA);
             document.getElementById('arc-b').setAttribute('d', pathB);
         }
 
-        // 更新分類文字與顏色對應
         document.getElementById('type-a').textContent = `${t.nameA} = ${a}° (${getAngleType(a)})`;
         document.getElementById('type-b').textContent = `${t.nameB} = ${b}° (${getAngleType(b)})`;
-
-        // 更新下方的大算式
         document.getElementById('equation').innerText = `${a}° + ${b}° = 180°`;
     }
 
     document.getElementById('angle-slider').oninput = update;
-    // 👇 新增這段：網頁一打開時，先去檢查有沒有存過語言記憶
+    
     window.onload = function() {
         const savedLang = localStorage.getItem('mySiteLang');
         if (savedLang) {
-            // 如果有記憶，就把下拉選單自動切換過去
             document.getElementById('language').value = savedLang;
         }
-        // 最後再執行語言更新與畫面初始化
         changeLanguage();
     };
 </script>
-
 </body>
 </html>
