@@ -348,7 +348,16 @@
     }
 
     // 初始設定語言
-    changeLanguage();
+    // 👇 新增這段：網頁一打開時，先去檢查有沒有存過語言記憶
+    window.onload = function() {
+        const savedLang = localStorage.getItem('mySiteLang');
+        if (savedLang) {
+            // 如果有記憶，就把下拉選單自動切換過去
+            document.getElementById('language').value = savedLang;
+        }
+        // 最後再執行語言更新與畫面初始化
+        changeLanguage();
+    };
 </script>
 
 </body>
