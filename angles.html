@@ -378,4 +378,151 @@
         document.getElementById('name-tb').setAttribute('x', tB.x); document.getElementById('name-tb').setAttribute('y', tB.y + 1);
         document.getElementById('name-tc').setAttribute('x', tC.x); document.getElementById('name-tc').setAttribute('y', tC.y + 1);
 
-        let roundA = Math
+        let roundA = Math.round(getTriAngle(tB, tA, tC));
+        let roundB = Math.round(getTriAngle(tA, tB, tC));
+        let roundC = 180 - roundA - roundB;
+        if (isNaN(roundA) || isNaN(roundB)) { roundA = 0; roundB = 0; roundC = 0; }
+
+        function setLabel(id, pt, deg) {
+            const label = document.getElementById(id);
+            label.setAttribute('x', pt.x + (pt.x <= 0 ? -40 : 20));
+            label.setAttribute('y', pt.y + (pt.y <= 0 ? -15 : 25));
+            if (deg > 0 && deg < 180) { label.textContent = `${deg}° (${getAngleType(deg, true)})`; } 
+            else { label.textContent = ""; }
+        }
+
+        setLabel('label-ta', tA, roundA); setLabel('label-tb', tB, roundB); setLabel('label-tc', tC, roundC);
+
+        // 處理直角標記
+        document.getElementById('t-right-a').setAttribute('d', roundA === 90 ? getRightAnglePath(tB, tA, tC) : '');
+        document.getElementById('t-right-b').setAttribute('d', roundB === 90 ? getRightAnglePath(tA, tB, tC) : '');
+        document.getElementById('t-right-c').setAttribute('d', roundC === 90 ? getRightAnglePath(tA, tC, tB) : '');
+
+        const eq = document.getElementById('equation2');
+        if (roundA === 0 || roundB === 0 || roundC === 0) {
+            eq.innerText = `⚠️ ${translations[currentLang].invalid}`;
+            eq.style.color = "#e74c3c";
+        } else {
+            eq.innerText = `∠A + ∠B + ∠C = ${roundA}° + ${roundB}° + ${roundC}° = 180°`;
+            eq.style.color = "#27ae60";
+        }
+    }
+
+    // === 工具 3 ===
+    function ccw(p1, p2, p3) { return (p3.y - p1.y) * (p2.x - p1.x) > (p2.y - p1.y) * (p3.x - p1.x); }
+    function intersect(p1, p2, p3, p4) { return (ccw(p1, p3, p4) !== ccw(p2, p3, p4)) && (ccw(p1, p2, p3) !== ccw(p1, p2, p4)); }
+    
+    function getInteriorAngle(pPrev, pCurr, pNext, isCW) {
+        let aPrev = Math.atan2(pPrev.y - pCurr.y, pPrev.x - pCurr.x);
+        let aNext = Math.atan2(pNext.y - pCurr.y, pNext.x - pCurr.x);
+        let diff = isCW ? (aPrev - aNext) : (aNext - aPrev);
+        while (diff <= 0) diff += 2 * Math.PI;
+        while (diff > 2 * Math.PI) diff -= 2 * Math.PI;
+        return diff * 180 / Math.PI;
+    }
+
+    function updateTool3() {
+        document.getElementById('quad-path').setAttribute('d', `M ${qA.x} ${qA.y} L ${qB.x} ${qB.y} L ${qC.x} ${qC.y} L ${qD.x} ${qD.y} Z`);
+
+        const pts = [qB, qC, qD];
+        const names = ['b', 'c', 'd'];
+        pts.forEach((pt, i) => {
+            document.getElementById(`point-q${names[i]}`).setAttribute('cx', pt.x);
+            document.getElementById(`point-q${names[i]}`).setAttribute('cy', pt.y);
+            document.getElementById(`name-q${names[i]}`).setAttribute('x', pt.x);
+            document.getElementById(`name-q${names[i]}`).setAttribute('y', pt.y + 1);
+        });
+
+        // 檢查邊線是否交叉
+        const isCrossing = intersect(qA, qB, qC, qD) || intersect(qB, qC, qD, qA);
+        const eq = document.getElementById('equation3');
+
+        if (isCrossing) {
+            ['qa', 'qb', 'qc', 'qd'].forEach(id => document.getElementById(`label-${id}`).textContent = "");
+            ['a', 'b', 'c', 'd'].forEach(id => document.getElementById(`q-right-${id}`).setAttribute('d', ''));
+            eq.innerText = `⚠️ ${translations[currentLang].cross}`;
+            eq.style.color = "#e74c3c";
+            return;
+        }
+
+        // 計算旋轉方向 (判斷內角用)
+        const area = (qA.x*qB.y - qB.x*qA.y) + (qB.x*qC.y - qC.x*qB.y) + (qC.x*qD.y - qD.x*qC.y) + (qD.x*qA.y - qA.x*qD.y);
+        const isCW = area > 0;
+
+        let rA = Math.round(getInteriorAngle(qD, qA, qB, isCW));
+        let rB = Math.round(getInteriorAngle(qA, qB, qC, isCW));
+        let rC = Math.round(getInteriorAngle(qB, qC, qD, isCW));
+        let rD = 360 - rA - rB - rC; // 確保總和精準
+
+        function setQuadLabel(id, pt, deg) {
+            const label = document.getElementById(id);
+            label.setAttribute('x', pt.x + (pt.x <= 0 ? -40 : 20));
+            label.setAttribute('y', pt.y + (pt.y <= 0 ? -15 : 25));
+            if(deg > 0 && deg < 360) { label.textContent = `${deg}° (${getAngleType(deg, true)})`; }
+            else { label.textContent = ""; }
+        }
+
+        setQuadLabel('label-qa', qA, rA); setQuadLabel('label-qb', qB, rB);
+        setQuadLabel('label-qc', qC, rC); setQuadLabel('label-qd', qD, rD);
+
+        // 處理直角標記
+        document.getElementById('q-right-a').setAttribute('d', rA === 90 ? getRightAnglePath(qD, qA, qB) : '');
+        document.getElementById('q-right-b').setAttribute('d', rB === 90 ? getRightAnglePath(qA, qB, qC) : '');
+        document.getElementById('q-right-c').setAttribute('d', rC === 90 ? getRightAnglePath(qB, qC, qD) : '');
+        document.getElementById('q-right-d').setAttribute('d', rD === 90 ? getRightAnglePath(qC, qD, qA) : '');
+
+        if (rA===0 || rB===0 || rC===0 || rD===0 || rA===180 || rB===180 || rC===180 || rD===180) {
+            eq.innerText = `⚠️ ${translations[currentLang].invalid}`;
+            eq.style.color = "#e74c3c";
+        } else {
+            eq.innerText = `∠A + ∠B + ∠C + ∠D = ${rA}° + ${rB}° + ${rC}° + ${rD}° = 360°`;
+            eq.style.color = "#2980b9";
+        }
+    }
+
+    // === 拖曳邏輯 ===
+    function startDrag(evt, svgId, ptName) {
+        evt.preventDefault(); 
+        activeSvg = document.getElementById(svgId);
+        isDragging = true;
+        draggedPoint = ptName;
+    }
+
+    function drag(evt) {
+        if (!isDragging || !activeSvg) return;
+        evt.preventDefault();
+        let pt = activeSvg.createSVGPoint();
+        if (evt.touches) { pt.x = evt.touches[0].clientX; pt.y = evt.touches[0].clientY; } 
+        else { pt.x = evt.clientX; pt.y = evt.clientY; }
+        
+        let cursorPt = pt.matrixTransform(activeSvg.getScreenCTM().inverse());
+        cursorPt.x = Math.round(cursorPt.x / snapGrid) * snapGrid;
+        cursorPt.y = Math.round(cursorPt.y / snapGrid) * snapGrid;
+        
+        if (cursorPt.x === 0 && cursorPt.y === 0) return; // 保護 A 點
+
+        // 工具 2
+        if (draggedPoint === 'tB' && (cursorPt.x !== tC.x || cursorPt.y !== tC.y)) { tB.x = cursorPt.x; tB.y = cursorPt.y; updateTool2(); }
+        else if (draggedPoint === 'tC' && (cursorPt.x !== tB.x || cursorPt.y !== tB.y)) { tC.x = cursorPt.x; tC.y = cursorPt.y; updateTool2(); }
+        
+        // 工具 3
+        else if (draggedPoint === 'qB') { qB.x = cursorPt.x; qB.y = cursorPt.y; updateTool3(); }
+        else if (draggedPoint === 'qC') { qC.x = cursorPt.x; qC.y = cursorPt.y; updateTool3(); }
+        else if (draggedPoint === 'qD') { qD.x = cursorPt.x; qD.y = cursorPt.y; updateTool3(); }
+    }
+
+    function endDrag() { isDragging = false; activeSvg = null; draggedPoint = null; }
+
+    // === 初始化 ===
+    document.getElementById('angle-slider').oninput = updateTool1;
+    
+    window.onload = function() {
+        const savedLang = localStorage.getItem('mySiteLang');
+        if (savedLang) { document.getElementById('language').value = savedLang; }
+        drawGrid('grid2');
+        drawGrid('grid3');
+        changeLanguage();
+    };
+</script>
+</body>
+</html>
