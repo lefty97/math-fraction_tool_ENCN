@@ -56,7 +56,6 @@
             cursor: pointer;
         }
         
-        /* 區塊分隔線 */
         .section-divider {
             margin: 50px 0;
             border: 0;
@@ -64,7 +63,6 @@
             background-image: linear-gradient(to right, transparent, #bdc3c7, transparent);
         }
 
-        /* 共通樣式 */
         .control-panel {
             background-color: #fef9e7;
             padding: 20px;
@@ -92,11 +90,9 @@
             touch-action: none;
         }
         
-        /* 工具 1 專用 */
         input[type="range"] { width: 80%; margin: 20px 0; }
         #svg-tool1 { width: 100%; height: 250px; }
 
-        /* 工具 2 與 3 專用 */
         .interactive-svg {
             display: block;
             width: 100%;
@@ -188,7 +184,7 @@
     <hr class="section-divider">
 
     <h2 id="text-title3">🔲 Quadrilateral Explorer</h2>
-    <p id="text-subtitle3">Drag vertices B, C, and D. The sum of interior angles is always 360°!</p>
+    <p id="text-subtitle3">Drag vertices A, B, C, and D. The sum of interior angles is always 360°!</p>
 
     <div class="visual-box">
         <svg id="svg-tool3" class="interactive-svg" viewBox="-250 -200 500 400" onmousemove="drag(event)" onmouseup="endDrag()" ontouchmove="drag(event)" ontouchend="endDrag()">
@@ -208,12 +204,12 @@
             <text id="label-qc" class="angle-label" fill="#8e44ad"></text>
             <text id="label-qd" class="angle-label" fill="#d35400"></text>
 
-            <circle cx="0" cy="0" r="6" fill="#c0392b" />
+            <circle id="point-qa" class="draggable" r="12" fill="#c0392b" onmousedown="startDrag(event, 'svg-tool3', 'qA')" ontouchstart="startDrag(event, 'svg-tool3', 'qA')" />
             <circle id="point-qb" class="draggable" r="12" fill="#27ae60" onmousedown="startDrag(event, 'svg-tool3', 'qB')" ontouchstart="startDrag(event, 'svg-tool3', 'qB')" />
             <circle id="point-qc" class="draggable" r="12" fill="#8e44ad" onmousedown="startDrag(event, 'svg-tool3', 'qC')" ontouchstart="startDrag(event, 'svg-tool3', 'qC')" />
             <circle id="point-qd" class="draggable" r="12" fill="#d35400" onmousedown="startDrag(event, 'svg-tool3', 'qD')" ontouchstart="startDrag(event, 'svg-tool3', 'qD')" />
             
-            <text x="-15" y="-10" font-weight="bold" fill="#c0392b">A</text>
+            <text id="name-qa" font-weight="bold" fill="#fff" font-size="12" pointer-events="none" text-anchor="middle" dominant-baseline="middle">A</text>
             <text id="name-qb" font-weight="bold" fill="#fff" font-size="12" pointer-events="none" text-anchor="middle" dominant-baseline="middle">B</text>
             <text id="name-qc" font-weight="bold" fill="#fff" font-size="12" pointer-events="none" text-anchor="middle" dominant-baseline="middle">C</text>
             <text id="name-qd" font-weight="bold" fill="#fff" font-size="12" pointer-events="none" text-anchor="middle" dominant-baseline="middle">D</text>
@@ -224,12 +220,11 @@
 </div>
 
 <script>
-    // === 語言字典 ===
     const translations = {
         en: {
             title1: "📐 Angle Explorer (Straight Line)", subtitle1: "Drag the slider to see how Angle A and B change on a straight line (180°).",
             title2: "🔺 Triangle Explorer", subtitle2: "Drag vertices B and C. Notice how the sum of all interior angles is always 180°!",
-            title3: "🔲 Quadrilateral Explorer", subtitle3: "Drag vertices B, C, and D. The sum of interior angles is always 360°!",
+            title3: "🔲 Quadrilateral Explorer", subtitle3: "Drag vertices A, B, C, and D. The sum of interior angles is always 360°!",
             labelA: "Adjust Angle A:",
             acute: "Acute", right: "Right", obtuse: "Obtuse", straight: "Straight", zero: "Zero",
             invalid: "Line", cross: "Self-Intersecting", concave: "Reflex",
@@ -238,7 +233,7 @@
         zh: {
             title1: "📐 直線與補角探險", subtitle1: "拖曳滑桿來觀察直線上的角 A 與角 B 如何變化（相加為 180°）。",
             title2: "🔺 三角形內角和探險", subtitle2: "自由拖曳座標上的頂點 B 和 C。觀察看看內角和是否永遠都是 180°！",
-            title3: "🔲 四邊形內角和探險", subtitle3: "拖曳頂點 B、C 和 D。試著發現四邊形內角和永遠是 360°！",
+            title3: "🔲 四邊形內角和探險", subtitle3: "拖曳頂點 A、B、C 和 D。試著發現四邊形內角和永遠是 360°！",
             labelA: "調整角度 A：",
             acute: "銳角", right: "直角", obtuse: "鈍角", straight: "平角", zero: "零角",
             invalid: "成一直線", cross: "邊線交叉", concave: "優角",
@@ -247,7 +242,7 @@
         ja: {
             title1: "📐 直線と補角エクスプローラー", subtitle1: "スライダーを動かして、直線上の角Aと角Bがどのように変化するか見てみよう（合計180°）。",
             title2: "🔺 三角形内角の和エクスプローラー", subtitle2: "頂点BとCをドラッグして動かしてみよう。内角の和は常に180°になります！",
-            title3: "🔲 四角形内角の和エクスプローラー", subtitle3: "頂点B、C、Dをドラッグしてみよう。内角の和は常に360°です！",
+            title3: "🔲 四角形内角の和エクスプローラー", subtitle3: "頂点A、B、C、Dをドラッグしてみよう。内角の和は常に360°です！",
             labelA: "角度 A を調整：",
             acute: "鋭角", right: "直角", obtuse: "鈍角", straight: "平角", zero: "零角",
             invalid: "直線", cross: "交差しています", concave: "優角",
@@ -257,24 +252,22 @@
 
     let currentLang = 'en';
 
-    // === 狀態資料 ===
     const snapGrid = 20;
     let activeSvg = null;
     let isDragging = false;
     let draggedPoint = null;
 
-    // 工具 2: 三角形
+    // 工具 2: 三角形 (A 點固定)
     const tA = { x: 0, y: 0 };
     let tB = { x: 100, y: 0 };
     let tC = { x: 0, y: -100 };
 
-    // 工具 3: 四邊形
-    const qA = { x: 0, y: 0 };
-    let qB = { x: 100, y: 0 };
+    // 工具 3: 四邊形 (A 點解封，改為 let，並且初始為一個置中長方形)
+    let qA = { x: -100, y: -100 };
+    let qB = { x: 100, y: -100 };
     let qC = { x: 100, y: 100 };
-    let qD = { x: 0, y: 100 };
+    let qD = { x: -100, y: 100 };
 
-    // === 核心功能 ===
     function changeLanguage() {
         currentLang = document.getElementById('language').value;
         localStorage.setItem('mySiteLang', currentLang);
@@ -302,7 +295,6 @@
         return t.concave;
     }
 
-    // 計算直角符號的路徑 (一個小正方形的兩邊)
     function getRightAnglePath(pPrev, pCurr, pNext) {
         const L = 15;
         const v1x = pPrev.x - pCurr.x, v1y = pPrev.y - pCurr.y;
@@ -393,7 +385,6 @@
 
         setLabel('label-ta', tA, roundA); setLabel('label-tb', tB, roundB); setLabel('label-tc', tC, roundC);
 
-        // 處理直角標記
         document.getElementById('t-right-a').setAttribute('d', roundA === 90 ? getRightAnglePath(tB, tA, tC) : '');
         document.getElementById('t-right-b').setAttribute('d', roundB === 90 ? getRightAnglePath(tA, tB, tC) : '');
         document.getElementById('t-right-c').setAttribute('d', roundC === 90 ? getRightAnglePath(tA, tC, tB) : '');
@@ -424,8 +415,8 @@
     function updateTool3() {
         document.getElementById('quad-path').setAttribute('d', `M ${qA.x} ${qA.y} L ${qB.x} ${qB.y} L ${qC.x} ${qC.y} L ${qD.x} ${qD.y} Z`);
 
-        const pts = [qB, qC, qD];
-        const names = ['b', 'c', 'd'];
+        const pts = [qA, qB, qC, qD];
+        const names = ['a', 'b', 'c', 'd'];
         pts.forEach((pt, i) => {
             document.getElementById(`point-q${names[i]}`).setAttribute('cx', pt.x);
             document.getElementById(`point-q${names[i]}`).setAttribute('cy', pt.y);
@@ -433,7 +424,6 @@
             document.getElementById(`name-q${names[i]}`).setAttribute('y', pt.y + 1);
         });
 
-        // 檢查邊線是否交叉
         const isCrossing = intersect(qA, qB, qC, qD) || intersect(qB, qC, qD, qA);
         const eq = document.getElementById('equation3');
 
@@ -445,14 +435,13 @@
             return;
         }
 
-        // 計算旋轉方向 (判斷內角用)
         const area = (qA.x*qB.y - qB.x*qA.y) + (qB.x*qC.y - qC.x*qB.y) + (qC.x*qD.y - qD.x*qC.y) + (qD.x*qA.y - qA.x*qD.y);
         const isCW = area > 0;
 
         let rA = Math.round(getInteriorAngle(qD, qA, qB, isCW));
         let rB = Math.round(getInteriorAngle(qA, qB, qC, isCW));
         let rC = Math.round(getInteriorAngle(qB, qC, qD, isCW));
-        let rD = 360 - rA - rB - rC; // 確保總和精準
+        let rD = 360 - rA - rB - rC; 
 
         function setQuadLabel(id, pt, deg) {
             const label = document.getElementById(id);
@@ -465,7 +454,6 @@
         setQuadLabel('label-qa', qA, rA); setQuadLabel('label-qb', qB, rB);
         setQuadLabel('label-qc', qC, rC); setQuadLabel('label-qd', qD, rD);
 
-        // 處理直角標記
         document.getElementById('q-right-a').setAttribute('d', rA === 90 ? getRightAnglePath(qD, qA, qB) : '');
         document.getElementById('q-right-b').setAttribute('d', rB === 90 ? getRightAnglePath(qA, qB, qC) : '');
         document.getElementById('q-right-c').setAttribute('d', rC === 90 ? getRightAnglePath(qB, qC, qD) : '');
@@ -499,16 +487,18 @@
         cursorPt.x = Math.round(cursorPt.x / snapGrid) * snapGrid;
         cursorPt.y = Math.round(cursorPt.y / snapGrid) * snapGrid;
         
-        if (cursorPt.x === 0 && cursorPt.y === 0) return; // 保護 A 點
+        // 只有工具2 (三角形) 鎖定 A 點在原點，避免其他點疊上去
+        if (activeSvg.id === 'svg-tool2' && cursorPt.x === 0 && cursorPt.y === 0) return; 
 
         // 工具 2
         if (draggedPoint === 'tB' && (cursorPt.x !== tC.x || cursorPt.y !== tC.y)) { tB.x = cursorPt.x; tB.y = cursorPt.y; updateTool2(); }
         else if (draggedPoint === 'tC' && (cursorPt.x !== tB.x || cursorPt.y !== tB.y)) { tC.x = cursorPt.x; tC.y = cursorPt.y; updateTool2(); }
         
-        // 工具 3
-        else if (draggedPoint === 'qB') { qB.x = cursorPt.x; qB.y = cursorPt.y; updateTool3(); }
-        else if (draggedPoint === 'qC') { qC.x = cursorPt.x; qC.y = cursorPt.y; updateTool3(); }
-        else if (draggedPoint === 'qD') { qD.x = cursorPt.x; qD.y = cursorPt.y; updateTool3(); }
+        // 工具 3 (四邊形的四個點互不重疊)
+        else if (draggedPoint === 'qA' && !(cursorPt.x===qB.x && cursorPt.y===qB.y) && !(cursorPt.x===qC.x && cursorPt.y===qC.y) && !(cursorPt.x===qD.x && cursorPt.y===qD.y)) { qA.x = cursorPt.x; qA.y = cursorPt.y; updateTool3(); }
+        else if (draggedPoint === 'qB' && !(cursorPt.x===qA.x && cursorPt.y===qA.y) && !(cursorPt.x===qC.x && cursorPt.y===qC.y) && !(cursorPt.x===qD.x && cursorPt.y===qD.y)) { qB.x = cursorPt.x; qB.y = cursorPt.y; updateTool3(); }
+        else if (draggedPoint === 'qC' && !(cursorPt.x===qA.x && cursorPt.y===qA.y) && !(cursorPt.x===qB.x && cursorPt.y===qB.y) && !(cursorPt.x===qD.x && cursorPt.y===qD.y)) { qC.x = cursorPt.x; qC.y = cursorPt.y; updateTool3(); }
+        else if (draggedPoint === 'qD' && !(cursorPt.x===qA.x && cursorPt.y===qA.y) && !(cursorPt.x===qB.x && cursorPt.y===qB.y) && !(cursorPt.x===qC.x && cursorPt.y===qC.y)) { qD.x = cursorPt.x; qD.y = cursorPt.y; updateTool3(); }
     }
 
     function endDrag() { isDragging = false; activeSvg = null; draggedPoint = null; }
