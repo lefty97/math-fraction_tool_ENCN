@@ -3,14 +3,14 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Angle Explorer</title>
+    <title>Geometry Explorer</title>
     <style>
         body {
             font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
             background-color: #f0f8ff;
             color: #333;
             text-align: center;
-            padding: 0 20px 20px 20px;
+            padding: 0 20px 40px 20px;
             margin: 0;
         }
         .nav-bar {
@@ -28,6 +28,7 @@
             padding: 5px 10px;
             border-radius: 5px;
             transition: background 0.3s;
+            display: inline-block;
         }
         .nav-bar a:hover, .nav-bar a.active {
             background-color: #e67e22;
@@ -45,6 +46,7 @@
             position: absolute;
             top: 20px;
             right: 20px;
+            z-index: 10;
         }
         .lang-switch select {
             font-size: 1rem;
@@ -53,6 +55,16 @@
             border: 1px solid #ccc;
             cursor: pointer;
         }
+        
+        /* 區塊分隔線 */
+        .section-divider {
+            margin: 50px 0;
+            border: 0;
+            height: 2px;
+            background-image: linear-gradient(to right, transparent, #bdc3c7, transparent);
+        }
+
+        /* 共通樣式 */
         .control-panel {
             background-color: #fef9e7;
             padding: 20px;
@@ -60,25 +72,43 @@
             margin: 20px 0;
             font-size: 1.2rem;
         }
-        input[type="range"] {
-            width: 80%;
-            margin: 20px 0;
-        }
         .equation {
-            font-size: 2rem;
+            font-size: 1.8rem;
             font-weight: bold;
-            color: #d35400;
             margin-top: 20px;
             padding: 15px;
-            background-color: #fff9c4;
             border-radius: 10px;
         }
+        .eq-orange { background-color: #fff9c4; color: #d35400; }
+        .eq-green { background-color: #e8f8f5; color: #2c3e50; }
+        
         .visual-box {
             background-color: #fff;
             border: 2px solid #ecf0f1;
             border-radius: 10px;
-            padding: 20px;
             margin-top: 20px;
+            overflow: hidden;
+            touch-action: none;
+        }
+        
+        /* 工具 1 專用 */
+        input[type="range"] { width: 80%; margin: 20px 0; }
+        #svg-tool1 { width: 100%; height: 250px; }
+
+        /* 工具 2 專用 */
+        #svg-tool2 {
+            display: block;
+            width: 100%;
+            height: 400px;
+            cursor: crosshair;
+        }
+        .draggable { cursor: grab; }
+        .draggable:active { cursor: grabbing; }
+        .angle-label {
+            font-size: 14px;
+            font-weight: bold;
+            pointer-events: none;
+            text-shadow: 1px 1px 0 #fff, -1px -1px 0 #fff, 1px -1px 0 #fff, -1px 1px 0 #fff;
         }
     </style>
 </head>
@@ -87,7 +117,7 @@
 <div class="nav-bar">
     <a href="index.html">🍕 Fractions</a>
     <a href="1a2b.html">🔢 1A2B Game</a>
-    <a href="angles.html" class="active">📐 Angle Explorer</a>
+    <a href="angles.html" class="active">📐 Geometry Explorer</a>
 </div>
 
 <div class="container">
@@ -99,17 +129,16 @@
         </select>
     </div>
 
-    <h2 id="text-title">📐 Angle Explorer</h2>
-    <p id="text-subtitle">Drag the slider to see how Angle A and B change on a straight line (180°).</p>
+    <h2 id="text-title1" style="margin-top: 30px;">📐 Angle Explorer (Straight Line)</h2>
+    <p id="text-subtitle1">Drag the slider to see how Angle A and B change on a straight line (180°).</p>
     
     <div class="control-panel">
-        <label><strong id="text-label-a">Angle A:</strong> <span id="val-a">60</span>°</label>
-        <br>
+        <label><strong id="text-label-a">Adjust Angle A:</strong> <span id="val-a">60</span>°</label><br>
         <input type="range" id="angle-slider" min="0" max="180" value="60">
     </div>
 
     <div class="visual-box">
-        <svg viewBox="0 0 400 200" width="100%" height="250">
+        <svg id="svg-tool1" viewBox="0 0 400 200">
             <path id="arc-a" fill="rgba(230, 126, 34, 0.25)" stroke="#d35400" stroke-width="1.5" />
             <path id="arc-b" fill="rgba(52, 152, 219, 0.25)" stroke="#2980b9" stroke-width="1.5" />
             <line x1="30" y1="150" x2="370" y2="150" stroke="#34495e" stroke-width="4" />
@@ -121,78 +150,109 @@
             <text x="100" y="130" id="type-b" font-size="15" fill="#2980b9" font-weight="bold" text-anchor="middle"></text>
         </svg>
     </div>
+    <div class="equation eq-orange" id="equation1">60° + 120° = 180°</div>
 
-    <div class="equation" id="equation">60° + 120° = 180°</div>
+    <hr class="section-divider">
+
+    <h2 id="text-title2">🔺 Triangle Explorer</h2>
+    <p id="text-subtitle2">Drag vertices B and C. Notice how the sum of all interior angles is always 180°!</p>
+
+    <div class="visual-box">
+        <svg id="svg-tool2" viewBox="-250 -200 500 400" onmousemove="drag(event)" onmouseup="endDrag()" ontouchmove="drag(event)" ontouchend="endDrag()">
+            <g id="grid"></g> 
+            <line x1="-250" y1="0" x2="250" y2="0" stroke="#bdc3c7" stroke-width="2" />
+            <line x1="0" y1="-200" x2="0" y2="200" stroke="#bdc3c7" stroke-width="2" />
+            <path id="triangle-path" fill="rgba(46, 204, 113, 0.2)" stroke="#27ae60" stroke-width="3" stroke-linejoin="round" />
+            
+            <text id="label-ta" class="angle-label" fill="#c0392b"></text>
+            <text id="label-tb" class="angle-label" fill="#2980b9"></text>
+            <text id="label-tc" class="angle-label" fill="#8e44ad"></text>
+
+            <circle cx="0" cy="0" r="6" fill="#c0392b" />
+            <circle id="point-b" class="draggable" r="12" fill="#2980b9" onmousedown="startDrag(event, 'B')" ontouchstart="startDrag(event, 'B')" />
+            <circle id="point-c" class="draggable" r="12" fill="#8e44ad" onmousedown="startDrag(event, 'C')" ontouchstart="startDrag(event, 'C')" />
+            
+            <text x="-15" y="20" font-weight="bold" fill="#c0392b">A</text>
+            <text id="name-b" font-weight="bold" fill="#fff" font-size="12" pointer-events="none" text-anchor="middle" dominant-baseline="middle">B</text>
+            <text id="name-c" font-weight="bold" fill="#fff" font-size="12" pointer-events="none" text-anchor="middle" dominant-baseline="middle">C</text>
+        </svg>
+    </div>
+    <div class="equation eq-green" id="equation2">∠A + ∠B + ∠C = 180°</div>
+
 </div>
 
 <script>
+    // 語言字典 (合併兩個工具的翻譯)
     const translations = {
         en: {
-            title: "📐 Angle Explorer",
-            subtitle: "Drag the slider to see how Angle A and B change on a straight line (180°).",
+            title1: "📐 Angle Explorer (Straight Line)", subtitle1: "Drag the slider to see how Angle A and B change on a straight line (180°).",
+            title2: "🔺 Triangle Explorer", subtitle2: "Drag vertices B and C. Notice how the sum of all interior angles is always 180°!",
             labelA: "Adjust Angle A:",
-            acute: "Acute",
-            right: "Right",
-            obtuse: "Obtuse",
-            straight: "Straight",
-            zero: "Zero",
-            nameA: "Angle A",
-            nameB: "Angle B"
+            acute: "Acute", right: "Right", obtuse: "Obtuse", straight: "Straight", zero: "Zero",
+            invalid: "Line", nameA: "Angle A", nameB: "Angle B"
         },
         zh: {
-            title: "📐 角度探險家",
-            subtitle: "拖曳滑桿來觀察直線上的角 A 與角 B 如何變化（相加為 180°）。",
+            title1: "📐 直線與補角探險", subtitle1: "拖曳滑桿來觀察直線上的角 A 與角 B 如何變化（相加為 180°）。",
+            title2: "🔺 三角形內角和探險", subtitle2: "自由拖曳座標上的頂點 B 和 C。觀察看看內角和是否永遠都是 180°！",
             labelA: "調整角度 A：",
-            acute: "銳角",
-            right: "直角",
-            obtuse: "鈍角",
-            straight: "平角",
-            zero: "零角",
-            nameA: "角 A",
-            nameB: "角 B"
+            acute: "銳角", right: "直角", obtuse: "鈍角", straight: "平角", zero: "零角",
+            invalid: "成一直線", nameA: "角 A", nameB: "角 B"
         },
         ja: {
-            title: "📐 角度エクスプローラー",
-            subtitle: "スライダーを動かして、直線上の角Aと角Bがどのように変化するか見てみよう（合計180°）。",
+            title1: "📐 直線と補角エクスプローラー", subtitle1: "スライダーを動かして、直線上の角Aと角Bがどのように変化するか見てみよう（合計180°）。",
+            title2: "🔺 三角形内角の和エクスプローラー", subtitle2: "頂点BとCをドラッグして動かしてみよう。内角の和は常に180°になります！",
             labelA: "角度 A を調整：",
-            acute: "鋭角",
-            right: "直角",
-            obtuse: "鈍角",
-            straight: "平角",
-            zero: "零角",
-            nameA: "角 A",
-            nameB: "角 B"
+            acute: "鋭角", right: "直角", obtuse: "鈍角", straight: "平角", zero: "零角",
+            invalid: "直線", nameA: "角 A", nameB: "角 B"
         }
     };
 
     let currentLang = 'en';
 
+    // === 工具 2 的狀態 ===
+    const ptA = { x: 0, y: 0 };
+    let ptB = { x: 100, y: 0 };
+    let ptC = { x: 0, y: -100 };
+    const snapGrid = 20;
+    let isDragging = false;
+    let draggedPoint = null;
+
+    // === 核心切換語言邏輯 ===
     function changeLanguage() {
         currentLang = document.getElementById('language').value;
         localStorage.setItem('mySiteLang', currentLang);
         
         const t = translations[currentLang];
-        document.getElementById('text-title').innerText = t.title;
-        document.getElementById('text-subtitle').innerText = t.subtitle;
+        
+        // 更新文字
+        document.getElementById('text-title1').innerText = t.title1;
+        document.getElementById('text-subtitle1').innerText = t.subtitle1;
+        document.getElementById('text-title2').innerText = t.title2;
+        document.getElementById('text-subtitle2').innerText = t.subtitle2;
         document.getElementById('text-label-a').innerText = t.labelA;
-        update();
+        
+        // 更新兩個工具的圖表
+        updateTool1();
+        updateTool2();
     }
 
-    function getAngleType(deg) {
+    // 共用角度判斷邏輯
+    function getAngleType(deg, isTriangle = false) {
         const t = translations[currentLang];
-        if (deg === 0) return t.zero;
+        if (deg === 0 || (isTriangle && deg === 180)) return isTriangle ? t.invalid : t.zero;
         if (deg < 90) return t.acute;
         if (deg === 90) return t.right;
         if (deg < 180) return t.obtuse;
         return t.straight;
     }
 
-    function update() {
+    // === 工具 1 (補角) 更新邏輯 ===
+    function updateTool1() {
         const a = parseInt(document.getElementById('angle-slider').value);
         const b = 180 - a;
         const t = translations[currentLang];
-
         document.getElementById('val-a').innerText = a;
+        
         const cx = 200, cy = 150, rayLen = 120, arcRadius = 45; 
         const rad = (a * Math.PI) / 180;
         const x2 = cx + rayLen * Math.cos(-rad);
@@ -220,16 +280,117 @@
 
         document.getElementById('type-a').textContent = `${t.nameA} = ${a}° (${getAngleType(a)})`;
         document.getElementById('type-b').textContent = `${t.nameB} = ${b}° (${getAngleType(b)})`;
-        document.getElementById('equation').innerText = `${a}° + ${b}° = 180°`;
+        document.getElementById('equation1').innerText = `${a}° + ${b}° = 180°`;
     }
 
-    document.getElementById('angle-slider').oninput = update;
+    // === 工具 2 (三角形) 繪製與計算邏輯 ===
+    function calculateAngle(p1, center, p2) {
+        const angle1 = Math.atan2(p1.y - center.y, p1.x - center.x);
+        const angle2 = Math.atan2(p2.y - center.y, p2.x - center.x);
+        let deg = (angle1 - angle2) * (180 / Math.PI);
+        deg = Math.abs(deg);
+        if (deg > 180) deg = 360 - deg;
+        return deg;
+    }
+
+    function drawGrid() {
+        const grid = document.getElementById('grid');
+        grid.innerHTML = '';
+        for (let i = -250; i <= 250; i += snapGrid) {
+            grid.innerHTML += `<line x1="${i}" y1="-200" x2="${i}" y2="200" stroke="#ecf0f1" stroke-width="1" />`;
+        }
+        for (let i = -200; i <= 200; i += snapGrid) {
+            grid.innerHTML += `<line x1="-250" y1="${i}" x2="250" y2="${i}" stroke="#ecf0f1" stroke-width="1" />`;
+        }
+    }
+
+    function updateTool2() {
+        const path = document.getElementById('triangle-path');
+        path.setAttribute('d', `M ${ptA.x} ${ptA.y} L ${ptB.x} ${ptB.y} L ${ptC.x} ${ptC.y} Z`);
+
+        document.getElementById('point-b').setAttribute('cx', ptB.x);
+        document.getElementById('point-b').setAttribute('cy', ptB.y);
+        document.getElementById('point-c').setAttribute('cx', ptC.x);
+        document.getElementById('point-c').setAttribute('cy', ptC.y);
+        
+        document.getElementById('name-b').setAttribute('x', ptB.x);
+        document.getElementById('name-b').setAttribute('y', ptB.y + 1);
+        document.getElementById('name-c').setAttribute('x', ptC.x);
+        document.getElementById('name-c').setAttribute('y', ptC.y + 1);
+
+        let degA = calculateAngle(ptB, ptA, ptC);
+        let degB = calculateAngle(ptA, ptB, ptC);
+        let roundA = Math.round(degA);
+        let roundB = Math.round(degB);
+        let roundC = 180 - roundA - roundB;
+
+        if (isNaN(roundA) || isNaN(roundB)) { roundA = 0; roundB = 0; roundC = 0; }
+
+        function setLabel(id, point, deg) {
+            const label = document.getElementById(id);
+            const offsetX = point.x === 0 ? 15 : (point.x > 0 ? 20 : -60);
+            const offsetY = point.y === 0 ? -15 : (point.y > 0 ? 25 : -15);
+            label.setAttribute('x', point.x + offsetX);
+            label.setAttribute('y', point.y + offsetY);
+            label.textContent = `${deg}° (${getAngleType(deg, true)})`;
+        }
+
+        setLabel('label-ta', ptA, roundA);
+        setLabel('label-tb', ptB, roundB);
+        setLabel('label-tc', ptC, roundC);
+
+        const eq = document.getElementById('equation2');
+        if (roundA === 0 || roundB === 0 || roundC === 0) {
+            eq.innerText = `⚠️ ${translations[currentLang].invalid}`;
+            eq.style.color = "#e74c3c";
+        } else {
+            eq.innerText = `∠A + ∠B + ∠C = ${roundA}° + ${roundB}° + ${roundC}° = 180°`;
+            eq.style.color = "#2c3e50";
+        }
+    }
+
+    // === 工具 2 拖曳邏輯 ===
+    function startDrag(evt, pointName) {
+        evt.preventDefault(); 
+        isDragging = true;
+        draggedPoint = pointName;
+    }
+
+    function drag(evt) {
+        if (!isDragging) return;
+        evt.preventDefault();
+        const svg = document.getElementById('svg-tool2');
+        let pt = svg.createSVGPoint();
+        if (evt.touches) { pt.x = evt.touches[0].clientX; pt.y = evt.touches[0].clientY; } 
+        else { pt.x = evt.clientX; pt.y = evt.clientY; }
+        
+        let cursorPt = pt.matrixTransform(svg.getScreenCTM().inverse());
+        cursorPt.x = Math.round(cursorPt.x / snapGrid) * snapGrid;
+        cursorPt.y = Math.round(cursorPt.y / snapGrid) * snapGrid;
+        
+        if (cursorPt.x === 0 && cursorPt.y === 0) return;
+
+        if (draggedPoint === 'B') {
+            if (cursorPt.x === ptC.x && cursorPt.y === ptC.y) return;
+            ptB.x = cursorPt.x; ptB.y = cursorPt.y;
+        } else if (draggedPoint === 'C') {
+            if (cursorPt.x === ptB.x && cursorPt.y === ptB.y) return;
+            ptC.x = cursorPt.x; ptC.y = cursorPt.y;
+        }
+        updateTool2();
+    }
+
+    function endDrag() { isDragging = false; draggedPoint = null; }
+
+    // === 綁定事件與初始化 ===
+    document.getElementById('angle-slider').oninput = updateTool1;
     
     window.onload = function() {
         const savedLang = localStorage.getItem('mySiteLang');
         if (savedLang) {
             document.getElementById('language').value = savedLang;
         }
+        drawGrid();
         changeLanguage();
     };
 </script>
