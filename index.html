@@ -376,7 +376,7 @@
         return svg;
     }
 
-    function renderFractionShapes(containerId, num, den, shape, maxHeight = 150) {
+    function renderFractionShapes(containerId, num, den, shape) {
         const vis = document.getElementById(containerId);
         vis.innerHTML = '';
         const totalContainers = Math.ceil(num / den) || 1;
@@ -390,9 +390,8 @@
             } else {
                 let div = document.createElement('div');
                 div.className = shape === 'choco' ? 'choco-bar' : 'bottle';
-                // 限制最大高度避免通分後長得太誇張
-                let h = Math.min(den * 25, maxHeight);
-                div.style.height = h + 'px'; 
+                // ★ 關鍵修正：將容器高度固定為 120px，確保通分前後的整體大小一致
+                div.style.height = '120px'; 
                 for (let j = 0; j < den; j++) {
                     let pieceDiv = document.createElement('div');
                     pieceDiv.className = shape === 'choco' ? 'choco-piece' : 'bottle-level';
@@ -420,7 +419,7 @@
         else if (whole === 0) eq.innerText = `${num} / ${den}${t.properMsg}`;
         else eq.innerText = `${num} / ${den} = ${whole}${t.andMsg}${remainder}/${den}`;
 
-        renderFractionShapes('visualization', num, den, shape, 200);
+        renderFractionShapes('visualization', num, den, shape);
     }
 
     document.getElementById('num').addEventListener('input', updateVisualization);
@@ -439,14 +438,14 @@
 
         if (isNaN(num) || isNaN(den) || isNaN(factor) || den <= 0 || factor <= 0) return;
 
-        renderFractionShapes('eq-vis-left', num, den, shape, 150);
+        renderFractionShapes('eq-vis-left', num, den, shape);
 
         let newNum = 0, newDen = 0;
         if (op === 'mult') {
             newNum = num * factor; newDen = den * factor;
             eq.innerText = `${num} / ${den} = (${num} × ${factor}) / (${den} × ${factor}) = ${newNum} / ${newDen}`;
             eq.style.color = "#2980b9";
-            renderFractionShapes('eq-vis-right', newNum, newDen, shape, 150);
+            renderFractionShapes('eq-vis-right', newNum, newDen, shape);
         } else {
             if (num % factor !== 0 || den % factor !== 0) {
                 eq.innerText = t.errDiv;
@@ -456,7 +455,7 @@
                 newNum = num / factor; newDen = den / factor;
                 eq.innerText = `${num} / ${den} = (${num} ÷ ${factor}) / (${den} ÷ ${factor}) = ${newNum} / ${newDen}`;
                 eq.style.color = "#2980b9";
-                renderFractionShapes('eq-vis-right', newNum, newDen, shape, 150);
+                renderFractionShapes('eq-vis-right', newNum, newDen, shape);
             }
         }
     }
