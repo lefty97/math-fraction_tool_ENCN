@@ -42,17 +42,32 @@
             box-shadow: 0 4px 8px rgba(0,0,0,0.1);
             position: relative;
         }
-        .lang-switch {
+        .top-controls {
             position: absolute;
             top: 20px;
             right: 20px;
             z-index: 10;
+            display: flex;
+            flex-direction: column;
+            align-items: flex-end;
+            gap: 10px;
         }
         .lang-switch select {
             font-size: 1rem;
             padding: 5px 10px;
             border-radius: 5px;
             border: 1px solid #ccc;
+            cursor: pointer;
+        }
+        .snap-toggle {
+            background: #fff;
+            padding: 5px 10px;
+            border-radius: 5px;
+            border: 1px solid #ccc;
+            font-size: 0.9rem;
+            display: flex;
+            align-items: center;
+            gap: 5px;
             cursor: pointer;
         }
         
@@ -118,12 +133,18 @@
 </div>
 
 <div class="container">
-    <div class="lang-switch">
-        <select id="language" onchange="changeLanguage()">
-            <option value="en" selected>English</option>
-            <option value="zh">繁體中文</option>
-            <option value="ja">日本語</option>
-        </select>
+    <div class="top-controls">
+        <div class="lang-switch">
+            <select id="language" onchange="changeLanguage()">
+                <option value="en" selected>English</option>
+                <option value="zh">繁體中文</option>
+                <option value="ja">日本語</option>
+            </select>
+        </div>
+        <label class="snap-toggle">
+            <input type="checkbox" id="snap-checkbox" checked onchange="toggleSnap()">
+            <span id="text-snap">Snap to Grid</span>
+        </label>
     </div>
 
     <h2 id="text-title1" style="margin-top: 30px;">📐 Angle Explorer (Straight Line)</h2>
@@ -152,7 +173,7 @@
     <hr class="section-divider">
 
     <h2 id="text-title2">🔺 Triangle Explorer</h2>
-    <p id="text-subtitle2">Drag vertices B and C. Notice how the sum of all interior angles is always 180°!</p>
+    <p id="text-subtitle2">Drag vertices A, B, and C. Notice how the sum of all interior angles is always 180°!</p>
 
     <div class="visual-box">
         <svg id="svg-tool2" class="interactive-svg" viewBox="-250 -200 500 400" onmousemove="drag(event)" onmouseup="endDrag()" ontouchmove="drag(event)" ontouchend="endDrag()">
@@ -162,6 +183,8 @@
             
             <path id="triangle-path" fill="rgba(46, 204, 113, 0.2)" stroke="#27ae60" stroke-width="3" stroke-linejoin="round" />
             
+            <g id="tri-markers"></g>
+
             <path id="t-right-a" fill="none" stroke="#c0392b" stroke-width="2"/>
             <path id="t-right-b" fill="none" stroke="#2980b9" stroke-width="2"/>
             <path id="t-right-c" fill="none" stroke="#8e44ad" stroke-width="2"/>
@@ -170,11 +193,11 @@
             <text id="label-tb" class="angle-label" fill="#2980b9"></text>
             <text id="label-tc" class="angle-label" fill="#8e44ad"></text>
 
-            <circle cx="0" cy="0" r="6" fill="#c0392b" />
+            <circle id="point-ta" class="draggable" r="12" fill="#c0392b" onmousedown="startDrag(event, 'svg-tool2', 'tA')" ontouchstart="startDrag(event, 'svg-tool2', 'tA')" />
             <circle id="point-tb" class="draggable" r="12" fill="#2980b9" onmousedown="startDrag(event, 'svg-tool2', 'tB')" ontouchstart="startDrag(event, 'svg-tool2', 'tB')" />
             <circle id="point-tc" class="draggable" r="12" fill="#8e44ad" onmousedown="startDrag(event, 'svg-tool2', 'tC')" ontouchstart="startDrag(event, 'svg-tool2', 'tC')" />
             
-            <text x="-15" y="20" font-weight="bold" fill="#c0392b">A</text>
+            <text id="name-ta" font-weight="bold" fill="#fff" font-size="12" pointer-events="none" text-anchor="middle" dominant-baseline="middle">A</text>
             <text id="name-tb" font-weight="bold" fill="#fff" font-size="12" pointer-events="none" text-anchor="middle" dominant-baseline="middle">B</text>
             <text id="name-tc" font-weight="bold" fill="#fff" font-size="12" pointer-events="none" text-anchor="middle" dominant-baseline="middle">C</text>
         </svg>
@@ -194,6 +217,8 @@
             
             <path id="quad-path" fill="rgba(52, 152, 219, 0.2)" stroke="#2980b9" stroke-width="3" stroke-linejoin="round" />
             
+            <g id="quad-markers"></g>
+
             <path id="q-right-a" fill="none" stroke="#c0392b" stroke-width="2"/>
             <path id="q-right-b" fill="none" stroke="#27ae60" stroke-width="2"/>
             <path id="q-right-c" fill="none" stroke="#8e44ad" stroke-width="2"/>
@@ -223,27 +248,27 @@
     const translations = {
         en: {
             title1: "📐 Angle Explorer (Straight Line)", subtitle1: "Drag the slider to see how Angle A and B change on a straight line (180°).",
-            title2: "🔺 Triangle Explorer", subtitle2: "Drag vertices B and C. Notice how the sum of all interior angles is always 180°!",
+            title2: "🔺 Triangle Explorer", subtitle2: "Drag vertices A, B, and C. Notice how the sum of all interior angles is always 180°!",
             title3: "🔲 Quadrilateral Explorer", subtitle3: "Drag vertices A, B, C, and D. The sum of interior angles is always 360°!",
-            labelA: "Adjust Angle A:",
+            labelA: "Adjust Angle A:", snap: "Snap to Grid",
             acute: "Acute", right: "Right", obtuse: "Obtuse", straight: "Straight", zero: "Zero",
             invalid: "Line", cross: "Self-Intersecting", concave: "Reflex",
             nameA: "Angle A", nameB: "Angle B"
         },
         zh: {
             title1: "📐 直線與補角探險", subtitle1: "拖曳滑桿來觀察直線上的角 A 與角 B 如何變化（相加為 180°）。",
-            title2: "🔺 三角形內角和探險", subtitle2: "自由拖曳座標上的頂點 B 和 C。觀察看看內角和是否永遠都是 180°！",
+            title2: "🔺 三角形內角和探險", subtitle2: "自由拖曳座標上的頂點 A、B 和 C。觀察看看內角和是否永遠都是 180°！",
             title3: "🔲 四邊形內角和探險", subtitle3: "拖曳頂點 A、B、C 和 D。試著發現四邊形內角和永遠是 360°！",
-            labelA: "調整角度 A：",
+            labelA: "調整角度 A：", snap: "網格對齊 (關閉可畫正三角形)",
             acute: "銳角", right: "直角", obtuse: "鈍角", straight: "平角", zero: "零角",
             invalid: "成一直線", cross: "邊線交叉", concave: "優角",
             nameA: "角 A", nameB: "角 B"
         },
         ja: {
             title1: "📐 直線と補角エクスプローラー", subtitle1: "スライダーを動かして、直線上の角Aと角Bがどのように変化するか見てみよう（合計180°）。",
-            title2: "🔺 三角形内角の和エクスプローラー", subtitle2: "頂点BとCをドラッグして動かしてみよう。内角の和は常に180°になります！",
+            title2: "🔺 三角形内角の和エクスプローラー", subtitle2: "頂点A、B、Cをドラッグしてみよう。内角の和は常に180°になります！",
             title3: "🔲 四角形内角の和エクスプローラー", subtitle3: "頂点A、B、C、Dをドラッグしてみよう。内角の和は常に360°です！",
-            labelA: "角度 A を調整：",
+            labelA: "角度 A を調整：", snap: "グリッドにスナップ",
             acute: "鋭角", right: "直角", obtuse: "鈍角", straight: "平角", zero: "零角",
             invalid: "直線", cross: "交差しています", concave: "優角",
             nameA: "角 A", nameB: "角 B"
@@ -251,18 +276,18 @@
     };
 
     let currentLang = 'en';
+    let currentSnap = 20; // 預設網格為 20px
 
-    const snapGrid = 20;
     let activeSvg = null;
     let isDragging = false;
     let draggedPoint = null;
 
-    // 工具 2: 三角形 (A 點固定)
-    const tA = { x: 0, y: 0 };
+    // 工具 2: 三角形 (A點解封)
+    let tA = { x: 0, y: 0 };
     let tB = { x: 100, y: 0 };
     let tC = { x: 0, y: -100 };
 
-    // 工具 3: 四邊形 (A 點解封，改為 let，並且初始為一個置中長方形)
+    // 工具 3: 四邊形
     let qA = { x: -100, y: -100 };
     let qB = { x: 100, y: -100 };
     let qC = { x: 100, y: 100 };
@@ -280,10 +305,13 @@
         document.getElementById('text-title3').innerText = t.title3;
         document.getElementById('text-subtitle3').innerText = t.subtitle3;
         document.getElementById('text-label-a').innerText = t.labelA;
+        document.getElementById('text-snap').innerText = t.snap;
         
-        updateTool1();
-        updateTool2();
-        updateTool3();
+        updateTool1(); updateTool2(); updateTool3();
+    }
+
+    function toggleSnap() {
+        currentSnap = document.getElementById('snap-checkbox').checked ? 20 : 1;
     }
 
     function getAngleType(deg, isShape = false) {
@@ -295,48 +323,66 @@
         return t.concave;
     }
 
+    // 計算幾何標記 (箭頭與短槓) 的 SVG 路徑
+    function drawGeomMarker(containerId, pStart, pEnd, type, offset = 0) {
+        const mx = (pStart.x + pEnd.x)/2, my = (pStart.y + pEnd.y)/2;
+        const angle = Math.atan2(pEnd.y - pStart.y, pEnd.x - pStart.x) * 180 / Math.PI;
+        const ox = mx + offset * Math.cos(angle * Math.PI / 180);
+        const oy = my + offset * Math.sin(angle * Math.PI / 180);
+
+        let d = '', stroke = '#333';
+        if (type === 'para1') { d = 'M -6 -6 L 2 0 L -6 6'; stroke = '#d35400'; } // 單箭頭
+        if (type === 'para2') { d = 'M -10 -6 L -2 0 L -10 6 M 2 -6 L 10 0 L 2 6'; stroke = '#d35400'; } // 雙箭頭
+        if (type === 'tick1') { d = 'M 0 -8 L 0 8'; stroke = '#2980b9'; } // 一槓
+        if (type === 'tick2') { d = 'M -3 -8 L -3 8 M 3 -8 L 3 8'; stroke = '#2980b9'; } // 兩槓
+        if (type === 'tick3') { d = 'M -6 -8 L -6 8 M 0 -8 L 0 8 M 6 -8 L 6 8'; stroke = '#2980b9'; } // 三槓
+
+        document.getElementById(containerId).innerHTML += `<path d="${d}" fill="none" stroke="${stroke}" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round" transform="translate(${ox}, ${oy}) rotate(${angle})" />`;
+    }
+
     function getRightAnglePath(pPrev, pCurr, pNext) {
         const L = 15;
         const v1x = pPrev.x - pCurr.x, v1y = pPrev.y - pCurr.y;
         const v2x = pNext.x - pCurr.x, v2y = pNext.y - pCurr.y;
         const len1 = Math.hypot(v1x, v1y), len2 = Math.hypot(v2x, v2y);
         if (len1 === 0 || len2 === 0) return '';
-        const u1x = v1x/len1, u1y = v1y/len1;
-        const u2x = v2x/len2, u2y = v2y/len2;
-        const pAx = pCurr.x + L*u1x, pAy = pCurr.y + L*u1y;
-        const pBx = pAx + L*u2x, pBy = pAy + L*u2y;
-        const pCx = pCurr.x + L*u2x, pCy = pCurr.y + L*u2y;
+        const pAx = pCurr.x + L*(v1x/len1), pAy = pCurr.y + L*(v1y/len1);
+        const pBx = pAx + L*(v2x/len2), pBy = pAy + L*(v2y/len2);
+        const pCx = pCurr.x + L*(v2x/len2), pCy = pCurr.y + L*(v2y/len2);
         return `M ${pAx} ${pAy} L ${pBx} ${pBy} L ${pCx} ${pCy}`;
     }
 
     function drawGrid(id) {
         const grid = document.getElementById(id);
         grid.innerHTML = '';
-        for (let i = -250; i <= 250; i += snapGrid) {
+        for (let i = -250; i <= 250; i += 20) { // 網格背景固定為20px
             grid.innerHTML += `<line x1="${i}" y1="-200" x2="${i}" y2="200" stroke="#ecf0f1" stroke-width="1" />`;
-        }
-        for (let i = -200; i <= 200; i += snapGrid) {
             grid.innerHTML += `<line x1="-250" y1="${i}" x2="250" y2="${i}" stroke="#ecf0f1" stroke-width="1" />`;
         }
     }
 
-    // === 工具 1 ===
+    // 基本數學函數
+    function getLen(p1, p2) { return Math.hypot(p2.x-p1.x, p2.y-p1.y); }
+    function isEqual(l1, l2) { return Math.abs(l1 - l2) < 2; } // 容許2px誤差 (因為手動拖曳可能會有浮點數)
+    function isPar(p1, p2, p3, p4) {
+        const dx1 = p2.x - p1.x, dy1 = p2.y - p1.y;
+        const dx2 = p4.x - p3.x, dy2 = p4.y - p3.y;
+        // 向量外積趨近於0則平行
+        return Math.abs(dx1*dy2 - dy1*dx2) < 50; 
+    }
+
+    // === 工具 1 更新 ===
     function updateTool1() {
         const a = parseInt(document.getElementById('angle-slider').value);
         const b = 180 - a;
         const t = translations[currentLang];
         document.getElementById('val-a').innerText = a;
-        
         const cx = 200, cy = 150, rayLen = 120, arcRadius = 45; 
         const rad = (a * Math.PI) / 180;
-        const x2 = cx + rayLen * Math.cos(-rad);
-        const y2 = cy + rayLen * Math.sin(-rad);
-        
-        document.getElementById('ray').setAttribute('x2', x2);
-        document.getElementById('ray').setAttribute('y2', y2);
+        const x2 = cx + rayLen * Math.cos(-rad), y2 = cy + rayLen * Math.sin(-rad);
+        document.getElementById('ray').setAttribute('x2', x2); document.getElementById('ray').setAttribute('y2', y2);
 
         const arcAx = cx + arcRadius * Math.cos(-rad), arcAy = cy + arcRadius * Math.sin(-rad);
-        
         if (a === 0) {
             document.getElementById('arc-a').setAttribute('d', ''); 
             document.getElementById('arc-b').setAttribute('d', `M ${cx} ${cy} L ${cx - arcRadius} ${cy} A ${arcRadius} ${arcRadius} 0 0 1 ${cx + arcRadius} ${cy} Z`); 
@@ -347,133 +393,145 @@
             document.getElementById('arc-a').setAttribute('d', `M ${cx} ${cy} L ${cx + arcRadius} ${cy} A ${arcRadius} ${arcRadius} 0 0 0 ${arcAx} ${arcAy} Z`);
             document.getElementById('arc-b').setAttribute('d', `M ${cx} ${cy} L ${cx - arcRadius} ${cy} A ${arcRadius} ${arcRadius} 0 0 1 ${arcAx} ${arcAy} Z`);
         }
-
         document.getElementById('type-a').textContent = `${t.nameA} = ${a}° (${getAngleType(a)})`;
         document.getElementById('type-b').textContent = `${t.nameB} = ${b}° (${getAngleType(b)})`;
         document.getElementById('equation1').innerText = `${a}° + ${b}° = 180°`;
     }
 
-    // === 工具 2 ===
-    function getTriAngle(p1, center, p2) {
-        let a = Math.atan2(p1.y - center.y, p1.x - center.x);
-        let b = Math.atan2(p2.y - center.y, p2.x - center.x);
-        let deg = Math.abs(a - b) * (180 / Math.PI);
-        if (deg > 180) deg = 360 - deg;
-        return deg;
-    }
-
+    // === 工具 2 更新 ===
     function updateTool2() {
         document.getElementById('triangle-path').setAttribute('d', `M ${tA.x} ${tA.y} L ${tB.x} ${tB.y} L ${tC.x} ${tC.y} Z`);
+        
+        const pts = [tA, tB, tC];
+        const names = ['ta', 'tb', 'tc'];
+        pts.forEach((pt, i) => {
+            document.getElementById(`point-${names[i]}`).setAttribute('cx', pt.x);
+            document.getElementById(`point-${names[i]}`).setAttribute('cy', pt.y);
+            document.getElementById(`name-${names[i]}`).setAttribute('x', pt.x);
+            document.getElementById(`name-${names[i]}`).setAttribute('y', pt.y + 1);
+        });
 
-        document.getElementById('point-tb').setAttribute('cx', tB.x); document.getElementById('point-tb').setAttribute('cy', tB.y);
-        document.getElementById('point-tc').setAttribute('cx', tC.x); document.getElementById('point-tc').setAttribute('cy', tC.y);
-        document.getElementById('name-tb').setAttribute('x', tB.x); document.getElementById('name-tb').setAttribute('y', tB.y + 1);
-        document.getElementById('name-tc').setAttribute('x', tC.x); document.getElementById('name-tc').setAttribute('y', tC.y + 1);
-
-        let roundA = Math.round(getTriAngle(tB, tA, tC));
-        let roundB = Math.round(getTriAngle(tA, tB, tC));
-        let roundC = 180 - roundA - roundB;
-        if (isNaN(roundA) || isNaN(roundB)) { roundA = 0; roundB = 0; roundC = 0; }
+        // 角度計算
+        let aA = Math.atan2(tB.y-tA.y, tB.x-tA.x) - Math.atan2(tC.y-tA.y, tC.x-tA.x);
+        let aB = Math.atan2(tA.y-tB.y, tA.x-tB.x) - Math.atan2(tC.y-tB.y, tC.x-tB.x);
+        let degA = Math.abs(aA * 180 / Math.PI); if(degA > 180) degA = 360 - degA;
+        let degB = Math.abs(aB * 180 / Math.PI); if(degB > 180) degB = 360 - degB;
+        let roundA = Math.round(degA), roundB = Math.round(degB), roundC = 180 - roundA - roundB;
+        if (isNaN(roundA)) { roundA = 0; roundB = 0; roundC = 0; }
 
         function setLabel(id, pt, deg) {
             const label = document.getElementById(id);
             label.setAttribute('x', pt.x + (pt.x <= 0 ? -40 : 20));
             label.setAttribute('y', pt.y + (pt.y <= 0 ? -15 : 25));
-            if (deg > 0 && deg < 180) { label.textContent = `${deg}° (${getAngleType(deg, true)})`; } 
-            else { label.textContent = ""; }
+            label.textContent = (deg > 0 && deg < 180) ? `${deg}° (${getAngleType(deg, true)})` : "";
         }
-
         setLabel('label-ta', tA, roundA); setLabel('label-tb', tB, roundB); setLabel('label-tc', tC, roundC);
 
         document.getElementById('t-right-a').setAttribute('d', roundA === 90 ? getRightAnglePath(tB, tA, tC) : '');
         document.getElementById('t-right-b').setAttribute('d', roundB === 90 ? getRightAnglePath(tA, tB, tC) : '');
         document.getElementById('t-right-c').setAttribute('d', roundC === 90 ? getRightAnglePath(tA, tC, tB) : '');
 
+        // --- 三角形等長偵測 ---
+        document.getElementById('tri-markers').innerHTML = '';
+        const lenAB = getLen(tA, tB), lenBC = getLen(tB, tC), lenCA = getLen(tC, tA);
+        const eqAB_BC = isEqual(lenAB, lenBC), eqBC_CA = isEqual(lenBC, lenCA), eqCA_AB = isEqual(lenCA, lenAB);
+        
+        if (eqAB_BC && eqBC_CA) { // 正三角形
+            drawGeomMarker('tri-markers', tA, tB, 'tick1'); drawGeomMarker('tri-markers', tB, tC, 'tick1'); drawGeomMarker('tri-markers', tC, tA, 'tick1');
+        } else { // 等腰三角形
+            if (eqAB_BC) { drawGeomMarker('tri-markers', tA, tB, 'tick1'); drawGeomMarker('tri-markers', tB, tC, 'tick1'); }
+            if (eqBC_CA) { drawGeomMarker('tri-markers', tB, tC, 'tick2'); drawGeomMarker('tri-markers', tC, tA, 'tick2'); }
+            if (eqCA_AB) { drawGeomMarker('tri-markers', tC, tA, 'tick3'); drawGeomMarker('tri-markers', tA, tB, 'tick3'); }
+        }
+
         const eq = document.getElementById('equation2');
         if (roundA === 0 || roundB === 0 || roundC === 0) {
-            eq.innerText = `⚠️ ${translations[currentLang].invalid}`;
-            eq.style.color = "#e74c3c";
+            eq.innerText = `⚠️ ${translations[currentLang].invalid}`; eq.style.color = "#e74c3c";
         } else {
-            eq.innerText = `∠A + ∠B + ∠C = ${roundA}° + ${roundB}° + ${roundC}° = 180°`;
-            eq.style.color = "#27ae60";
+            eq.innerText = `∠A + ∠B + ∠C = ${roundA}° + ${roundB}° + ${roundC}° = 180°`; eq.style.color = "#27ae60";
         }
     }
 
-    // === 工具 3 ===
+    // === 工具 3 更新 ===
     function ccw(p1, p2, p3) { return (p3.y - p1.y) * (p2.x - p1.x) > (p2.y - p1.y) * (p3.x - p1.x); }
     function intersect(p1, p2, p3, p4) { return (ccw(p1, p3, p4) !== ccw(p2, p3, p4)) && (ccw(p1, p2, p3) !== ccw(p1, p2, p4)); }
     
-    function getInteriorAngle(pPrev, pCurr, pNext, isCW) {
-        let aPrev = Math.atan2(pPrev.y - pCurr.y, pPrev.x - pCurr.x);
-        let aNext = Math.atan2(pNext.y - pCurr.y, pNext.x - pCurr.x);
-        let diff = isCW ? (aPrev - aNext) : (aNext - aPrev);
-        while (diff <= 0) diff += 2 * Math.PI;
-        while (diff > 2 * Math.PI) diff -= 2 * Math.PI;
-        return diff * 180 / Math.PI;
-    }
-
     function updateTool3() {
         document.getElementById('quad-path').setAttribute('d', `M ${qA.x} ${qA.y} L ${qB.x} ${qB.y} L ${qC.x} ${qC.y} L ${qD.x} ${qD.y} Z`);
 
         const pts = [qA, qB, qC, qD];
-        const names = ['a', 'b', 'c', 'd'];
+        const names = ['qa', 'qb', 'qc', 'qd'];
         pts.forEach((pt, i) => {
-            document.getElementById(`point-q${names[i]}`).setAttribute('cx', pt.x);
-            document.getElementById(`point-q${names[i]}`).setAttribute('cy', pt.y);
-            document.getElementById(`name-q${names[i]}`).setAttribute('x', pt.x);
-            document.getElementById(`name-q${names[i]}`).setAttribute('y', pt.y + 1);
+            document.getElementById(`point-${names[i]}`).setAttribute('cx', pt.x);
+            document.getElementById(`point-${names[i]}`).setAttribute('cy', pt.y);
+            document.getElementById(`name-${names[i]}`).setAttribute('x', pt.x);
+            document.getElementById(`name-${names[i]}`).setAttribute('y', pt.y + 1);
         });
 
         const isCrossing = intersect(qA, qB, qC, qD) || intersect(qB, qC, qD, qA);
         const eq = document.getElementById('equation3');
+        document.getElementById('quad-markers').innerHTML = '';
 
         if (isCrossing) {
-            ['qa', 'qb', 'qc', 'qd'].forEach(id => document.getElementById(`label-${id}`).textContent = "");
-            ['a', 'b', 'c', 'd'].forEach(id => document.getElementById(`q-right-${id}`).setAttribute('d', ''));
-            eq.innerText = `⚠️ ${translations[currentLang].cross}`;
-            eq.style.color = "#e74c3c";
+            ['qa', 'qb', 'qc', 'qd'].forEach(id => { document.getElementById(`label-${id}`).textContent = ""; document.getElementById(`q-right-${id.charAt(1)}`).setAttribute('d', ''); });
+            eq.innerText = `⚠️ ${translations[currentLang].cross}`; eq.style.color = "#e74c3c";
             return;
         }
 
         const area = (qA.x*qB.y - qB.x*qA.y) + (qB.x*qC.y - qC.x*qB.y) + (qC.x*qD.y - qD.x*qC.y) + (qD.x*qA.y - qA.x*qD.y);
         const isCW = area > 0;
-
-        let rA = Math.round(getInteriorAngle(qD, qA, qB, isCW));
-        let rB = Math.round(getInteriorAngle(qA, qB, qC, isCW));
-        let rC = Math.round(getInteriorAngle(qB, qC, qD, isCW));
-        let rD = 360 - rA - rB - rC; 
-
-        function setQuadLabel(id, pt, deg) {
-            const label = document.getElementById(id);
-            label.setAttribute('x', pt.x + (pt.x <= 0 ? -40 : 20));
-            label.setAttribute('y', pt.y + (pt.y <= 0 ? -15 : 25));
-            if(deg > 0 && deg < 360) { label.textContent = `${deg}° (${getAngleType(deg, true)})`; }
-            else { label.textContent = ""; }
+        
+        function getIntAngle(pP, pC, pN) {
+            let d = (isCW ? 1 : -1) * (Math.atan2(pP.y-pC.y, pP.x-pC.x) - Math.atan2(pN.y-pC.y, pN.x-pC.x));
+            while(d <= 0) d += 2*Math.PI; while(d > 2*Math.PI) d -= 2*Math.PI;
+            return d * 180 / Math.PI;
         }
 
-        setQuadLabel('label-qa', qA, rA); setQuadLabel('label-qb', qB, rB);
-        setQuadLabel('label-qc', qC, rC); setQuadLabel('label-qd', qD, rD);
+        let rA = Math.round(getIntAngle(qD, qA, qB)), rB = Math.round(getIntAngle(qA, qB, qC));
+        let rC = Math.round(getIntAngle(qB, qC, qD)), rD = 360 - rA - rB - rC; 
+
+        function setLabel(id, pt, deg) {
+            const label = document.getElementById(id);
+            label.setAttribute('x', pt.x + (pt.x <= 0 ? -40 : 20)); label.setAttribute('y', pt.y + (pt.y <= 0 ? -15 : 25));
+            label.textContent = (deg > 0 && deg < 360) ? `${deg}° (${getAngleType(deg, true)})` : "";
+        }
+        setLabel('label-qa', qA, rA); setLabel('label-qb', qB, rB); setLabel('label-qc', qC, rC); setLabel('label-qd', qD, rD);
 
         document.getElementById('q-right-a').setAttribute('d', rA === 90 ? getRightAnglePath(qD, qA, qB) : '');
         document.getElementById('q-right-b').setAttribute('d', rB === 90 ? getRightAnglePath(qA, qB, qC) : '');
         document.getElementById('q-right-c').setAttribute('d', rC === 90 ? getRightAnglePath(qB, qC, qD) : '');
         document.getElementById('q-right-d').setAttribute('d', rD === 90 ? getRightAnglePath(qC, qD, qA) : '');
 
-        if (rA===0 || rB===0 || rC===0 || rD===0 || rA===180 || rB===180 || rC===180 || rD===180) {
-            eq.innerText = `⚠️ ${translations[currentLang].invalid}`;
-            eq.style.color = "#e74c3c";
+        // --- 四邊形平行與等長偵測 ---
+        const pAB_CD = isPar(qA, qB, qD, qC), pBC_DA = isPar(qB, qC, qA, qD);
+        const lAB = getLen(qA, qB), lBC = getLen(qB, qC), lCD = getLen(qC, qD), lDA = getLen(qD, qA);
+        
+        if (pAB_CD) { drawGeomMarker('quad-markers', qA, qB, 'para1'); drawGeomMarker('quad-markers', qD, qC, 'para1'); }
+        if (pBC_DA) { drawGeomMarker('quad-markers', qB, qC, 'para2'); drawGeomMarker('quad-markers', qA, qD, 'para2'); }
+
+        if (isEqual(lAB, lBC) && isEqual(lBC, lCD) && isEqual(lCD, lDA)) {
+            // 菱形/正方形
+            drawGeomMarker('quad-markers', qA, qB, 'tick1', pAB_CD?-20:0); drawGeomMarker('quad-markers', qB, qC, 'tick1', pBC_DA?-20:0);
+            drawGeomMarker('quad-markers', qC, qD, 'tick1', pAB_CD?-20:0); drawGeomMarker('quad-markers', qD, qA, 'tick1', pBC_DA?-20:0);
         } else {
-            eq.innerText = `∠A + ∠B + ∠C + ∠D = ${rA}° + ${rB}° + ${rC}° + ${rD}° = 360°`;
-            eq.style.color = "#2980b9";
+            // 長方形/平行四邊形/風箏形 等
+            let tick = 'tick1';
+            if (isEqual(lAB, lCD)) { drawGeomMarker('quad-markers', qA, qB, tick, pAB_CD?-20:0); drawGeomMarker('quad-markers', qC, qD, tick, pAB_CD?-20:0); tick = 'tick2'; }
+            if (isEqual(lBC, lDA)) { drawGeomMarker('quad-markers', qB, qC, tick, pBC_DA?-20:0); drawGeomMarker('quad-markers', qD, qA, tick, pBC_DA?-20:0); }
+        }
+
+        if (rA===0 || rB===0 || rC===0 || rD===0 || rA===180 || rB===180 || rC===180 || rD===180) {
+            eq.innerText = `⚠️ ${translations[currentLang].invalid}`; eq.style.color = "#e74c3c";
+        } else {
+            eq.innerText = `∠A + ∠B + ∠C + ∠D = ${rA}° + ${rB}° + ${rC}° + ${rD}° = 360°`; eq.style.color = "#2980b9";
         }
     }
 
-    // === 拖曳邏輯 ===
+    // === 拖曳互動邏輯 ===
     function startDrag(evt, svgId, ptName) {
         evt.preventDefault(); 
         activeSvg = document.getElementById(svgId);
-        isDragging = true;
-        draggedPoint = ptName;
+        isDragging = true; draggedPoint = ptName;
     }
 
     function drag(evt) {
@@ -483,22 +541,18 @@
         if (evt.touches) { pt.x = evt.touches[0].clientX; pt.y = evt.touches[0].clientY; } 
         else { pt.x = evt.clientX; pt.y = evt.clientY; }
         
-        let cursorPt = pt.matrixTransform(activeSvg.getScreenCTM().inverse());
-        cursorPt.x = Math.round(cursorPt.x / snapGrid) * snapGrid;
-        cursorPt.y = Math.round(cursorPt.y / snapGrid) * snapGrid;
+        let cPt = pt.matrixTransform(activeSvg.getScreenCTM().inverse());
+        cPt.x = Math.round(cPt.x / currentSnap) * currentSnap;
+        cPt.y = Math.round(cPt.y / currentSnap) * currentSnap;
         
-        // 只有工具2 (三角形) 鎖定 A 點在原點，避免其他點疊上去
-        if (activeSvg.id === 'svg-tool2' && cursorPt.x === 0 && cursorPt.y === 0) return; 
-
-        // 工具 2
-        if (draggedPoint === 'tB' && (cursorPt.x !== tC.x || cursorPt.y !== tC.y)) { tB.x = cursorPt.x; tB.y = cursorPt.y; updateTool2(); }
-        else if (draggedPoint === 'tC' && (cursorPt.x !== tB.x || cursorPt.y !== tB.y)) { tC.x = cursorPt.x; tC.y = cursorPt.y; updateTool2(); }
+        if (draggedPoint === 'tA' && !(cPt.x===tB.x && cPt.y===tB.y) && !(cPt.x===tC.x && cPt.y===tC.y)) { tA.x = cPt.x; tA.y = cPt.y; updateTool2(); }
+        else if (draggedPoint === 'tB' && !(cPt.x===tA.x && cPt.y===tA.y) && !(cPt.x===tC.x && cPt.y===tC.y)) { tB.x = cPt.x; tB.y = cPt.y; updateTool2(); }
+        else if (draggedPoint === 'tC' && !(cPt.x===tA.x && cPt.y===tA.y) && !(cPt.x===tB.x && cPt.y===tB.y)) { tC.x = cPt.x; tC.y = cPt.y; updateTool2(); }
         
-        // 工具 3 (四邊形的四個點互不重疊)
-        else if (draggedPoint === 'qA' && !(cursorPt.x===qB.x && cursorPt.y===qB.y) && !(cursorPt.x===qC.x && cursorPt.y===qC.y) && !(cursorPt.x===qD.x && cursorPt.y===qD.y)) { qA.x = cursorPt.x; qA.y = cursorPt.y; updateTool3(); }
-        else if (draggedPoint === 'qB' && !(cursorPt.x===qA.x && cursorPt.y===qA.y) && !(cursorPt.x===qC.x && cursorPt.y===qC.y) && !(cursorPt.x===qD.x && cursorPt.y===qD.y)) { qB.x = cursorPt.x; qB.y = cursorPt.y; updateTool3(); }
-        else if (draggedPoint === 'qC' && !(cursorPt.x===qA.x && cursorPt.y===qA.y) && !(cursorPt.x===qB.x && cursorPt.y===qB.y) && !(cursorPt.x===qD.x && cursorPt.y===qD.y)) { qC.x = cursorPt.x; qC.y = cursorPt.y; updateTool3(); }
-        else if (draggedPoint === 'qD' && !(cursorPt.x===qA.x && cursorPt.y===qA.y) && !(cursorPt.x===qB.x && cursorPt.y===qB.y) && !(cursorPt.x===qC.x && cursorPt.y===qC.y)) { qD.x = cursorPt.x; qD.y = cursorPt.y; updateTool3(); }
+        else if (draggedPoint === 'qA' && !(cPt.x===qB.x && cPt.y===qB.y) && !(cPt.x===qC.x && cPt.y===qC.y) && !(cPt.x===qD.x && cPt.y===qD.y)) { qA.x = cPt.x; qA.y = cPt.y; updateTool3(); }
+        else if (draggedPoint === 'qB' && !(cPt.x===qA.x && cPt.y===qA.y) && !(cPt.x===qC.x && cPt.y===qC.y) && !(cPt.x===qD.x && cPt.y===qD.y)) { qB.x = cPt.x; qB.y = cPt.y; updateTool3(); }
+        else if (draggedPoint === 'qC' && !(cPt.x===qA.x && cPt.y===qA.y) && !(cPt.x===qB.x && cPt.y===qB.y) && !(cPt.x===qD.x && cPt.y===qD.y)) { qC.x = cPt.x; qC.y = cPt.y; updateTool3(); }
+        else if (draggedPoint === 'qD' && !(cPt.x===qA.x && cPt.y===qA.y) && !(cPt.x===qB.x && cPt.y===qB.y) && !(cPt.x===qC.x && cPt.y===qC.y)) { qD.x = cPt.x; qD.y = cPt.y; updateTool3(); }
     }
 
     function endDrag() { isDragging = false; activeSvg = null; draggedPoint = null; }
@@ -509,8 +563,7 @@
     window.onload = function() {
         const savedLang = localStorage.getItem('mySiteLang');
         if (savedLang) { document.getElementById('language').value = savedLang; }
-        drawGrid('grid2');
-        drawGrid('grid3');
+        drawGrid('grid2'); drawGrid('grid3');
         changeLanguage();
     };
 </script>
