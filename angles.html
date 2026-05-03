@@ -153,6 +153,27 @@
         .shape-info-box h3 { margin: 0 0 8px 0; color: #2c3e50; font-size: 1.25rem; display: flex; align-items: center; gap: 8px; }
         .shape-info-box p { margin: 0; color: #555; font-size: 1.05rem; line-height: 1.5; }
 
+        /* 🔊 語音點擊按鈕樣式 */
+        .speak-btn {
+            color: #2980b9;
+            cursor: pointer;
+            border-bottom: 2px dashed #2980b9;
+            transition: background-color 0.2s, color 0.2s;
+            padding: 0 5px;
+            border-radius: 4px;
+            display: inline-flex;
+            align-items: center;
+            gap: 5px;
+        }
+        .speak-btn:hover {
+            background-color: #ebf5fb;
+            color: #1f618d;
+            border-bottom-style: solid;
+        }
+        .speak-btn:active {
+            transform: scale(0.95);
+        }
+
         .btn {
             background-color: #3498db; color: white; border: none; padding: 8px 15px;
             font-size: 1.1rem; border-radius: 5px; cursor: pointer; transition: 0.2s; font-weight: bold;
@@ -281,7 +302,7 @@
             
             <path id="quad-path" fill="rgba(52, 152, 219, 0.2)" stroke="#2980b9" stroke-width="3" stroke-linejoin="round" />
             
-            <g id="quad-diagonals"></g> <!-- 新增：對角線繪製層 -->
+            <g id="quad-diagonals"></g>
             <g id="quad-markers"></g>
 
             <path id="q-right-a" fill="none" stroke="#c0392b" stroke-width="2"/>
@@ -392,7 +413,7 @@
     // === 工具 2 & 3 狀態 ===
     const snapGrid = 20;
     let snapEnabled = true;
-    let showDiagonals = false; // ★ 對角線開關變數
+    let showDiagonals = false; 
     let activeSvg = null;
     let isDragging = false;
     let draggedPoint = null;
@@ -406,15 +427,29 @@
     let qC = { x: 100, y: 100 };
     let qD = { x: -100, y: 100 };
 
+    // === 語音合成功能 (Text-to-Speech) ===
+    function speakText(text) {
+        if ('speechSynthesis' in window) {
+            window.speechSynthesis.cancel(); // 停止先前的發音
+            const utterance = new SpeechSynthesisUtterance(text);
+            
+            // 根據目前選擇的介面語言，設定相對應的發音語言
+            if (currentLang === 'en') utterance.lang = 'en-US';
+            else if (currentLang === 'zh') utterance.lang = 'zh-TW';
+            else if (currentLang === 'ja') utterance.lang = 'ja-JP';
+            
+            // 稍微放慢語速讓學生聽清楚
+            utterance.rate = 0.9;
+            
+            window.speechSynthesis.speak(utterance);
+        } else {
+            alert("Sorry, your browser doesn't support Text-to-Speech!");
+        }
+    }
+
     // === 切換狀態 ===
-    function toggleSnap() {
-        snapEnabled = document.getElementById('snap-toggle').checked;
-    }
-    
-    function toggleDiag() {
-        showDiagonals = document.getElementById('diag-toggle').checked;
-        updateTool3();
-    }
+    function toggleSnap() { snapEnabled = document.getElementById('snap-toggle').checked; }
+    function toggleDiag() { showDiagonals = document.getElementById('diag-toggle').checked; updateTool3(); }
 
     // === 語言切換 ===
     function changeLanguage() {
@@ -453,7 +488,6 @@
     function changeAngleCount(delta) {
         let newCount = lineAngleCount + delta;
         if (newCount < 2 || newCount > 5) return; 
-        
         if (delta === 1) {
             let lastIdx = lineAngles.length - 1;
             let half = Math.floor(lineAngles[lastIdx] / 2);
@@ -463,7 +497,6 @@
             let last = lineAngles.pop();
             lineAngles[lineAngles.length - 1] += last;
         }
-        
         lineAngleCount = newCount;
         buildSliders();
         updateTool1();
@@ -487,7 +520,6 @@
             `;
             container.appendChild(div);
         }
-        
         document.getElementById('btn-add-angle').disabled = lineAngleCount >= 5;
         document.getElementById('btn-rm-angle').disabled = lineAngleCount <= 2;
     }
@@ -495,21 +527,12 @@
     function handleSlider(index) {
         let slider = document.getElementById(`slider-${index}`);
         let newVal = parseInt(slider.value);
-        
         let fixedSum = 0;
-        for(let i = 0; i < lineAngleCount - 1; i++) {
-            if (i !== index) fixedSum += lineAngles[i];
-        }
-        
+        for(let i = 0; i < lineAngleCount - 1; i++) { if (i !== index) fixedSum += lineAngles[i]; }
         let maxAllowed = 180 - fixedSum;
-        if (newVal > maxAllowed) {
-            newVal = maxAllowed;
-            slider.value = newVal; 
-        }
-        
+        if (newVal > maxAllowed) { newVal = maxAllowed; slider.value = newVal; }
         lineAngles[index] = newVal;
         lineAngles[lineAngleCount - 1] = 180 - fixedSum - newVal;
-        
         document.getElementById(`val-${index}`).innerText = newVal;
         updateTool1();
     }
@@ -517,7 +540,6 @@
     function updateTool1() {
         const svg = document.getElementById('svg-tool1');
         svg.innerHTML = '';
-        
         const cx = 200, cy = 180, rayLen = 140, arcRadius = 50;
         svg.innerHTML += `<line x1="20" y1="${cy}" x2="380" y2="${cy}" stroke="#34495e" stroke-width="4" />`;
         
@@ -572,7 +594,6 @@
         return `M ${pAx} ${pAy} L ${pBx} ${pBy} L ${pCx} ${pCy}`;
     }
 
-    // ★ 新增：計算兩線交點 (用於對角線交點標示)
     function getIntersection(p1, p2, p3, p4) {
         const x1 = p1.x, y1 = p1.y, x2 = p2.x, y2 = p2.y;
         const x3 = p3.x, y3 = p3.y, x4 = p4.x, y4 = p4.y;
@@ -656,7 +677,6 @@
             eq.innerText = `∠A + ∠B + ∠C = ${roundA}° + ${roundB}° + ${roundC}° = 180°`; eq.style.color = "#27ae60";
         }
 
-        // --- 智能三角形辨識 ---
         const lenAB = getLen(tA, tB), lenBC = getLen(tB, tC), lenCA = getLen(tC, tA);
         const eqAB_BC = isEqual(lenAB, lenBC), eqBC_CA = isEqual(lenBC, lenCA), eqCA_AB = isEqual(lenCA, lenAB);
         
@@ -674,7 +694,10 @@
         if (shapeKey && roundA !== 0 && roundB !== 0 && roundC !== 0 && roundA !== 180 && roundB !== 180 && roundC !== 180) {
             const sData = translations[currentLang][shapeKey];
             let tipHtml = sData.tip ? `<small style="display:block; margin-top:8px; color:#95a5a6; font-size:0.85rem;">${sData.tip}</small>` : '';
-            shapeBox.innerHTML = `<h3>${translations[currentLang].detected} <span style="color:#e67e22;">${sData.name}</span></h3><p>${sData.desc}</p>${tipHtml}`;
+            // 替換：名稱變成可點擊語音播放
+            shapeBox.innerHTML = `<h3>${translations[currentLang].detected} 
+                <span class="speak-btn" onclick="speakText('${sData.name}')" title="Listen to pronunciation">${sData.name} 🔊</span></h3>
+                <p>${sData.desc}</p>${tipHtml}`;
             shapeBox.style.borderLeftColor = "#f39c12";
         } else {
             shapeBox.innerHTML = `<p style="color:#7f8c8d; font-style:italic;">${translations[currentLang].exploring}</p>`;
@@ -757,7 +780,6 @@
             if (isEqual(lenBC, lenDA)) { drawMarker(qB, qC, tickType, pBC ? -20 : 0); drawMarker(qD, qA, tickType, pBC ? -20 : 0); }
         }
 
-        // ★ 新增：繪製對角線與垂直記號
         if (showDiagonals) {
             let diagHTML = `<line x1="${qA.x}" y1="${qA.y}" x2="${qC.x}" y2="${qC.y}" stroke="#8e44ad" stroke-width="2" stroke-dasharray="6,4" />`;
             diagHTML += `<line x1="${qB.x}" y1="${qB.y}" x2="${qD.x}" y2="${qD.y}" stroke="#8e44ad" stroke-width="2" stroke-dasharray="6,4" />`;
@@ -769,7 +791,6 @@
             let diff = Math.abs(angle1 - angle2) % 180;
             if (diff > 90) diff = 180 - diff;
             
-            // 判斷對角線是否垂直 (90度)
             if (Math.abs(diff - 90) < 0.1) {
                 const intersection = getIntersection(qA, qC, qB, qD);
                 if (intersection) {
@@ -804,7 +825,10 @@
 
         if (shapeKey && rA!==0 && rB!==0 && rC!==0 && rD!==0 && rA!==180 && rB!==180 && rC!==180 && rD!==180) {
             const sData = translations[currentLang][shapeKey];
-            shapeBox.innerHTML = `<h3>${translations[currentLang].detected} <span style="color:#2980b9;">${sData.name}</span></h3><p>${sData.desc}</p>`;
+            // 替換：名稱變成可點擊語音播放
+            shapeBox.innerHTML = `<h3>${translations[currentLang].detected} 
+                <span class="speak-btn" onclick="speakText('${sData.name}')" title="Listen to pronunciation">${sData.name} 🔊</span></h3>
+                <p>${sData.desc}</p>`;
             shapeBox.style.borderLeftColor = "#3498db";
         } else {
             shapeBox.innerHTML = `<p style="color:#7f8c8d; font-style:italic;">${translations[currentLang].exploring}</p>`;
@@ -830,19 +854,16 @@
         
         let cursorPt = pt.matrixTransform(activeSvg.getScreenCTM().inverse());
         
-        // ★ 吸附格線邏輯 ★
         if (snapEnabled) {
             cursorPt.x = Math.round(cursorPt.x / snapGrid) * snapGrid;
             cursorPt.y = Math.round(cursorPt.y / snapGrid) * snapGrid;
         }
         
-        // 三角形拖曳邏輯
         if (activeSvg.id === 'svg-tool2') {
             if (draggedPoint === 'tA' && (cursorPt.x !== tB.x || cursorPt.y !== tB.y) && (cursorPt.x !== tC.x || cursorPt.y !== tC.y)) { tA.x = cursorPt.x; tA.y = cursorPt.y; updateTool2(); }
             else if (draggedPoint === 'tB' && (cursorPt.x !== tA.x || cursorPt.y !== tA.y) && (cursorPt.x !== tC.x || cursorPt.y !== tC.y)) { tB.x = cursorPt.x; tB.y = cursorPt.y; updateTool2(); }
             else if (draggedPoint === 'tC' && (cursorPt.x !== tA.x || cursorPt.y !== tA.y) && (cursorPt.x !== tB.x || cursorPt.y !== tB.y)) { tC.x = cursorPt.x; tC.y = cursorPt.y; updateTool2(); }
         }
-        // 四邊形拖曳邏輯
         else if (activeSvg.id === 'svg-tool3') {
             if (draggedPoint === 'qA' && !(cursorPt.x===qB.x && cursorPt.y===qB.y) && !(cursorPt.x===qC.x && cursorPt.y===qC.y) && !(cursorPt.x===qD.x && cursorPt.y===qD.y)) { qA.x = cursorPt.x; qA.y = cursorPt.y; updateTool3(); }
             else if (draggedPoint === 'qB' && !(cursorPt.x===qA.x && cursorPt.y===qA.y) && !(cursorPt.x===qC.x && cursorPt.y===qC.y) && !(cursorPt.x===qD.x && cursorPt.y===qD.y)) { qB.x = cursorPt.x; qB.y = cursorPt.y; updateTool3(); }
@@ -853,7 +874,6 @@
 
     function endDrag() { isDragging = false; activeSvg = null; draggedPoint = null; }
 
-    // === 初始化 ===
     window.onload = function() {
         const savedLang = localStorage.getItem('mySiteLang');
         if (savedLang) { document.getElementById('language').value = savedLang; }
