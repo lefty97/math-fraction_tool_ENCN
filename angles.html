@@ -71,7 +71,6 @@
             font-size: 1.2rem;
         }
         
-        /* 💡 吸附格線開關樣式 (iOS Style Toggle) */
         .snap-control {
             display: flex;
             justify-content: center;
@@ -110,7 +109,6 @@
         input:checked + .slider-toggle { background-color: #27ae60; }
         input:checked + .slider-toggle:before { transform: translateX(24px); }
         
-        /* 紫色對角線開關專用 */
         input.purple-switch:checked + .slider-toggle { background-color: #8e44ad; }
 
         .equation {
@@ -153,7 +151,6 @@
         .shape-info-box h3 { margin: 0 0 8px 0; color: #2c3e50; font-size: 1.25rem; display: flex; align-items: center; gap: 8px; }
         .shape-info-box p { margin: 0; color: #555; font-size: 1.05rem; line-height: 1.5; }
 
-        /* 🔊 語音點擊按鈕樣式 */
         .speak-btn {
             color: #2980b9;
             cursor: pointer;
@@ -238,7 +235,6 @@
 
     <hr class="section-divider">
 
-    <!-- 全局控制：吸附格線開關 -->
     <div class="snap-control">
         <span id="text-snap" style="font-size:1.2rem; font-weight:bold; color:#16a085;">Snap to Grid (Magnet Effect)</span>
         <label class="switch">
@@ -285,7 +281,6 @@
     <h2 id="text-title3">🔲 Quadrilateral Explorer</h2>
     <p id="text-subtitle3">Drag vertices A, B, C, and D. The sum of interior angles is always 360°!</p>
 
-    <!-- 對角線專屬開關 -->
     <div class="snap-control" style="background: #f4ecf7; border-color: #d7bde2; margin-top: 10px; margin-bottom: 20px;">
         <span id="text-diag" style="font-size:1.2rem; font-weight:bold; color:#8e44ad;">Show Diagonals</span>
         <label class="switch">
@@ -402,15 +397,60 @@
     };
 
     let currentLang = 'en';
+    let availableVoices = [];
 
-    // === 工具 1 (直線平角) 狀態 ===
+    // === 預先載入可用的語音包 ===
+    function loadVoices() {
+        availableVoices = window.speechSynthesis.getVoices();
+    }
+    if ('speechSynthesis' in window) {
+        loadVoices();
+        // Chrome 等瀏覽器需要等待語音包非同步載入
+        window.speechSynthesis.onvoiceschanged = loadVoices;
+    }
+
+    // === 智慧語音合成功能 (Text-to-Speech) ===
+    function speakText(text) {
+        if ('speechSynthesis' in window) {
+            window.speechSynthesis.cancel(); 
+            const utterance = new SpeechSynthesisUtterance(text);
+            
+            let langCode = 'en-US';
+            if (currentLang === 'zh') langCode = 'zh-TW'; 
+            if (currentLang === 'ja') langCode = 'ja-JP';
+            utterance.lang = langCode;
+
+            // 尋找高質量的自然語音
+            if (availableVoices.length > 0) {
+                // 1. 先篩選出符合當前語言的語音包
+                let langVoices = availableVoices.filter(v => v.lang.includes(langCode) || v.lang.includes(langCode.split('-')[0]));
+                
+                if (langVoices.length > 0) {
+                    // 2. 優先挑選名稱中包含 Google, Premium, Siri, Natural 的高階語音
+                    let preferredVoice = langVoices.find(v => 
+                        v.name.includes('Google') || 
+                        v.name.includes('Premium') || 
+                        v.name.includes('Siri') || 
+                        v.name.includes('Natural')
+                    );
+                    utterance.voice = preferredVoice || langVoices[0]; // 如果沒有高級的，就用該語言的第一個
+                }
+            }
+            
+            utterance.rate = 0.9; // 稍微放慢，讓小朋友聽得清楚
+            utterance.pitch = 1.1; // 音調微調高一點點，聽起來比較友善
+            window.speechSynthesis.speak(utterance);
+        } else {
+            alert("Sorry, your browser doesn't support Text-to-Speech!");
+        }
+    }
+
     let lineAngleCount = 2;
     let lineAngles = [60, 120];
     const lineColors = ['#d35400', '#2980b9', '#27ae60', '#8e44ad', '#c0392b'];
     const lineFills = ['rgba(230, 126, 34, 0.25)', 'rgba(41, 128, 185, 0.25)', 'rgba(39, 174, 96, 0.25)', 'rgba(142, 68, 173, 0.25)', 'rgba(192, 57, 43, 0.25)'];
     const angleNames = ['A', 'B', 'C', 'D', 'E'];
 
-    // === 工具 2 & 3 狀態 ===
     const snapGrid = 20;
     let snapEnabled = true;
     let showDiagonals = false; 
@@ -427,31 +467,9 @@
     let qC = { x: 100, y: 100 };
     let qD = { x: -100, y: 100 };
 
-    // === 語音合成功能 (Text-to-Speech) ===
-    function speakText(text) {
-        if ('speechSynthesis' in window) {
-            window.speechSynthesis.cancel(); // 停止先前的發音
-            const utterance = new SpeechSynthesisUtterance(text);
-            
-            // 根據目前選擇的介面語言，設定相對應的發音語言
-            if (currentLang === 'en') utterance.lang = 'en-US';
-            else if (currentLang === 'zh') utterance.lang = 'zh-TW';
-            else if (currentLang === 'ja') utterance.lang = 'ja-JP';
-            
-            // 稍微放慢語速讓學生聽清楚
-            utterance.rate = 0.9;
-            
-            window.speechSynthesis.speak(utterance);
-        } else {
-            alert("Sorry, your browser doesn't support Text-to-Speech!");
-        }
-    }
-
-    // === 切換狀態 ===
     function toggleSnap() { snapEnabled = document.getElementById('snap-toggle').checked; }
     function toggleDiag() { showDiagonals = document.getElementById('diag-toggle').checked; updateTool3(); }
 
-    // === 語言切換 ===
     function changeLanguage() {
         currentLang = document.getElementById('language').value;
         localStorage.setItem('mySiteLang', currentLang);
@@ -484,7 +502,6 @@
         return t.concave;
     }
 
-    // === 工具 1 ===
     function changeAngleCount(delta) {
         let newCount = lineAngleCount + delta;
         if (newCount < 2 || newCount > 5) return; 
@@ -506,7 +523,6 @@
         const container = document.getElementById('sliders-container');
         container.innerHTML = '';
         const t = translations[currentLang];
-        
         for (let i = 0; i < lineAngleCount - 1; i++) {
             let div = document.createElement('div');
             div.style.marginBottom = "10px";
@@ -555,17 +571,14 @@
                 let endRad = (currentAngle + a) * Math.PI / 180;
                 let x1 = cx + arcRadius * Math.cos(-startRad), y1 = cy + arcRadius * Math.sin(-startRad);
                 let x2 = cx + arcRadius * Math.cos(-endRad), y2 = cy + arcRadius * Math.sin(-endRad);
-                
                 let path = '';
                 if (a === 180) { path = `M ${cx} ${cy} L ${cx+arcRadius} ${cy} A ${arcRadius} ${arcRadius} 0 0 0 ${cx-arcRadius} ${cy} Z`; } 
                 else { path = `M ${cx} ${cy} L ${x1} ${y1} A ${arcRadius} ${arcRadius} 0 0 0 ${x2} ${y2} Z`; }
                 svg.innerHTML += `<path d="${path}" fill="${lineFills[i]}" stroke="${lineColors[i]}" stroke-width="1.5" />`;
-                
                 if (i < lineAngleCount - 1) {
                     let rx = cx + rayLen * Math.cos(-endRad), ry = cy + rayLen * Math.sin(-endRad);
                     svg.innerHTML += `<line x1="${cx}" y1="${cy}" x2="${rx}" y2="${ry}" stroke="${lineColors[i]}" stroke-width="3" stroke-linecap="round" />`;
                 }
-                
                 let midRad = (currentAngle + a / 2) * Math.PI / 180;
                 let tx = cx + (arcRadius + 22) * Math.cos(-midRad), ty = cy + (arcRadius + 22) * Math.sin(-midRad);
                 svg.innerHTML += `<text x="${tx}" y="${ty}" font-weight="bold" font-size="16" fill="${lineColors[i]}" text-anchor="middle" dominant-baseline="middle">${angleNames[i]}</text>`;
@@ -579,7 +592,6 @@
         document.getElementById('angle-legends').innerHTML = legends.join('');
     }
 
-    // === 幾何數學共用函數 ===
     function getRightAnglePath(pPrev, pCurr, pNext) {
         const L = 15;
         const v1x = pPrev.x - pCurr.x, v1y = pPrev.y - pCurr.y;
@@ -634,7 +646,6 @@
         document.getElementById('quad-markers').innerHTML += `<path d="${d}" fill="none" stroke="${stroke}" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round" transform="translate(${ox}, ${oy}) rotate(${angle})" />`;
     }
 
-    // === 工具 2 ===
     function getTriAngle(p1, center, p2) {
         let a = Math.atan2(p1.y - center.y, p1.x - center.x);
         let b = Math.atan2(p2.y - center.y, p2.x - center.x);
@@ -694,7 +705,6 @@
         if (shapeKey && roundA !== 0 && roundB !== 0 && roundC !== 0 && roundA !== 180 && roundB !== 180 && roundC !== 180) {
             const sData = translations[currentLang][shapeKey];
             let tipHtml = sData.tip ? `<small style="display:block; margin-top:8px; color:#95a5a6; font-size:0.85rem;">${sData.tip}</small>` : '';
-            // 替換：名稱變成可點擊語音播放
             shapeBox.innerHTML = `<h3>${translations[currentLang].detected} 
                 <span class="speak-btn" onclick="speakText('${sData.name}')" title="Listen to pronunciation">${sData.name} 🔊</span></h3>
                 <p>${sData.desc}</p>${tipHtml}`;
@@ -706,7 +716,6 @@
         shapeBox.style.display = 'block'; 
     }
 
-    // === 工具 3 ===
     function ccw(p1, p2, p3) { return (p3.y - p1.y) * (p2.x - p1.x) > (p2.y - p1.y) * (p3.x - p1.x); }
     function intersect(p1, p2, p3, p4) { return (ccw(p1, p3, p4) !== ccw(p2, p3, p4)) && (ccw(p1, p2, p3) !== ccw(p1, p2, p4)); }
     
@@ -807,7 +816,6 @@
             eq.innerText = `∠A + ∠B + ∠C + ∠D = ${rA}° + ${rB}° + ${rC}° + ${rD}° = 360°`; eq.style.color = "#2980b9";
         }
 
-        // --- 智能四邊形辨識 ---
         let isRect = (rA === 90 && rB === 90 && rC === 90 && rD === 90);
         let isKite = (isEqual(lenAB, lenBC) && isEqual(lenCD, lenDA)) || (isEqual(lenAB, lenDA) && isEqual(lenBC, lenCD));
         let shapeKey = "";
@@ -825,7 +833,6 @@
 
         if (shapeKey && rA!==0 && rB!==0 && rC!==0 && rD!==0 && rA!==180 && rB!==180 && rC!==180 && rD!==180) {
             const sData = translations[currentLang][shapeKey];
-            // 替換：名稱變成可點擊語音播放
             shapeBox.innerHTML = `<h3>${translations[currentLang].detected} 
                 <span class="speak-btn" onclick="speakText('${sData.name}')" title="Listen to pronunciation">${sData.name} 🔊</span></h3>
                 <p>${sData.desc}</p>`;
@@ -837,7 +844,6 @@
         shapeBox.style.display = 'block'; 
     }
 
-    // === 拖曳邏輯 ===
     function startDrag(evt, svgId, ptName) {
         evt.preventDefault(); 
         activeSvg = document.getElementById(svgId); 
