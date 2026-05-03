@@ -143,6 +143,7 @@
             <select id="shape" class="setting-select">
                 <option value="pizza" id="opt-pizza">Pizza</option>
                 <option value="choco" id="opt-choco">Choco Bar</option>
+                <option value="bottle" id="opt-bottle">Bottle</option>
             </select>
         </label>
     </div>
@@ -340,7 +341,7 @@
         document.getElementById('text-num').innerText = t.num; document.getElementById('text-den').innerText = t.den;
         document.getElementById('text-m-whole').innerText = t.mWhole;
         document.getElementById('text-shape').innerText = t.shape;
-        document.getElementById('opt-pizza').innerText = t.pizza; document.getElementById('opt-choco').innerText = t.choco;
+        document.getElementById('opt-pizza').innerText = t.pizza; document.getElementById('opt-choco').innerText = t.choco; document.getElementById('opt-bottle').innerText = t.bottle;
         
         document.getElementById('text-title-equiv').innerText = t.titleEquiv; document.getElementById('text-sub-equiv').innerText = t.subEquiv;
         document.getElementById('opt-mult').innerText = t.opMult; document.getElementById('opt-div').innerText = t.opDiv;
@@ -394,9 +395,9 @@
             let fill = Math.min(den, left);
             if (shape === 'pizza') vis.innerHTML += createPizzaSVG(den, fill);
             else {
-                let div = document.createElement('div'); div.className = 'choco-bar'; div.style.height = fixedH + 'px';
+                let div = document.createElement('div'); div.className = shape === 'choco' ? 'choco-bar' : 'bottle'; div.style.height = fixedH + 'px';
                 for (let j = 0; j < den; j++) {
-                    let p = document.createElement('div'); p.className = 'choco-piece';
+                    let p = document.createElement('div'); p.className = shape === 'choco' ? 'choco-piece' : 'bottle-level';
                     if (j < fill) p.classList.add('filled'); else p.classList.add('empty');
                     p.style.height = (100/den) + '%'; div.appendChild(p);
                 }
@@ -597,12 +598,38 @@
 
         let score = 0; const total = currentQuizData.length; let reportDetails = "";
         for (let i = 0; i < total; i++) {
-            const ansObj = currentQuizData[i].answers; let isCorrect = true; let userAnsStr = "";
-            for (const key in ansObj) {
-                const el = document.getElementById(`q${i}-${key}`), val = parseInt(el.value);
-                el.classList.remove('correct', 'wrong'); userAnsStr += `[${val || 'Empty'}] `;
-                if (val === ansObj[key]) el.classList.add('correct'); else { el.classList.add('wrong'); isCorrect = false; }
+            const ansObj = currentQuizData[i].answers;
+            let isCorrect = true;
+            let userAnsStr = "";
+
+            // ★ 新增：等值分數判斷邏輯 ★
+            if (ansObj.resN !== undefined && ansObj.lcd !== undefined) {
+                const elN = document.getElementById(`q${i}-resN`);
+                const elD = document.getElementById(`q${i}-lcd`);
+                const valN = parseInt(elN.value);
+                const valD = parseInt(elD.value);
+
+                elN.classList.remove('correct', 'wrong');
+                elD.classList.remove('correct', 'wrong');
+                userAnsStr += `[N:${valN}, D:${valD}] `;
+
+                // 交叉相乘比對等值分數，分母不能為0或空值
+                if (!isNaN(valN) && !isNaN(valD) && valD !== 0 && (valN * ansObj.lcd === ansObj.resN * valD)) {
+                    elN.classList.add('correct');
+                    elD.classList.add('correct');
+                } else {
+                    elN.classList.add('wrong');
+                    elD.classList.add('wrong');
+                    isCorrect = false;
+                }
+            } else {
+                for (const key in ansObj) {
+                    const el = document.getElementById(`q${i}-${key}`), val = parseInt(el.value);
+                    el.classList.remove('correct', 'wrong'); userAnsStr += `[${val || 'Empty'}] `;
+                    if (val === ansObj[key]) el.classList.add('correct'); else { el.classList.add('wrong'); isCorrect = false; }
+                }
             }
+
             const solBtn = document.getElementById(`btn-sol-${i}`), solBox = document.getElementById(`sol-${i}`);
             if (isCorrect) { score++; solBtn.style.display = 'none'; solBox.style.display = 'none'; } 
             else { solBtn.style.display = 'inline-block'; solBtn.innerText = t.btnSol; solBox.style.display = 'none'; }
