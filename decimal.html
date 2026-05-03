@@ -46,7 +46,7 @@
         
         .controls { display: flex; justify-content: center; align-items: center; gap: 15px; margin-bottom: 20px; font-size: 1.1rem; flex-wrap: wrap; margin-top: 20px; }
         input[type="number"], input[type="text"], select.setting-select { font-size: 1.1rem; padding: 5px; border: 1px solid #bdc3c7; border-radius: 4px; }
-        .visual-input { width: 75px; text-align: center; }
+        .visual-input { width: 75px; text-align: center; font-weight: bold; }
         
         .input-fraction { display: inline-flex; flex-direction: column; align-items: center; vertical-align: middle; background: #fff; border: 1px solid #bdc3c7; border-radius: 5px; padding: 2px 5px; margin: 0 5px;}
         .input-fraction input { border: none; width: 50px; text-align: center; font-size: 1.1rem; outline: none; background: transparent; padding: 0;}
@@ -64,11 +64,19 @@
         .slider-row { display: flex; align-items: center; gap: 15px; font-size: 1.2rem; font-weight: bold; }
         input[type="range"] { width: 150px; cursor: pointer; }
 
-        /* 小數點跳跳蛙專屬樣式 */
-        .jump-box { display: flex; flex-direction: column; align-items: center; gap: 10px; margin-top: 10px; font-size: 1.5rem; font-weight: bold; }
-        .jump-step { background: #fff; border: 2px dashed #9b59b6; border-radius: 8px; padding: 10px 20px; min-width: 150px; display: inline-block; box-shadow: 0 2px 5px rgba(0,0,0,0.05); }
-        .jump-arrow { color: #8e44ad; font-size: 1.2rem; }
-        .highlight-zero { color: #e74c3c; text-decoration: underline; }
+        /* ★ 小數點跳跳蛙專屬樣式 ★ */
+        .jumper-wrapper { margin: 30px auto; width: fit-content; display: flex; flex-direction: column; align-items: center; }
+        .jumper-track { position: relative; font-family: 'Courier New', Courier, monospace; font-size: 2.5rem; font-weight: bold; background: #fdfefe; padding: 20px 20px 50px 20px; border-radius: 12px; border: 3px solid #d7bde2; box-shadow: 0 4px 10px rgba(0,0,0,0.05); }
+        .jumper-digits { display: flex; height: 50px; line-height: 50px; }
+        .digit { width: 36px; text-align: center; transition: color 0.3s ease; }
+        .digit.real { color: #2c3e50; }
+        .digit.ghost { color: rgba(0, 0, 0, 0.12); } /* 淺灰色幽靈 0 */
+        .dot {
+            position: absolute; bottom: 50px; color: #e67e22; width: 12px; margin-left: -6px; text-align: center;
+            transition: left 0.4s cubic-bezier(0.34, 1.56, 0.64, 1); /* 加入一點點彈性的動畫 */
+            z-index: 10; font-size: 3rem; text-shadow: 0 2px 4px rgba(230,126,34,0.4);
+        }
+        .jump-svg { position: absolute; bottom: 10px; left: 20px; width: calc(100% - 40px); height: 40px; pointer-events: none; overflow: visible; }
 
         /* 測驗區雙欄設計 */
         .quiz-panel { background-color: #fef9e7; padding: 25px; border-radius: 10px; margin-top: 20px; }
@@ -87,6 +95,7 @@
 
         .btn { background-color: #e67e22; color: white; border: none; padding: 8px 15px; font-size: 1.1rem; border-radius: 5px; cursor: pointer; transition: 0.2s; font-weight: bold;}
         .btn:hover { background-color: #d35400; }
+        .btn:disabled { background-color: #bdc3c7; cursor: not-allowed; }
         .btn-check { background-color: #27ae60; font-size: 1.3rem; padding: 12px 30px; margin-top: 20px;}
         .btn-check:hover { background-color: #2ecc71; }
         .btn-sol { background-color: #2980b9; color: white; border: none; padding: 5px 10px; font-size: 1rem; border-radius: 5px; cursor: pointer; margin-left: 10px; display: none;}
@@ -131,25 +140,42 @@
 
     <hr class="section-divider">
 
-    <!-- ================= 1.5 小數點跳跳蛙 (乘除 10/100/1000) ================= -->
+    <!-- ================= 1.5 小數點跳跳蛙 ================= -->
     <h2 id="text-title-jump">🚀 Decimal Point Jumper</h2>
-    <p id="text-sub-jump">Count the zeros to see how many steps the decimal point jumps left or right!</p>
+    <p id="text-sub-jump">Watch the decimal point jump! Ghost zeros will turn solid when needed.</p>
     
     <div class="controls">
-        <input type="text" id="jump-num" class="visual-input" style="width: 100px;" value="4.65">
-        <select id="jump-op" class="setting-select" style="font-size: 1.5rem; font-weight:bold;">
+        <input type="text" id="jump-num" class="visual-input" style="width: 110px;" value="465" oninput="initJumper()">
+        <select id="jump-op" class="setting-select" style="font-size: 1.5rem; font-weight:bold;" onchange="initJumper()">
             <option value="mult">×</option>
             <option value="div">÷</option>
         </select>
-        <select id="jump-pow" class="setting-select" style="font-weight:bold;">
+        <select id="jump-pow" class="setting-select" style="font-weight:bold;" onchange="initJumper()">
             <option value="10">10 (1 zero)</option>
             <option value="100" selected>100 (2 zeros)</option>
             <option value="1000">1000 (3 zeros)</option>
+            <option value="10000">10000 (4 zeros)</option>
         </select>
+        <button class="btn" style="background:#8e44ad; padding: 10px 20px; font-size: 1.2rem; margin-left:10px;" id="btn-play-jump" onclick="playJumper()">▶ Play Jump</button>
     </div>
     
-    <div class="equation eq-purple" id="eq-jump"></div>
-    <div id="jump-vis" class="jump-box"></div>
+    <div class="jumper-wrapper">
+        <div class="jumper-track">
+            <div id="jumper-digits" class="jumper-digits"></div>
+            <div id="jumper-dot" class="dot">.</div>
+            <svg id="jump-svg" class="jump-svg">
+                <defs>
+                    <marker id="arrow-mult" markerWidth="10" markerHeight="10" refX="8" refY="5" orient="auto">
+                        <polygon points="0 0, 10 5, 0 10" fill="#e74c3c" />
+                    </marker>
+                    <marker id="arrow-div" markerWidth="10" markerHeight="10" refX="8" refY="5" orient="auto">
+                        <polygon points="0 0, 10 5, 0 10" fill="#3498db" />
+                    </marker>
+                </defs>
+            </svg>
+        </div>
+        <div class="equation eq-purple" id="eq-jump" style="width: 100%; min-height: 40px; margin-top:20px;"></div>
+    </div>
 
     <hr class="section-divider">
 
@@ -230,9 +256,9 @@
             tTitle1: "🟩 Decimal Place Value Explorer", tSub1: "Build your decimal! See how tenths, hundredths, and thousandths combine.",
             tTenths: "Tenths:", tHunds: "Hundredths:", tThous: "Thousandths:",
             
-            tTitleJump: "🚀 Decimal Point Jumper", tSubJump: "Count the zeros to see how many steps the decimal point jumps left or right!",
-            optPow10: "10 (1 zero)", optPow100: "100 (2 zeros)", optPow1000: "1000 (3 zeros)",
-            jumpDirRight: "JUMP RIGHT", jumpDirLeft: "JUMP LEFT", jumpStepMsg: "Step",
+            tTitleJump: "🚀 Decimal Point Jumper", tSubJump: "Watch the decimal point jump! Ghost zeros will turn solid when needed.",
+            optPow10: "10 (1 zero)", optPow100: "100 (2 zeros)", optPow1000: "1000 (3 zeros)", optPow10000: "10000 (4 zeros)",
+            btnPlayJump: "▶ Play Jump",
             
             tTitle2: "🔄 Decimal ⇄ Fraction Converter", optD2F: "Decimal ➔ Fraction", optF2D: "Fraction ➔ Decimal",
             
@@ -253,9 +279,9 @@
             tTitle1: "🟩 小數位值積木探險家", tSub1: "動手拉滑桿！看看十分位、百分位、千分位是如何組成的。",
             tTenths: "十分位：", tHunds: "百分位：", tThous: "千分位：",
             
-            tTitleJump: "🚀 小數點跳跳蛙", tSubJump: "數數看有幾個 0，小數點就會向右或向左跳幾步！如果沒有數字了就補 0。",
-            optPow10: "10 (1 個 0)", optPow100: "100 (2 個 0)", optPow1000: "1000 (3 個 0)",
-            jumpDirRight: "向右跳", jumpDirLeft: "向左跳", jumpStepMsg: "第",
+            tTitleJump: "🚀 小數點跳跳蛙", tSubJump: "數數看有幾個 0，小數點就會向右或向左跳幾步！注意淺灰色的幽靈 0 是如何被點亮的喔！",
+            optPow10: "10 (1 個 0)", optPow100: "100 (2 個 0)", optPow1000: "1000 (3 個 0)", optPow10000: "10000 (4 個 0)",
+            btnPlayJump: "▶ 開始跳躍",
             
             tTitle2: "🔄 小數與分數轉換器", optD2F: "小數 ➔ 分數", optF2D: "分數 ➔ 小數",
             
@@ -276,9 +302,9 @@
             tTitle1: "🟩 小数の位取りエクスプローラー", tSub1: "小数第一位、第二位、第三位の仕組みを見てみよう！",
             tTenths: "1/10の位:", tHunds: "1/100の位:", tThous: "1/1000の位:",
             
-            tTitleJump: "🚀 小数点ジャンプ", tSubJump: "0の数を数えて、小数点が左右に何歩ジャンプするか確認しよう！",
-            optPow10: "10 (0が1つ)", optPow100: "100 (0が2つ)", optPow1000: "1000 (0が3つ)",
-            jumpDirRight: "右へジャンプ", jumpDirLeft: "左へジャンプ", jumpStepMsg: "ステップ",
+            tTitleJump: "🚀 小数点ジャンプ", tSubJump: "0の数を数えて、小数点が左右に何歩ジャンプするか確認しよう！ゴーストの0が実体化するよ！",
+            optPow10: "10 (0が1つ)", optPow100: "100 (0が2つ)", optPow1000: "1000 (0が3つ)", optPow10000: "10000 (0が4つ)",
+            btnPlayJump: "▶ ジャンプ開始",
             
             tTitle2: "🔄 小数 ⇄ 分数 変換器", optD2F: "小数 ➔ 分数", optF2D: "分数 ➔ 小数",
             
@@ -312,7 +338,9 @@
         document.getElementById('text-tenths').innerText = t.tTenths; document.getElementById('text-hundredths').innerText = t.tHunds; document.getElementById('text-thousandths').innerText = t.tThous;
         
         document.getElementById('text-title-jump').innerText = t.tTitleJump; document.getElementById('text-sub-jump').innerText = t.tSubJump;
-        document.getElementById('jump-pow').options[0].text = t.optPow10; document.getElementById('jump-pow').options[1].text = t.optPow100; document.getElementById('jump-pow').options[2].text = t.optPow1000;
+        document.getElementById('jump-pow').options[0].text = t.optPow10; document.getElementById('jump-pow').options[1].text = t.optPow100; 
+        document.getElementById('jump-pow').options[2].text = t.optPow1000; document.getElementById('jump-pow').options[3].text = t.optPow10000;
+        document.getElementById('btn-play-jump').innerText = t.btnPlayJump;
         
         document.getElementById('text-title2').innerText = t.tTitle2; document.getElementById('opt-d2f').innerText = t.optD2F; document.getElementById('opt-f2d').innerText = t.optF2D;
         
@@ -322,7 +350,7 @@
         document.getElementById('btn-generate').innerText = t.btnGen; document.getElementById('btn-check').innerText = t.btnCheck;
         document.getElementById('text-submit-teacher').innerText = t.submitTeacher; document.getElementById('student-name').placeholder = t.requireName.replace('⚠️ ', '');
 
-        updatePlaceValue(); updateJumper(); updateConverter();
+        updatePlaceValue(); initJumper(); updateConverter();
         
         for (let i = 0; i < currentQuizData.length; i++) {
             const btn = document.getElementById(`btn-sol-${i}`);
@@ -349,44 +377,116 @@
     }
     ['slide-t', 'slide-h', 'slide-th'].forEach(id => document.getElementById(id).addEventListener('input', updatePlaceValue));
 
-    // ================= 1.5 跳跳蛙視覺化 =================
-    function updateJumper() {
+    // ================= 1.5 🚀 小數點跳跳蛙 (核心演算法) =================
+    let jumpInterval = null;
+    let jumperState = {};
+
+    function initJumper() {
+        clearInterval(jumpInterval);
+        document.getElementById('btn-play-jump').disabled = false;
+        document.getElementById('eq-jump').innerText = '';
+        document.getElementById('jump-svg').innerHTML = ''; // 清除舊弧線
+
         let valStr = document.getElementById('jump-num').value.trim();
-        let val = parseFloat(valStr);
-        if (isNaN(val)) return;
+        if(!valStr || isNaN(valStr)) return;
+        if(valStr.startsWith('.')) valStr = '0' + valStr;
+        if(valStr.endsWith('.')) valStr = valStr.slice(0, -1);
 
-        const op = document.getElementById('jump-op').value;
-        const powStr = document.getElementById('jump-pow').value;
-        const pow = parseInt(powStr);
-        const zeros = powStr.length - 1; // 10->1, 100->2, 1000->3
-        const t = translations[currentLang];
+        let isInt = !valStr.includes('.');
+        let cleanStr = valStr.replace('.', '');
+        let origDot = isInt ? valStr.length : valStr.indexOf('.');
 
-        let finalVal = op === 'mult' ? val * pow : val / pow;
-        finalVal = parseFloat(finalVal.toPrecision(12)); // 避免 JS 浮點數誤差
+        // 為了展示無限的 0，左右都墊 6 個幽靈 0
+        let leftPad = 6;
+        let rightPad = 6;
+        
+        jumperState.realStart = leftPad;
+        jumperState.realEnd = leftPad + cleanStr.length - 1;
+        jumperState.currDot = leftPad + origDot;
+        
+        jumperState.digits = [];
+        for(let i=0; i<leftPad; i++) jumperState.digits.push('0');
+        jumperState.digits = jumperState.digits.concat(cleanStr.split(''));
+        for(let i=0; i<rightPad; i++) jumperState.digits.push('0');
 
-        document.getElementById('eq-jump').innerText = `${valStr} ${op === 'mult' ? '×' : '÷'} ${pow} = ${finalVal}`;
-
-        let visBox = document.getElementById('jump-vis');
-        visBox.innerHTML = '';
-
-        // 初始方塊
-        visBox.innerHTML += `<div class="jump-step">${valStr}</div>`;
-
-        let currentVal = val;
-        let stepWord = currentLang === 'zh' ? '步' : (currentLang === 'ja' ? '歩' : 'jump');
-
-        for (let i = 1; i <= zeros; i++) {
-            currentVal = op === 'mult' ? currentVal * 10 : currentVal / 10;
-            currentVal = parseFloat(currentVal.toPrecision(12));
-            
-            let dirText = op === 'mult' ? t.jumpDirRight : t.jumpDirLeft;
-            let arrowStr = op === 'mult' ? '↷' : '↶';
-            
-            visBox.innerHTML += `<div class="jump-arrow">${arrowStr} ${dirText} (1 ${stepWord})</div>`;
-            visBox.innerHTML += `<div class="jump-step" style="border-color:${i===zeros ? '#27ae60' : '#bdc3c7'}; color:${i===zeros ? '#27ae60' : '#333'};">${currentVal}</div>`;
-        }
+        renderJumperStep();
     }
-    ['jump-num', 'jump-op', 'jump-pow'].forEach(id => document.getElementById(id).addEventListener('input', updateJumper));
+
+    function renderJumperStep() {
+        let digitHTML = '';
+        for(let i=0; i<jumperState.digits.length; i++) {
+            let dot = jumperState.currDot;
+            let start = jumperState.realStart;
+            let end = jumperState.realEnd;
+
+            // 判斷這個位置的數字該是「黑色實體 (real)」還是「淺灰幽靈 (ghost)」
+            // 規則：如果是原本輸入的數字就是實體。如果是點亮出來的 0 也是實體。
+            let isReal = (i >= start && i <= end) ||             // 使用者打的數字
+                         (i < dot && i > end) ||                 // 向右跳補出的 0 (例如 4650.)
+                         (i >= dot && i < start) ||              // 向左跳補出的 0 (例如 0.0465)
+                         (i === dot - 1 && dot <= start);        // 向左跳時，小數點前面的那個唯一的 0 (例如 0.465)
+
+            let cls = isReal ? "digit real" : "digit ghost";
+            digitHTML += `<div class="${cls}">${jumperState.digits[i]}</div>`;
+        }
+        
+        document.getElementById('jumper-digits').innerHTML = digitHTML;
+        // 小數點位置計算：每個數字寬度 36px，左邊 padding 20px
+        document.getElementById('jumper-dot').style.left = (jumperState.currDot * 36 + 20) + 'px';
+    }
+
+    function playJumper() {
+        // 重置為初始狀態
+        initJumper();
+        
+        let valStr = document.getElementById('jump-num').value.trim();
+        if(!valStr || isNaN(valStr)) return;
+
+        let op = document.getElementById('jump-op').value;
+        let powStr = document.getElementById('jump-pow').value;
+        let steps = powStr.length - 1; // 100 有 2 個 0 就是 2 步
+        let dir = op === 'mult' ? 1 : -1;
+
+        document.getElementById('btn-play-jump').disabled = true;
+        let stepCount = 0;
+        let svg = document.getElementById('jump-svg');
+
+        jumpInterval = setInterval(() => {
+            if (stepCount >= steps) {
+                clearInterval(jumpInterval);
+                document.getElementById('btn-play-jump').disabled = false;
+                // 計算最終答案並顯示算式
+                let finalVal = op === 'mult' ? parseFloat(valStr) * Math.pow(10, steps) : parseFloat(valStr) / Math.pow(10, steps);
+                finalVal = parseFloat(finalVal.toPrecision(12)); // 修正 JS 浮點數問題
+                document.getElementById('eq-jump').innerText = `${valStr} ${op==='mult'?'×':'÷'} ${powStr} = ${finalVal}`;
+                return;
+            }
+
+            let nextDot = jumperState.currDot + dir;
+            // 座標計算：每個格子 36px。起點和終點是小數點停的位置
+            let startX = jumperState.currDot * 36;
+            let endX = nextDot * 36;
+
+            let color = op === 'mult' ? '#e74c3c' : '#3498db';
+            let marker = op === 'mult' ? 'url(#arrow-mult)' : 'url(#arrow-div)';
+
+            // 在 SVG 畫出跳躍弧線 ↷
+            let path = document.createElementNS('http://www.w3.org/2000/svg', 'path');
+            path.setAttribute('d', `M ${startX} 0 Q ${(startX+endX)/2} 35 ${endX} 0`);
+            path.setAttribute('fill', 'none');
+            path.setAttribute('stroke', color);
+            path.setAttribute('stroke-width', '3');
+            path.setAttribute('stroke-linecap', 'round');
+            path.setAttribute('marker-end', marker);
+            svg.appendChild(path);
+
+            // 更新小數點位置並重新渲染數字狀態
+            jumperState.currDot = nextDot;
+            renderJumperStep();
+            
+            stepCount++;
+        }, 800); // 停頓 0.8 秒，讓學生看清楚補 0 瞬間
+    }
 
     // ================= 2. 轉換器與圓餅圖 =================
     function toggleConvMode() {
@@ -442,13 +542,13 @@
             else if (qT === 'powers') {
                 let baseInt = randInt(1, 9999);
                 let shift = Math.pow(10, randInt(0, 3));
-                let n = baseInt / shift; // e.g. 45, 4.5, 0.45, 0.045
+                let n = baseInt / shift; 
                 let powStr = ['10', '100', '1000'][randInt(0, 2)];
                 let pow = parseInt(powStr);
                 let isMult = Math.random() > 0.5;
                 
                 let res = isMult ? n * pow : n / pow;
-                res = parseFloat(res.toPrecision(12)); // 修正浮點數
+                res = parseFloat(res.toPrecision(12));
 
                 ans = { res }; sol = { type: 'powers', n, pow, op: isMult?'mult':'div', ans: res, zeros: powStr.length - 1 };
                 qH = `<span style="font-size:1.5rem; font-weight:bold;">${n} ${isMult ? '×' : '÷'} ${pow} = </span> <input type="number" step="any" class="quiz-input" style="width:90px;" id="q${i}-res" onclick="resetInput(${i})">`;
@@ -536,7 +636,7 @@
 
     window.onload = () => {
         const s = localStorage.getItem('mySiteLang'); if (s) document.getElementById('language').value = s;
-        changeLanguage(); updateJumper();
+        changeLanguage(); initJumper(); // 初始化跳跳蛙
     };
 </script>
 </body>
