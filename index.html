@@ -67,10 +67,20 @@
             font-size: 1.2rem; padding: 5px; border: 1px solid #bdc3c7; border-radius: 4px;
         }
         .visual-input { width: 65px; text-align: center; }
+        
+        /* 帶分數輸入框專用 */
+        .input-fraction {
+            display: inline-flex; flex-direction: column; align-items: center; vertical-align: middle;
+            background: white; border: 1px solid #bdc3c7; border-radius: 5px; padding: 2px 5px; margin: 0 5px;
+        }
+        .input-fraction input { border: none; width: 50px; text-align: center; font-size: 1.2rem; outline: none; background: transparent; padding: 0;}
+        .input-fraction .divider { width: 100%; border-top: 2px solid #333; margin: 2px 0; }
+
         .equation {
             font-size: 1.8rem; font-weight: bold; margin: 20px 0; padding: 15px; border-radius: 10px;
         }
         .eq-orange { background-color: #fef9e7; color: #d35400; }
+        .eq-green { background-color: #e8f8f5; color: #27ae60; }
         .eq-blue { background-color: #ebf5fb; color: #2980b9; }
         
         .vis-area {
@@ -165,6 +175,7 @@
         </select>
     </div>
 
+    <!-- ================= 工具 1：假分數變形 ================= -->
     <h2 id="text-title1">🍕 Fraction Shapeshifter 🍫</h2>
     <p id="text-subtitle1">See how an improper fraction transforms into a mixed number!</p>
     
@@ -185,6 +196,33 @@
 
     <hr class="section-divider">
 
+    <!-- ================= 工具 1.5：帶分數換假分數 ================= -->
+    <h2 id="text-title-m2i">🔄 Mixed to Improper</h2>
+    <p id="text-sub-m2i">See how a mixed number transforms into an improper fraction!</p>
+    
+    <div class="controls">
+        <label><span id="text-m-whole">Whole: </span><input type="number" id="m-whole" class="visual-input" value="3" min="1" max="10"></label>
+        
+        <div class="input-fraction">
+            <input type="number" id="m-num" value="1" min="1" max="20">
+            <div class="divider"></div>
+            <input type="number" id="m-den" value="2" min="2" max="20">
+        </div>
+        
+        <label><span id="text-m-shape">Shape: </span>
+            <select id="m-shape" class="setting-select">
+                <option value="pizza" id="opt-m-pizza">Pizza</option>
+                <option value="choco" id="opt-m-choco">Choco Bar</option>
+                <option value="bottle" id="opt-m-bottle">Bottle</option>
+            </select>
+        </label>
+    </div>
+    <div class="equation eq-green" id="m-equation"></div>
+    <div id="m-visualization" class="vis-area"></div>
+
+    <hr class="section-divider">
+
+    <!-- ================= 工具 2：等值分數 ================= -->
     <h2 id="text-title-equiv">⚖️ Equivalent Fractions Explorer</h2>
     <p id="text-sub-equiv">Multiply or divide to find equivalent fractions!</p>
     
@@ -212,6 +250,7 @@
 
     <hr class="section-divider">
 
+    <!-- ================= 工具 3：互動測驗 ================= -->
     <h2 id="text-title2">📝 Fraction Practice Generator</h2>
     <p id="text-subtitle2">Generate fill-in-the-blank questions to test your skills!</p>
 
@@ -258,14 +297,16 @@
 </div>
 
 <script>
-    // 信箱已更新為您的個人信箱
+    // 老師信箱
     const teacherEmail = "anita20700@gmail.com";
 
     const translations = {
         en: {
-            title1: "🍕 Fraction Shapeshifter 🍫", subtitle1: "See how an improper fraction transforms into a mixed number!",
+            title1: "🍕 Improper to Mixed 🍫", subtitle1: "See how an improper fraction transforms into a mixed number!",
             num: "Num: ", den: "Den: ", shape: "Shape: ", pizza: "Pizza", choco: "Choco Bar", bottle: "Bottle",
             properMsg: " is a proper fraction", andMsg: " and ",
+            
+            titleM2I: "🔄 Mixed to Improper", subM2I: "See how a mixed number transforms into an improper fraction!", mWhole: "Whole: ",
             
             titleEquiv: "⚖️ Equivalent Fractions Explorer", subEquiv: "Multiply or divide both top and bottom by the same number to find equivalent fractions!",
             opMult: "Multiply (x)", opDiv: "Divide (÷)", factorLabel: "by", errDiv: "Cannot divide evenly!",
@@ -285,9 +326,11 @@
             solEquivRed: "Step: Divide both top and bottom by {m}."
         },
         zh: {
-            title1: "🍕 分數變形金剛 🍫", subtitle1: "試著改變分子和分母，看看假分數如何變身成帶分數！",
+            title1: "🍕 假分數換帶分數 🍫", subtitle1: "試著改變分子和分母，看看假分數如何變身成帶分數！",
             num: "分子：", den: "分母：", shape: "形狀：", pizza: "披薩", choco: "巧克力棒", bottle: "水瓶",
             properMsg: " 是真分數", andMsg: " 又 ",
+
+            titleM2I: "🔄 帶分數換假分數", subM2I: "輸入整數與分數，看看帶分數如何轉換成假分數！", mWhole: "整數：",
 
             titleEquiv: "⚖️ 等值分數探險家", subEquiv: "將分子和分母同乘或同除以一個數，找出等值分數！",
             opMult: "同乘以 (擴分)", opDiv: "同除以 (約分)", factorLabel: "倍數：", errDiv: "⚠️ 無法整除！請換一個數字。",
@@ -307,15 +350,17 @@
             solEquivRed: "步驟：分子和分母同時「除以」 {m} (約分)。"
         },
         ja: {
-            title1: "🍕 分数シェイプシフター 🍫", subtitle1: "仮分数が帯分数にどのように変わるか見てみよう！",
+            title1: "🍕 仮分数から帯分数へ 🍫", subtitle1: "仮分数が帯分数にどのように変わるか見てみよう！",
             num: "分子：", den: "分母：", shape: "形：", pizza: "ピザ", choco: "チョコバー", bottle: "ボトル",
             properMsg: " は真分数です", andMsg: " と ",
+
+            titleM2I: "🔄 帯分数から仮分数へ", subM2I: "帯分数が仮分数にどのように変わるか見てみよう！", mWhole: "整数：",
 
             titleEquiv: "⚖️ 等しい分数エクスプローラー", subEquiv: "分母と分子に同じ数を掛けたり割ったりして、等しい分数を見つけよう！",
             opMult: "掛ける (倍分)", opDiv: "割る (約分)", factorLabel: "数：", errDiv: "⚠️ 割り切れません！",
 
             title2: "📝 分数練習問題ジェネレーター", subtitle2: "空欄補充問題を作成してスキルをテストしよう！",
-            qtype: "問題：", qyear: "學年：", qcount: "問題數：",
+            qtype: "問題：", qyear: "学年：", qcount: "問題数：",
             imp2mix: "仮分数から帯分数へ", mix2imp: "帯分数から仮分数へ", equiv: "等しい分数 (倍分と約分)",
             btnGen: "問題を作成", btnCheck: "答え合わせ", btnSol: "解答を見る", btnHideSol: "解答を隠す",
             scoreMsg: "{total} 問中 {score} 問正解しました！",
@@ -342,6 +387,12 @@
         document.getElementById('text-num').innerText = t.num; document.getElementById('text-den').innerText = t.den;
         document.getElementById('text-shape').innerText = t.shape;
         document.getElementById('opt-pizza').innerText = t.pizza; document.getElementById('opt-choco').innerText = t.choco; document.getElementById('opt-bottle').innerText = t.bottle;
+
+        document.getElementById('text-title-m2i').innerText = t.titleM2I; document.getElementById('text-sub-m2i').innerText = t.subM2I;
+        document.getElementById('text-m-whole').innerText = t.mWhole;
+        document.getElementById('text-m-shape').innerText = t.shape;
+        document.getElementById('opt-m-pizza').innerText = t.pizza; document.getElementById('opt-m-choco').innerText = t.choco; document.getElementById('opt-m-bottle').innerText = t.bottle;
+
         document.getElementById('text-title-equiv').innerText = t.titleEquiv; document.getElementById('text-sub-equiv').innerText = t.subEquiv;
         document.getElementById('opt-mult').innerText = t.opMult; document.getElementById('opt-div').innerText = t.opDiv;
         document.getElementById('text-factor').innerText = t.factorLabel;
@@ -355,7 +406,7 @@
         document.getElementById('text-submit-teacher').innerText = t.submitTeacher;
         document.getElementById('student-name').placeholder = t.namePlaceholder;
 
-        updateVisualization(); updateEquivVisualization();
+        updateVisualization(); updateM2IVisualization(); updateEquivVisualization();
         
         for (let i = 0; i < currentQuizData.length; i++) {
             const btn = document.getElementById(`btn-sol-${i}`);
@@ -389,14 +440,20 @@
         svg += `</svg>`; return svg;
     }
 
-    function renderFractionShapes(containerId, num, den, shape) {
+    // ★ 關鍵修正：加入 customHeight 參數，解決分隔線溢出問題，同時確保等值分數兩邊高度一致
+    function renderFractionShapes(containerId, num, den, shape, customHeight = null) {
         const vis = document.getElementById(containerId); vis.innerHTML = '';
         const totalContainers = Math.ceil(num / den) || 1; let filledPiecesCount = 0;
+        
+        // 如果沒有指定高度，就根據分母動態拉長（保證每格至少有 8px 空間，基礎最小 120px）
+        const barHeight = customHeight ? customHeight : Math.max(120, den * 8);
+
         for (let i = 0; i < totalContainers; i++) {
             let piecesInThisContainer = Math.min(den, num - filledPiecesCount);
             if (shape === 'pizza') { vis.innerHTML += createPizzaSVG(den, piecesInThisContainer); filledPiecesCount += piecesInThisContainer; } 
             else {
-                let div = document.createElement('div'); div.className = shape === 'choco' ? 'choco-bar' : 'bottle'; div.style.height = '120px'; 
+                let div = document.createElement('div'); div.className = shape === 'choco' ? 'choco-bar' : 'bottle'; 
+                div.style.height = barHeight + 'px'; 
                 for (let j = 0; j < den; j++) {
                     let pieceDiv = document.createElement('div'); pieceDiv.className = shape === 'choco' ? 'choco-piece' : 'bottle-level'; pieceDiv.style.height = (100 / den) + '%';
                     if (filledPiecesCount < num) { pieceDiv.classList.add('filled'); filledPiecesCount++; } else { pieceDiv.classList.add('empty'); }
@@ -407,6 +464,7 @@
         }
     }
 
+    // ================= 工具 1：假分數換帶分數 =================
     function updateVisualization() {
         const num = parseInt(document.getElementById('num').value), den = parseInt(document.getElementById('den').value), shape = document.getElementById('shape').value, eq = document.getElementById('equation');
         if (isNaN(num) || isNaN(den) || den <= 0) return;
@@ -416,31 +474,73 @@
         else eq.innerText = `${num} / ${den} = ${whole}${t.andMsg}${remainder}/${den}`;
         renderFractionShapes('visualization', num, den, shape);
     }
+    document.getElementById('num').addEventListener('input', updateVisualization); document.getElementById('den').addEventListener('input', updateVisualization); document.getElementById('shape').addEventListener('change', updateVisualization);
 
+    // ================= 工具 1.5：帶分數換假分數 =================
+    function updateM2IVisualization() {
+        const whole = parseInt(document.getElementById('m-whole').value);
+        const num = parseInt(document.getElementById('m-num').value);
+        const den = parseInt(document.getElementById('m-den').value);
+        const shape = document.getElementById('m-shape').value;
+        const eq = document.getElementById('m-equation');
+        const t = translations[currentLang];
+        
+        if (isNaN(whole) || isNaN(num) || isNaN(den) || den <= 0) return;
+
+        const totalPieces = (whole * den) + num;
+        
+        if (currentLang === 'en') {
+            eq.innerText = `${whole} and ${num}/${den} = (${whole} × ${den} + ${num}) / ${den} = ${totalPieces} / ${den}`;
+        } else if (currentLang === 'zh') {
+            eq.innerText = `${whole} 又 ${num}/${den} = (${whole} × ${den} + ${num}) / ${den} = ${totalPieces} / ${den}`;
+        } else {
+            eq.innerText = `${whole} と ${num}/${den} = (${whole} × ${den} + ${num}) / ${den} = ${totalPieces} / ${den}`;
+        }
+        
+        renderFractionShapes('m-visualization', totalPieces, den, shape);
+    }
+    document.getElementById('m-whole').addEventListener('input', updateM2IVisualization);
+    document.getElementById('m-num').addEventListener('input', updateM2IVisualization);
+    document.getElementById('m-den').addEventListener('input', updateM2IVisualization);
+    document.getElementById('m-shape').addEventListener('change', updateM2IVisualization);
+
+    // ================= 工具 2：等值分數 =================
     function updateEquivVisualization() {
         const num = parseInt(document.getElementById('eq-num').value), den = parseInt(document.getElementById('eq-den').value);
         const op = document.getElementById('eq-op').value, factor = parseInt(document.getElementById('eq-factor').value), shape = document.getElementById('eq-shape').value, eq = document.getElementById('eq-equation');
         if (isNaN(num) || isNaN(den) || isNaN(factor) || den <= 0 || factor <= 0) return;
-        renderFractionShapes('eq-vis-left', num, den, shape);
+        
         let newNum = 0, newDen = 0;
+        let isDivisible = true;
+
         if (op === 'mult') {
             newNum = num * factor; newDen = den * factor;
-            eq.innerText = `${num} / ${den} = (${num} × ${factor}) / (${den} × ${factor}) = ${newNum} / ${newDen}`; eq.style.color = "#2980b9";
-            renderFractionShapes('eq-vis-right', newNum, newDen, shape);
         } else {
-            if (num % factor !== 0 || den % factor !== 0) {
+            if (num % factor !== 0 || den % factor !== 0) isDivisible = false;
+            else { newNum = num / factor; newDen = den / factor; }
+        }
+
+        // 為了讓左右兩邊高度絕對一致，取兩者分母的最大值來計算高度
+        const maxDen = isDivisible ? Math.max(den, newDen) : den;
+        const syncHeight = Math.max(120, maxDen * 8);
+
+        renderFractionShapes('eq-vis-left', num, den, shape, syncHeight);
+
+        if (op === 'mult') {
+            eq.innerText = `${num} / ${den} = (${num} × ${factor}) / (${den} × ${factor}) = ${newNum} / ${newDen}`; eq.style.color = "#2980b9";
+            renderFractionShapes('eq-vis-right', newNum, newDen, shape, syncHeight);
+        } else {
+            if (!isDivisible) {
                 eq.innerText = translations[currentLang].errDiv; eq.style.color = "#e74c3c"; document.getElementById('eq-vis-right').innerHTML = `<div style="font-size:3rem;">🤔</div>`;
             } else {
-                newNum = num / factor; newDen = den / factor;
                 eq.innerText = `${num} / ${den} = (${num} ÷ ${factor}) / (${den} ÷ ${factor}) = ${newNum} / ${newDen}`; eq.style.color = "#2980b9";
-                renderFractionShapes('eq-vis-right', newNum, newDen, shape);
+                renderFractionShapes('eq-vis-right', newNum, newDen, shape, syncHeight);
             }
         }
     }
-
-    document.getElementById('num').addEventListener('input', updateVisualization); document.getElementById('den').addEventListener('input', updateVisualization); document.getElementById('shape').addEventListener('change', updateVisualization);
     document.getElementById('eq-num').addEventListener('input', updateEquivVisualization); document.getElementById('eq-den').addEventListener('input', updateEquivVisualization); document.getElementById('eq-op').addEventListener('change', updateEquivVisualization); document.getElementById('eq-factor').addEventListener('input', updateEquivVisualization); document.getElementById('eq-shape').addEventListener('change', updateEquivVisualization);
 
+    // ================= 工具 3：題庫生成與批改 =================
     function randInt(min, max) { return Math.floor(Math.random() * (max - min + 1)) + min; }
 
     function generateQuiz() {
