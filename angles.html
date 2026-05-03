@@ -109,6 +109,9 @@
         }
         input:checked + .slider-toggle { background-color: #27ae60; }
         input:checked + .slider-toggle:before { transform: translateX(24px); }
+        
+        /* 紫色對角線開關專用 */
+        input.purple-switch:checked + .slider-toggle { background-color: #8e44ad; }
 
         .equation {
             font-size: 1.8rem;
@@ -261,6 +264,15 @@
     <h2 id="text-title3">🔲 Quadrilateral Explorer</h2>
     <p id="text-subtitle3">Drag vertices A, B, C, and D. The sum of interior angles is always 360°!</p>
 
+    <!-- 對角線專屬開關 -->
+    <div class="snap-control" style="background: #f4ecf7; border-color: #d7bde2; margin-top: 10px; margin-bottom: 20px;">
+        <span id="text-diag" style="font-size:1.2rem; font-weight:bold; color:#8e44ad;">Show Diagonals</span>
+        <label class="switch">
+            <input type="checkbox" class="purple-switch" id="diag-toggle" onchange="toggleDiag()">
+            <span class="slider-toggle"></span>
+        </label>
+    </div>
+
     <div class="visual-box">
         <svg id="svg-tool3" class="interactive-svg" viewBox="-250 -200 500 400" onmousemove="drag(event)" onmouseup="endDrag()" ontouchmove="drag(event)" ontouchend="endDrag()">
             <g id="grid3"></g> 
@@ -269,6 +281,7 @@
             
             <path id="quad-path" fill="rgba(52, 152, 219, 0.2)" stroke="#2980b9" stroke-width="3" stroke-linejoin="round" />
             
+            <g id="quad-diagonals"></g> <!-- 新增：對角線繪製層 -->
             <g id="quad-markers"></g>
 
             <path id="q-right-a" fill="none" stroke="#c0392b" stroke-width="2"/>
@@ -304,7 +317,7 @@
             title2: "🔺 Triangle Explorer", subtitle2: "Drag vertices A, B, and C. Notice how the sum of all interior angles is always 180°!",
             title3: "🔲 Quadrilateral Explorer", subtitle3: "Drag vertices A, B, C, and D. The sum of interior angles is always 360°!",
             addAngle: "+ Add Angle", rmAngle: "- Remove Angle", anglePrefix: "Angle",
-            snapGrid: "Snap to Grid (Magnet Effect)",
+            snapGrid: "Snap to Grid (Magnet Effect)", showDiag: "Show Diagonals",
             acute: "Acute", right: "Right", obtuse: "Obtuse", straight: "Straight", zero: "Zero",
             invalid: "Line", cross: "Self-Intersecting", concave: "Reflex",
             exploring: "✨ Exploring... Keep dragging to find special shapes!",
@@ -319,14 +332,14 @@
             quadPara: { name: "Parallelogram", desc: "Identification: Two pairs of opposite sides are parallel. Opposite sides and angles are equal.", tip: "" },
             quadIsoTrap: { name: "Isosceles Trapezoid", desc: "Identification: Exactly one pair of parallel sides, and the non-parallel sides are equal in length.", tip: "" },
             quadTrap: { name: "Trapezoid", desc: "Identification: Exactly one pair of opposite sides is parallel.", tip: "" },
-            quadKite: { name: "Kite", desc: "Identification: Two pairs of adjacent sides are equal in length.", tip: "" }
+            quadKite: { name: "Kite", desc: "Identification: Two pairs of adjacent sides are equal in length. Diagonals are perpendicular!", tip: "" }
         },
         zh: {
             title1: "📐 直線平角探險家", subtitle1: "自由新增或減少直線上的角度。觀察看看，無論怎麼切，加起來永遠是 180°！",
             title2: "🔺 三角形內角和探險", subtitle2: "自由拖曳座標上的頂點 A、B 和 C。觀察看看內角和是否永遠都是 180°！",
             title3: "🔲 四邊形內角和探險", subtitle3: "拖曳頂點 A、B、C 和 D。試著發現四邊形內角和永遠是 360°！",
             addAngle: "+ 新增角度", rmAngle: "- 減少角度", anglePrefix: "角",
-            snapGrid: "吸附格線 (磁鐵效果)",
+            snapGrid: "吸附格線 (磁鐵效果)", showDiag: "顯示對角線",
             acute: "銳角", right: "直角", obtuse: "鈍角", straight: "平角", zero: "零角",
             invalid: "成一直線", cross: "邊線交叉", concave: "優角",
             exploring: "✨ 探索中... 試著拉出特殊圖形吧！",
@@ -348,7 +361,7 @@
             title2: "🔺 三角形内角の和エクスプローラー", subtitle2: "頂点A、B、Cをドラッグして動かしてみよう。内角の和は常に180°になります！",
             title3: "🔲 四角形内角の和エクスプローラー", subtitle3: "頂点A、B、C、Dをドラッグしてみよう。内角の和は常に360°です！",
             addAngle: "+ 角を追加", rmAngle: "- 角を減らす", anglePrefix: "角",
-            snapGrid: "グリッドにスナップ",
+            snapGrid: "グリッドにスナップ", showDiag: "対角線を表示",
             acute: "鋭角", right: "直角", obtuse: "鈍角", straight: "平角", zero: "零角",
             invalid: "直線", cross: "交差しています", concave: "優角",
             exploring: "✨ 探索中... 動かして特殊な図形を見つけよう！",
@@ -363,7 +376,7 @@
             quadPara: { name: "平行四辺形", desc: "見分け方：向かい合う2組の辺が平行です。向かい合う辺と角が等しいです。", tip: "" },
             quadIsoTrap: { name: "等脚台形", desc: "見分け方：1組の向かい合う辺だけが平行で、平行でないもう1組の辺の長さが等しいです。", tip: "" },
             quadTrap: { name: "台形", desc: "見分け方：1組の向かい合う辺だけが平行です。", tip: "" },
-            quadKite: { name: "凧形", desc: "見分け方：隣り合う2組の辺の長さがそれぞれ等しいです。", tip: "" }
+            quadKite: { name: "凧形", desc: "見分け方：隣り合う2組の辺の長さがそれぞれ等しく、対角線が直交します。", tip: "" }
         }
     };
 
@@ -378,7 +391,8 @@
 
     // === 工具 2 & 3 狀態 ===
     const snapGrid = 20;
-    let snapEnabled = true; // ★ 吸附格線開關變數
+    let snapEnabled = true;
+    let showDiagonals = false; // ★ 對角線開關變數
     let activeSvg = null;
     let isDragging = false;
     let draggedPoint = null;
@@ -392,9 +406,14 @@
     let qC = { x: 100, y: 100 };
     let qD = { x: -100, y: 100 };
 
-    // === 切換吸附狀態 ===
+    // === 切換狀態 ===
     function toggleSnap() {
         snapEnabled = document.getElementById('snap-toggle').checked;
+    }
+    
+    function toggleDiag() {
+        showDiagonals = document.getElementById('diag-toggle').checked;
+        updateTool3();
     }
 
     // === 語言切換 ===
@@ -413,6 +432,7 @@
         document.getElementById('btn-add-angle').innerText = t.addAngle;
         document.getElementById('btn-rm-angle').innerText = t.rmAngle;
         document.getElementById('text-snap').innerText = t.snapGrid;
+        document.getElementById('text-diag').innerText = t.showDiag;
 
         buildSliders(); 
         updateTool1();
@@ -552,6 +572,17 @@
         return `M ${pAx} ${pAy} L ${pBx} ${pBy} L ${pCx} ${pCy}`;
     }
 
+    // ★ 新增：計算兩線交點 (用於對角線交點標示)
+    function getIntersection(p1, p2, p3, p4) {
+        const x1 = p1.x, y1 = p1.y, x2 = p2.x, y2 = p2.y;
+        const x3 = p3.x, y3 = p3.y, x4 = p4.x, y4 = p4.y;
+        const denom = (x1 - x2) * (y3 - y4) - (y1 - y2) * (x3 - x4);
+        if (denom === 0) return null;
+        const intersectX = ((x1 * y2 - y1 * x2) * (x3 - x4) - (x1 - x2) * (x3 * y4 - y3 * x4)) / denom;
+        const intersectY = ((x1 * y2 - y1 * x2) * (y3 - y4) - (y1 - y2) * (x3 * y4 - y3 * x4)) / denom;
+        return { x: intersectX, y: intersectY };
+    }
+
     function drawGrid(id) {
         const grid = document.getElementById(id);
         grid.innerHTML = '';
@@ -678,6 +709,7 @@
         const eq = document.getElementById('equation3');
         const shapeBox = document.getElementById('shape-info-3');
         document.getElementById('quad-markers').innerHTML = '';
+        document.getElementById('quad-diagonals').innerHTML = '';
 
         if (isCrossing) {
             ['qa', 'qb', 'qc', 'qd'].forEach(id => document.getElementById(`label-${id}`).textContent = "");
@@ -723,6 +755,29 @@
             let tickType = 'tick1';
             if (isEqual(lenAB, lenCD)) { drawMarker(qA, qB, tickType, pAB ? -20 : 0); drawMarker(qC, qD, tickType, pAB ? -20 : 0); tickType = 'tick2'; }
             if (isEqual(lenBC, lenDA)) { drawMarker(qB, qC, tickType, pBC ? -20 : 0); drawMarker(qD, qA, tickType, pBC ? -20 : 0); }
+        }
+
+        // ★ 新增：繪製對角線與垂直記號
+        if (showDiagonals) {
+            let diagHTML = `<line x1="${qA.x}" y1="${qA.y}" x2="${qC.x}" y2="${qC.y}" stroke="#8e44ad" stroke-width="2" stroke-dasharray="6,4" />`;
+            diagHTML += `<line x1="${qB.x}" y1="${qB.y}" x2="${qD.x}" y2="${qD.y}" stroke="#8e44ad" stroke-width="2" stroke-dasharray="6,4" />`;
+            
+            const v1x = qC.x - qA.x, v1y = qC.y - qA.y;
+            const v2x = qD.x - qB.x, v2y = qD.y - qB.y;
+            let angle1 = Math.atan2(v1y, v1x) * 180 / Math.PI;
+            let angle2 = Math.atan2(v2y, v2x) * 180 / Math.PI;
+            let diff = Math.abs(angle1 - angle2) % 180;
+            if (diff > 90) diff = 180 - diff;
+            
+            // 判斷對角線是否垂直 (90度)
+            if (Math.abs(diff - 90) < 0.1) {
+                const intersection = getIntersection(qA, qC, qB, qD);
+                if (intersection) {
+                    let rPath = getRightAnglePath(qA, intersection, qB);
+                    diagHTML += `<path d="${rPath}" fill="none" stroke="#8e44ad" stroke-width="2.5" />`;
+                }
+            }
+            document.getElementById('quad-diagonals').innerHTML = diagHTML;
         }
 
         if (rA===0 || rB===0 || rC===0 || rD===0 || rA===180 || rB===180 || rC===180 || rD===180) {
