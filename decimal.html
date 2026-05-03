@@ -1,0 +1,514 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Decimal Master Explorer</title>
+    <style>
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            background-color: #f0f8ff;
+            color: #333;
+            text-align: center;
+            padding: 0 20px 40px 20px;
+            margin: 0;
+        }
+        .nav-bar {
+            background-color: #34495e;
+            padding: 15px;
+            text-align: center;
+            margin-bottom: 20px;
+            border-radius: 0 0 10px 10px;
+        }
+        .nav-bar a {
+            color: white;
+            text-decoration: none;
+            font-size: 1.1rem;
+            margin: 0 10px;
+            padding: 5px 10px;
+            border-radius: 5px;
+            transition: background 0.3s;
+            display: inline-block;
+        }
+        .nav-bar a:hover, .nav-bar a.active { background-color: #e67e22; }
+        .container {
+            background-color: white;
+            max-width: 950px;
+            margin: 0 auto;
+            padding: 30px;
+            border-radius: 15px;
+            box-shadow: 0 4px 8px rgba(0,0,0,0.1);
+            position: relative;
+        }
+        .lang-switch { position: absolute; top: 20px; right: 20px; }
+        .lang-switch select { font-size: 1rem; padding: 5px 10px; border-radius: 5px; border: 1px solid #ccc; cursor: pointer; }
+        .section-divider { margin: 50px 0; border: 0; height: 2px; background-image: linear-gradient(to right, transparent, #bdc3c7, transparent); }
+        
+        .controls { display: flex; justify-content: center; align-items: center; gap: 15px; margin-bottom: 20px; font-size: 1.1rem; flex-wrap: wrap; margin-top: 20px; }
+        input[type="number"], input[type="text"], select.setting-select { font-size: 1.1rem; padding: 5px; border: 1px solid #bdc3c7; border-radius: 4px; }
+        .visual-input { width: 70px; text-align: center; }
+        
+        .input-fraction { display: inline-flex; flex-direction: column; align-items: center; vertical-align: middle; background: #fff; border: 1px solid #bdc3c7; border-radius: 5px; padding: 2px 5px; margin: 0 5px;}
+        .input-fraction input { border: none; width: 50px; text-align: center; font-size: 1.1rem; outline: none; background: transparent; padding: 0;}
+        .input-fraction .divider { width: 100%; border-top: 2px solid #333; margin: 2px 0; }
+
+        .equation { font-size: 1.8rem; font-weight: bold; margin: 20px 0; padding: 15px; border-radius: 10px; line-height: 1.4; }
+        .eq-orange { background-color: #fff9c4; color: #d35400; }
+        .eq-blue { background-color: #ebf5fb; color: #2980b9; }
+        .eq-green { background-color: #e8f8f5; color: #27ae60; }
+        
+        .vis-area { display: flex; flex-wrap: wrap; justify-content: center; align-items: center; gap: 40px; margin-top: 20px; min-height: 250px; }
+        .svg-container { filter: drop-shadow(2px 2px 5px rgba(0,0,0,0.15)); }
+
+        .slider-group { display: flex; flex-direction: column; align-items: flex-end; gap: 10px; }
+        .slider-row { display: flex; align-items: center; gap: 15px; font-size: 1.2rem; font-weight: bold; }
+        input[type="range"] { width: 150px; cursor: pointer; }
+
+        /* 測驗區 */
+        .quiz-panel { background-color: #fef9e7; padding: 25px; border-radius: 10px; margin-top: 20px; }
+        #quiz-container { display: grid; grid-template-columns: repeat(auto-fit, minmax(380px, 1fr)); gap: 20px; }
+        .question-item { background-color: white; padding: 20px; border-radius: 10px; box-shadow: 0 2px 5px rgba(0,0,0,0.05); border: 2px solid #f9e79f; }
+        .question-row { font-size: 1.5rem; display: flex; align-items: center; justify-content: center; gap: 8px; flex-wrap: wrap; }
+        .fraction-display { display: inline-flex; flex-direction: column; align-items: center; vertical-align: middle; }
+        .fraction-display span.num { border-bottom: 2px solid #333; padding: 0 5px; }
+        .fraction-display span.den { padding: 0 5px; }
+        .quiz-input { width: 60px; text-align: center; font-size: 1.3rem; margin: 0 2px; border: 2px solid #bdc3c7; border-radius: 4px; }
+        .quiz-input.correct { background-color: #d5f5e3; border-color: #27ae60; color: #27ae60; font-weight: bold;}
+        .quiz-input.wrong { background-color: #fadedb; border-color: #e74c3c; color: #e74c3c; font-weight: bold;}
+        
+        .solution-box { background-color: #ebf5fb; color: #333; padding: 15px; margin-top: 15px; border-radius: 8px; display: none; text-align: left; line-height: 1.6; border: 1px dashed #2980b9; font-size: 1.15rem; }
+        .solution-box strong { color: #c0392b; }
+
+        .btn { background-color: #e67e22; color: white; border: none; padding: 8px 15px; font-size: 1.1rem; border-radius: 5px; cursor: pointer; transition: 0.2s; font-weight: bold;}
+        .btn:hover { background-color: #d35400; }
+        .btn-check { background-color: #27ae60; font-size: 1.3rem; padding: 12px 30px; margin-top: 20px;}
+        .btn-check:hover { background-color: #2ecc71; }
+        .btn-sol { background-color: #2980b9; color: white; border: none; padding: 5px 10px; font-size: 1rem; border-radius: 5px; cursor: pointer; margin-left: 10px; display: none;}
+        .btn-sol:hover { background-color: #1f618d; }
+        
+        .submit-area { background-color: #fff; border: 2px dashed #bdc3c7; border-radius: 10px; padding: 15px; margin: 25px auto; display: none; max-width: 500px; }
+        #student-name { margin-top: 15px; display: none; width: 80%; }
+        .score-display { font-size: 1.8rem; font-weight: bold; color: #27ae60; margin-top: 20px; }
+    </style>
+</head>
+<body>
+
+<div class="nav-bar">
+    <a href="index.html">🍕 Fractions</a>
+    <a href="decimal.html" class="active">🎯 Decimals</a>
+    <a href="1a2b.html">🔢 1A2B Game</a>
+    <a href="angles.html">📐 Geometry Explorer</a>
+</div>
+
+<div class="container">
+    <div class="lang-switch">
+        <select id="language" onchange="changeLanguage()">
+            <option value="en" selected>English</option>
+            <option value="zh">繁體中文</option>
+            <option value="ja">日本語</option>
+        </select>
+    </div>
+
+    <!-- ================= 1. 位值探險家 (Tenths, Hundredths, Thousandths) ================= -->
+    <h2 id="text-title1">🟩 Decimal Place Value Explorer</h2>
+    <p id="text-sub1">Build your decimal! See how tenths, hundredths, and thousandths combine to make a whole.</p>
+    
+    <div class="vis-area" style="align-items: flex-start;">
+        <div class="slider-group">
+            <div class="slider-row" style="color: #d35400;">
+                <span id="text-tenths">Tenths (0.1):</span> 
+                <span id="val-t" style="width:20px; text-align:center;">3</span>
+                <input type="range" id="slide-t" min="0" max="9" value="3">
+            </div>
+            <div class="slider-row" style="color: #2980b9;">
+                <span id="text-hundredths">Hundredths (0.01):</span> 
+                <span id="val-h" style="width:20px; text-align:center;">4</span>
+                <input type="range" id="slide-h" min="0" max="9" value="4">
+            </div>
+            <div class="slider-row" style="color: #27ae60;">
+                <span id="text-thousandths">Thousandths (0.001):</span> 
+                <span id="val-th" style="width:20px; text-align:center;">5</span>
+                <input type="range" id="slide-th" min="0" max="9" value="5">
+            </div>
+        </div>
+        
+        <div id="grid-visualization">
+            <!-- SVG Grid 繪製區 -->
+            <svg viewBox="0 0 100 100" width="250" height="250" id="decimal-grid" class="svg-container" style="background:#fdf2e9; border:2px solid #333;"></svg>
+        </div>
+    </div>
+    <div class="equation eq-orange" id="eq-place-value">0.345 = 3/10 + 4/100 + 5/1000</div>
+
+    <hr class="section-divider">
+
+    <!-- ================= 2. 小數分數轉換器 ================= -->
+    <h2 id="text-title2">🔄 Decimal ⇄ Fraction Converter</h2>
+    <p id="text-sub2">Convert between decimals and fractions and see them on a pie chart!</p>
+    
+    <div class="controls" style="margin-bottom: 0;">
+        <select id="conv-mode" class="setting-select" onchange="toggleConvMode()" style="background-color: #ebf5fb; font-weight: bold;">
+            <option value="d2f" id="opt-d2f">Decimal ➔ Fraction</option>
+            <option value="f2d" id="opt-f2d">Fraction ➔ Decimal</option>
+        </select>
+    </div>
+
+    <div class="controls">
+        <div id="input-d2f" style="display: flex; align-items: center; gap: 5px;">
+            <span style="font-size: 1.5rem; font-weight: bold;">0 . </span>
+            <input type="number" id="conv-dec" class="visual-input" value="75" min="1" max="999" placeholder="1-999">
+        </div>
+
+        <div id="input-f2d" style="display: none; align-items: center; gap: 10px;">
+            <div class="input-fraction">
+                <input type="number" id="conv-num" value="3" min="1">
+                <div class="divider"></div>
+                <input type="number" id="conv-den" value="4" min="1">
+            </div>
+        </div>
+    </div>
+
+    <div class="equation eq-blue" id="eq-converter">0.75 = 75/100 = 3/4</div>
+    <div id="conv-visualization" class="vis-area" style="min-height: 150px;">
+        <svg viewBox="0 0 100 100" width="150" height="150" id="pie-chart" class="svg-container"></svg>
+    </div>
+
+    <hr class="section-divider">
+
+    <!-- ================= 3. 測驗區 ================= -->
+    <h2 id="text-title3">📝 Decimal Practice Generator</h2>
+    <div class="quiz-panel">
+        <div class="quiz-settings">
+            <label><span id="text-qtype">Type: </span>
+                <select id="quiz-type" class="setting-select">
+                    <option value="mix" id="opt-q-all">All Types</option>
+                    <option value="d2f" id="opt-q-d2f">Decimal ➔ Fraction</option>
+                    <option value="f2d" id="opt-q-f2d">Fraction ➔ Decimal</option>
+                </select>
+            </label>
+            <label><span id="text-qcount">Count: </span>
+                <select id="quiz-count" class="setting-select">
+                    <option value="4">4</option>
+                    <option value="10" selected>10</option>
+                    <option value="20">20</option>
+                </select>
+            </label>
+            <button class="btn" id="btn-generate" onclick="generateQuiz()">Generate</button>
+        </div>
+
+        <div id="quiz-container"></div>
+        
+        <div id="submit-area" class="submit-area">
+            <label><input type="checkbox" id="chk-submit" onchange="toggleNameInput()"> <span id="text-submit-teacher">Submit results to teacher</span></label><br>
+            <input type="text" id="student-name" placeholder="Name">
+            <div id="submit-status" style="margin-top: 10px; font-weight: bold;"></div>
+        </div>
+        <button class="btn btn-check" id="btn-check" style="display:none" onclick="checkAnswers()">Check Answers</button>
+        <div id="score-display" class="score-display"></div>
+    </div>
+</div>
+
+<script>
+    const teacherEmail = "anita20700@gmail.com";
+    
+    const translations = {
+        en: {
+            tTitle1: "🟩 Decimal Place Value Explorer", tSub1: "Build your decimal! See how tenths, hundredths, and thousandths combine to make a whole.",
+            tTenths: "Tenths (0.1):", tHunds: "Hundredths (0.01):", tThous: "Thousandths (0.001):",
+            
+            tTitle2: "🔄 Decimal ⇄ Fraction Converter", tSub2: "Convert between decimals and fractions and see them on a pie chart!",
+            optD2F: "Decimal ➔ Fraction", optF2D: "Fraction ➔ Decimal",
+            
+            tTitle3: "📝 Decimal Practice Generator", qtype: "Type:", qcount: "Count:",
+            optQAll: "All Types", btnGen: "Generate", btnCheck: "Check Answers", btnSol: "Solution", btnHideSol: "Hide",
+            
+            submitTeacher: "Submit results to teacher", requireName: "⚠️ Please enter your name!", sending: "Sending...", sentSuccess: "✅ Results sent successfully!", sentError: "❌ Error sending results.",
+            scoreMsg: "You scored {score} out of {total}!",
+            
+            solD2F: "Step 1: Write {dec} as {origNum} / {origDen}.<br>Step 2: Simplify by dividing top and bottom by {gcd}.<br>Result: <strong>{n} / {d}</strong>.",
+            solF2D: "Step 1: Divide numerator by denominator ➔ {n} ÷ {d}.<br>Result: <strong>{dec}</strong>."
+        },
+        zh: {
+            tTitle1: "🟩 小數位值積木探險家", tSub1: "動手拉滑桿！看看十分位、百分位、千分位是如何組合成一個整體的。",
+            tTenths: "十分位 (0.1)：", tHunds: "百分位 (0.01)：", tThous: "千分位 (0.001)：",
+            
+            tTitle2: "🔄 小數與分數轉換器", tSub2: "在小數與分數之間輕鬆轉換，並透過圓餅圖視覺化大小！",
+            optD2F: "小數 ➔ 分數", optF2D: "分數 ➔ 小數",
+            
+            tTitle3: "📝 小數互動測驗", qtype: "題型：", qcount: "題數：",
+            optQAll: "綜合題型", btnGen: "產生題目", btnCheck: "對答案", btnSol: "觀看解答", btnHideSol: "隱藏解答",
+            
+            submitTeacher: "將成績提交給老師", requireName: "⚠️ 請輸入姓名！", sending: "傳送中...", sentSuccess: "✅ 成績已送出！", sentError: "❌ 傳送失敗",
+            scoreMsg: "你答對了 {score} / {total} 題！",
+            
+            solD2F: "步驟 1：將 {dec} 寫成分數 ➔ {origNum} / {origDen}。<br>步驟 2：分子分母同除以最大公因數 {gcd} 來約分。<br>答案：<strong>{n} / {d}</strong>。",
+            solF2D: "步驟 1：拿分子除以分母 ➔ {n} ÷ {d}。<br>答案：<strong>{dec}</strong>。"
+        },
+        ja: {
+            tTitle1: "🟩 小数の位取りエクスプローラー", tSub1: "スライダーを動かして、小数第一位、第二位、第三位がどのように組み合わさるか見てみよう！",
+            tTenths: "小数第一位 (0.1):", tHunds: "小数第二位 (0.01):", tThous: "小数第三位 (0.001):",
+            
+            tTitle2: "🔄 小数 ⇄ 分数 変換器", tSub2: "小数と分数を変換して、円グラフで大きさを確認しよう！",
+            optD2F: "小数 ➔ 分数", optF2D: "分数 ➔ 小数",
+            
+            tTitle3: "📝 小数練習問題ジェネレーター", qtype: "種類:", qcount: "問題数:",
+            optQAll: "すべての種類", btnGen: "問題作成", btnCheck: "答え合わせ", btnSol: "解答", btnHideSol: "隠す",
+            
+            submitTeacher: "先生に送信する", requireName: "⚠️ 名前を入力！", sending: "送信中...", sentSuccess: "✅ 送信完了！", sentError: "❌ 送信失敗",
+            scoreMsg: "{score} / {total} 問正解！",
+            
+            solD2F: "手順 1: {dec} を分数で表す ➔ {origNum} / {origDen}。<br>手順 2: 分母と分子を最大公約数 {gcd} で割って約分する。<br>答え: <strong>{n} / {d}</strong>。",
+            solF2D: "手順 1: 分子を分母で割る ➔ {n} ÷ {d}。<br>答え: <strong>{dec}</strong>。"
+        }
+    };
+
+    let currentLang = 'en';
+    let currentQuizData = [];
+
+    // 核心數學工具
+    function randInt(min, max) { return Math.floor(Math.random() * (max - min + 1)) + min; }
+    function gcd(a, b) { return b === 0 ? a : gcd(b, a % b); }
+
+    function changeLanguage() {
+        currentLang = document.getElementById('language').value;
+        localStorage.setItem('mySiteLang', currentLang);
+        const t = translations[currentLang];
+        
+        document.getElementById('text-title1').innerText = t.tTitle1; document.getElementById('text-sub1').innerText = t.tSub1;
+        document.getElementById('text-tenths').innerText = t.tTenths; document.getElementById('text-hundredths').innerText = t.tHunds; document.getElementById('text-thousandths').innerText = t.tThous;
+        
+        document.getElementById('text-title2').innerText = t.tTitle2; document.getElementById('text-sub2').innerText = t.tSub2;
+        document.getElementById('opt-d2f').innerText = t.optD2F; document.getElementById('opt-f2d').innerText = t.optF2D;
+        
+        document.getElementById('text-title3').innerText = t.tTitle3;
+        document.getElementById('text-qtype').innerText = t.qtype; document.getElementById('text-qcount').innerText = t.qcount;
+        document.getElementById('opt-q-all').innerText = t.optQAll; document.getElementById('opt-q-d2f').innerText = t.optD2F; document.getElementById('opt-q-f2d').innerText = t.optF2D;
+        
+        document.getElementById('btn-generate').innerText = t.btnGen; document.getElementById('btn-check').innerText = t.btnCheck;
+        document.getElementById('text-submit-teacher').innerText = t.submitTeacher; document.getElementById('student-name').placeholder = t.requireName.replace('⚠️ ', '');
+
+        updatePlaceValue(); updateConverter();
+        
+        for (let i = 0; i < currentQuizData.length; i++) {
+            const btn = document.getElementById(`btn-sol-${i}`);
+            if (btn) btn.innerText = (document.getElementById(`sol-${i}`).style.display === 'block') ? t.btnHideSol : t.btnSol;
+            const solBox = document.getElementById(`sol-${i}`);
+            if (solBox && solBox.style.display === 'block') solBox.innerHTML = generateSolutionText(currentQuizData[i].solData);
+        }
+        if(document.getElementById('score-display').innerHTML !== "") checkAnswers(false);
+    }
+
+    // ================= 1. 位值積木探險家邏輯 =================
+    function updatePlaceValue() {
+        const t = parseInt(document.getElementById('slide-t').value);
+        const h = parseInt(document.getElementById('slide-h').value);
+        const th = parseInt(document.getElementById('slide-th').value);
+
+        document.getElementById('val-t').innerText = t;
+        document.getElementById('val-h').innerText = h;
+        document.getElementById('val-th').innerText = th;
+
+        const totalThousandths = t * 100 + h * 10 + th;
+        const decVal = (totalThousandths / 1000).toFixed(3);
+        
+        document.getElementById('eq-place-value').innerText = `${decVal} = ${t}/10 + ${h}/100 + ${th}/1000`;
+
+        const svg = document.getElementById('decimal-grid');
+        svg.innerHTML = '';
+        
+        // 背景網格線 (10x10)
+        for (let i = 0; i <= 100; i+=10) {
+            svg.innerHTML += `<line x1="${i}" y1="0" x2="${i}" y2="100" stroke="#bdc3c7" stroke-width="0.5"/>`;
+            svg.innerHTML += `<line x1="0" y1="${i}" x2="100" y2="${i}" stroke="#bdc3c7" stroke-width="0.5"/>`;
+        }
+
+        // 畫橘色柱子 (Tenths)
+        if (t > 0) {
+            svg.innerHTML += `<rect x="0" y="0" width="${t*10}" height="100" fill="#e67e22" opacity="0.8"/>`;
+        }
+        
+        // 畫藍色方塊 (Hundredths)
+        if (h > 0) {
+            svg.innerHTML += `<rect x="${t*10}" y="0" width="10" height="${h*10}" fill="#3498db" opacity="0.8"/>`;
+        }
+
+        // 畫綠色細線 (Thousandths)
+        if (th > 0) {
+            // 每一條細線代表 1/1000，填在下一個格子的內部
+            for(let i = 0; i < th; i++) {
+                svg.innerHTML += `<rect x="${t*10 + i}" y="${h*10}" width="1" height="10" fill="#2ecc71"/>`;
+            }
+        }
+    }
+    ['slide-t', 'slide-h', 'slide-th'].forEach(id => document.getElementById(id).addEventListener('input', updatePlaceValue));
+
+    // ================= 2. 轉換器與圓餅圖 =================
+    function toggleConvMode() {
+        const mode = document.getElementById('conv-mode').value;
+        if (mode === 'd2f') { document.getElementById('input-d2f').style.display = 'flex'; document.getElementById('input-f2d').style.display = 'none'; } 
+        else { document.getElementById('input-d2f').style.display = 'none'; document.getElementById('input-f2d').style.display = 'flex'; }
+        updateConverter();
+    }
+
+    function drawPieChart(decimalValue) {
+        const svg = document.getElementById('pie-chart');
+        svg.innerHTML = `<circle cx="50" cy="50" r="45" fill="#fdf2e9" stroke="#34495e" stroke-width="2"/>`;
+        if (decimalValue >= 1) {
+            svg.innerHTML += `<circle cx="50" cy="50" r="45" fill="#3498db"/>`;
+            return;
+        }
+        if (decimalValue <= 0) return;
+
+        const angle = decimalValue * 2 * Math.PI;
+        const x = 50 + 45 * Math.cos(-Math.PI/2 + angle);
+        const y = 50 + 45 * Math.sin(-Math.PI/2 + angle);
+        const largeArc = decimalValue > 0.5 ? 1 : 0;
+        
+        svg.innerHTML += `<path d="M 50 50 L 50 5 A 45 45 0 ${largeArc} 1 ${x} ${y} Z" fill="#3498db" stroke="#2980b9" stroke-width="1"/>`;
+    }
+
+    function updateConverter() {
+        const mode = document.getElementById('conv-mode').value;
+        const eq = document.getElementById('eq-converter');
+        let decValue = 0;
+
+        if (mode === 'd2f') {
+            const rawInput = document.getElementById('conv-dec').value;
+            if (!rawInput) return;
+            // 計算小數位數來決定分母
+            const decimalPlaces = rawInput.length;
+            const num = parseInt(rawInput);
+            const den = Math.pow(10, decimalPlaces);
+            if (isNaN(num)) return;
+
+            const divisor = gcd(num, den);
+            const simpNum = num / divisor;
+            const simpDen = den / divisor;
+            
+            decValue = num / den;
+            eq.innerText = `0.${rawInput} = ${num}/${den} = ${simpNum}/${simpDen}`;
+        } else {
+            const num = parseInt(document.getElementById('conv-num').value);
+            const den = parseInt(document.getElementById('conv-den').value);
+            if (isNaN(num) || isNaN(den) || den <= 0) return;
+
+            decValue = num / den;
+            let displayDec = decValue.toString();
+            // 處理無限小數太長的問題
+            if (displayDec.length > 6) displayDec = decValue.toFixed(4) + "...";
+            
+            eq.innerText = `${num} / ${den} = ${displayDec}`;
+        }
+        
+        // 限制畫圖最高到 1 避免破圖
+        drawPieChart(Math.min(decValue, 1));
+    }
+    ['conv-dec', 'conv-num', 'conv-den'].forEach(id => document.getElementById(id).addEventListener('input', updateConverter));
+
+    // ================= 3. 測驗邏輯 =================
+    // 友善的國小分數清單 (分母為 2,4,5,8,10,20,25,50,100)
+    const friendlyDenoms = [2, 4, 5, 8, 10, 20, 25, 50, 100];
+
+    function generateQuiz() {
+        const type = document.getElementById('quiz-type').value, count = parseInt(document.getElementById('quiz-count').value), container = document.getElementById('quiz-container');
+        container.innerHTML = ''; document.getElementById('score-display').innerHTML = ''; document.getElementById('submit-status').innerHTML = '';
+        document.getElementById('submit-area').style.display = 'block'; document.getElementById('btn-check').style.display = 'inline-block';
+        currentQuizData = [];
+
+        for (let i = 0; i < count; i++) {
+            let qT = type === 'mix' ? (Math.random() > 0.5 ? 'd2f' : 'f2d') : type;
+            let qH = "", ans = {}, sol = {};
+            
+            // 隨機抽取一個友善的分母，並產生真分數
+            let d = friendlyDenoms[randInt(0, friendlyDenoms.length - 1)];
+            let n = randInt(1, d - 1);
+            let divisor = gcd(n, d);
+            n = n / divisor; d = d / divisor; // 確保是最簡分數
+            
+            let decStr = (n / d).toString();
+            let decPart = decStr.split('.')[1] || "0";
+
+            if (qT === 'd2f') {
+                let origDen = Math.pow(10, decPart.length);
+                let origNum = parseInt(decPart);
+                ans = {n, d}; sol = {type: 'd2f', dec: decStr, origNum, origDen, gcd: gcd(origNum, origDen), n, d};
+                qH = `<div class="fraction-display"><span class="num" style="border:none; font-size:1.6rem;">${decStr}</span></div> <span> = </span> <div class="fraction-display"><span class="num"><input type="number" class="quiz-input" id="q${i}-n" onclick="resetInput(${i})"></span><span class="den"><input type="number" class="quiz-input" id="q${i}-d" onclick="resetInput(${i})"></span></div>`;
+            } else {
+                ans = {dec: decPart}; sol = {type: 'f2d', n, d, dec: decStr};
+                qH = `<div class="fraction-display"><span class="num">${n}</span><span class="den">${d}</span></div> <span> = </span> <div class="fraction-display"><span style="font-size:1.6rem; font-weight:bold;">0 . </span></div> <input type="text" class="quiz-input" style="width:70px;" id="q${i}-dec" onclick="resetInput(${i})">`;
+            }
+
+            currentQuizData.push({ answers: ans, solData: sol });
+            let item = document.createElement('div'); item.className = 'question-item';
+            item.innerHTML = `<div class="question-row"><span style="font-weight:bold; color:#7f8c8d; font-size:1.2rem;">Q${i+1}. </span> ${qH} <button class="btn-sol" id="btn-sol-${i}" onclick="toggleSolution(${i})">${translations[currentLang].btnSol}</button></div><div class="solution-box" id="sol-${i}"></div>`;
+            container.appendChild(item);
+        }
+    }
+
+    function resetInput(idx) {
+        Object.keys(currentQuizData[idx].answers).forEach(k => document.getElementById(`q${idx}-${k}`).classList.remove('correct', 'wrong'));
+        document.getElementById(`btn-sol-${idx}`).style.display = 'none'; document.getElementById(`sol-${idx}`).style.display = 'none';
+    }
+
+    function generateSolutionText(d) {
+        const t = translations[currentLang];
+        if (d.type === 'd2f') return t.solD2F.replace('{dec}', d.dec).replace('{origNum}', d.origNum).replace('{origDen}', d.origDen).replace('{gcd}', d.gcd).replace('{n}', d.n).replace('{d}', d.d);
+        if (d.type === 'f2d') return t.solF2D.replace('{n}', d.n).replace('{d}', d.d).replace('{dec}', d.dec);
+        return "";
+    }
+
+    function toggleSolution(idx) {
+        const solBox = document.getElementById(`sol-${idx}`), btn = document.getElementById(`btn-sol-${idx}`), t = translations[currentLang];
+        if (solBox.style.display === 'none' || solBox.style.display === '') {
+            solBox.innerHTML = generateSolutionText(currentQuizData[idx].solData); solBox.style.display = 'block'; btn.innerText = t.btnHideSol;
+        } else { solBox.style.display = 'none'; btn.innerText = t.btnSol; }
+    }
+
+    function toggleNameInput() { document.getElementById('student-name').style.display = document.getElementById('chk-submit').checked ? 'inline-block' : 'none'; }
+
+    async function checkAnswers(isFinalSubmit = true) {
+        if (currentQuizData.length === 0) return;
+        const t = translations[currentLang], isSubmitChecked = document.getElementById('chk-submit').checked;
+        const studentName = document.getElementById('student-name').value.trim(), statusDiv = document.getElementById('submit-status');
+
+        if (isFinalSubmit && isSubmitChecked && !studentName) { statusDiv.innerText = t.requireName; statusDiv.style.color = "#e74c3c"; return; }
+
+        let score = 0; const total = currentQuizData.length; let reportDetails = "";
+        for (let i = 0; i < total; i++) {
+            const ansObj = currentQuizData[i].answers; let isCorrect = true; let userAnsStr = "";
+            for (const key in ansObj) {
+                const el = document.getElementById(`q${i}-${key}`);
+                const val = key === 'dec' ? el.value.trim() : parseInt(el.value); // decimal might be string '125'
+                el.classList.remove('correct', 'wrong'); userAnsStr += `[${val || 'Empty'}] `;
+                
+                // Compare string for decimal part, int for fractions
+                if (val == ansObj[key]) el.classList.add('correct'); 
+                else { el.classList.add('wrong'); isCorrect = false; }
+            }
+            const solBtn = document.getElementById(`btn-sol-${i}`), solBox = document.getElementById(`sol-${i}`);
+            if (isCorrect) { score++; solBtn.style.display = 'none'; solBox.style.display = 'none'; } 
+            else { solBtn.style.display = 'inline-block'; solBtn.innerText = t.btnSol; solBox.style.display = 'none'; }
+            reportDetails += `Q${i+1}: ${isCorrect ? '✅' : '❌'} (Ans: ${JSON.stringify(ansObj)}, Typed: ${userAnsStr})\n`;
+        }
+        document.getElementById('score-display').innerText = t.scoreMsg.replace('{score}', score).replace('{total}', total);
+
+        if (isFinalSubmit && isSubmitChecked) {
+            const checkBtn = document.getElementById('btn-check'), origText = checkBtn.innerText;
+            checkBtn.innerText = t.sending; checkBtn.disabled = true; statusDiv.innerText = t.sending; statusDiv.style.color = "#34495e";
+            try {
+                await fetch(`https://formsubmit.co/ajax/${teacherEmail}`, {
+                    method: "POST", headers: { 'Content-Type': 'application/json', 'Accept': 'application/json' },
+                    body: JSON.stringify({ name: studentName, _subject: `Decimal Quiz: ${studentName} (${score}/${total})`, message: reportDetails })
+                });
+                statusDiv.innerText = t.sentSuccess; statusDiv.style.color = "#27ae60";
+            } catch (e) { statusDiv.innerText = t.sentError; statusDiv.style.color = "#e74c3c"; } 
+            finally { checkBtn.innerText = origText; checkBtn.disabled = false; }
+        }
+    }
+
+    window.onload = function() {
+        const s = localStorage.getItem('mySiteLang'); if (s) document.getElementById('language').value = s;
+        changeLanguage(); updatePlaceValue(); updateConverter();
+    };
+</script>
+</body>
+</html>
