@@ -70,12 +70,56 @@
             margin: 20px 0;
             font-size: 1.2rem;
         }
+        
+        /* 💡 吸附格線開關樣式 (iOS Style Toggle) */
+        .snap-control {
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            background: #e8f8f5;
+            padding: 12px 25px;
+            border-radius: 50px;
+            margin: 20px auto;
+            border: 2px solid #a3e4d7;
+            gap: 15px;
+            width: fit-content;
+        }
+        .switch {
+            position: relative;
+            display: inline-block;
+            width: 54px;
+            height: 30px;
+        }
+        .switch input { opacity: 0; width: 0; height: 0; }
+        .slider-toggle {
+            position: absolute;
+            cursor: pointer;
+            top: 0; left: 0; right: 0; bottom: 0;
+            background-color: #bdc3c7;
+            transition: .4s;
+            border-radius: 34px;
+        }
+        .slider-toggle:before {
+            position: absolute; content: "";
+            height: 22px; width: 22px;
+            left: 4px; bottom: 4px;
+            background-color: white;
+            transition: .4s;
+            border-radius: 50%;
+        }
+        input:checked + .slider-toggle { background-color: #27ae60; }
+        input:checked + .slider-toggle:before { transform: translateX(24px); }
+
         .equation {
             font-size: 1.8rem;
             font-weight: bold;
             margin-top: 20px;
             padding: 15px;
             border-radius: 10px;
+            min-height: 40px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
         }
         .eq-orange { background-color: #fff9c4; color: #d35400; }
         .eq-green { background-color: #e8f8f5; color: #27ae60; }
@@ -88,38 +132,23 @@
             margin-top: 20px;
             overflow: hidden;
             touch-action: none;
+            user-select: none;
+            -webkit-user-select: none;
         }
 
-        /* 特殊圖形提示框樣式 */
         .shape-info-box {
             background-color: #fdfefe;
-            border-left: 6px solid #f39c12;
+            border-left: 6px solid #bdc3c7;
             padding: 15px 20px;
             margin-top: 15px;
             border-radius: 0 8px 8px 0;
             text-align: left;
-            box-shadow: 0 2px 8px rgba(0,0,0,0.08);
-            display: none;
-            animation: fadeIn 0.3s ease-in-out;
+            box-shadow: 0 2px 8px rgba(0,0,0,0.05);
+            min-height: 60px;
+            transition: all 0.3s ease;
         }
-        .shape-info-box h3 {
-            margin: 0 0 8px 0;
-            color: #2c3e50;
-            font-size: 1.25rem;
-            display: flex;
-            align-items: center;
-            gap: 8px;
-        }
-        .shape-info-box p {
-            margin: 0;
-            color: #555;
-            font-size: 1.05rem;
-            line-height: 1.5;
-        }
-        @keyframes fadeIn {
-            from { opacity: 0; transform: translateY(-5px); }
-            to { opacity: 1; transform: translateY(0); }
-        }
+        .shape-info-box h3 { margin: 0 0 8px 0; color: #2c3e50; font-size: 1.25rem; display: flex; align-items: center; gap: 8px; }
+        .shape-info-box p { margin: 0; color: #555; font-size: 1.05rem; line-height: 1.5; }
 
         .btn {
             background-color: #3498db; color: white; border: none; padding: 8px 15px;
@@ -135,6 +164,7 @@
             width: 100%;
             height: 400px;
             cursor: crosshair;
+            touch-action: none;
         }
         .draggable { cursor: grab; }
         .draggable:active { cursor: grabbing; }
@@ -182,12 +212,20 @@
     </div>
     <div class="equation eq-orange" id="equation1"></div>
 
-    <!-- 分隔線 -->
     <hr class="section-divider">
+
+    <!-- 全局控制：吸附格線開關 -->
+    <div class="snap-control">
+        <span id="text-snap" style="font-size:1.2rem; font-weight:bold; color:#16a085;">Snap to Grid (Magnet Effect)</span>
+        <label class="switch">
+            <input type="checkbox" id="snap-toggle" checked onchange="toggleSnap()">
+            <span class="slider-toggle"></span>
+        </label>
+    </div>
 
     <!-- =============== 工具 2：三角形內角和 =============== -->
     <h2 id="text-title2">🔺 Triangle Explorer</h2>
-    <p id="text-subtitle2">Drag vertices B and C. Notice how the sum of all interior angles is always 180°!</p>
+    <p id="text-subtitle2">Drag vertices A, B, and C. Notice how the sum of all interior angles is always 180°!</p>
 
     <div class="visual-box">
         <svg id="svg-tool2" class="interactive-svg" viewBox="-250 -200 500 400" onmousemove="drag(event)" onmouseup="endDrag()" ontouchmove="drag(event)" ontouchend="endDrag()">
@@ -205,20 +243,18 @@
             <text id="label-tb" class="angle-label" fill="#2980b9"></text>
             <text id="label-tc" class="angle-label" fill="#8e44ad"></text>
 
-            <circle cx="0" cy="0" r="6" fill="#c0392b" />
+            <circle id="point-ta" class="draggable" r="12" fill="#c0392b" onmousedown="startDrag(event, 'svg-tool2', 'tA')" ontouchstart="startDrag(event, 'svg-tool2', 'tA')" />
             <circle id="point-tb" class="draggable" r="12" fill="#2980b9" onmousedown="startDrag(event, 'svg-tool2', 'tB')" ontouchstart="startDrag(event, 'svg-tool2', 'tB')" />
             <circle id="point-tc" class="draggable" r="12" fill="#8e44ad" onmousedown="startDrag(event, 'svg-tool2', 'tC')" ontouchstart="startDrag(event, 'svg-tool2', 'tC')" />
             
-            <text x="-15" y="20" font-weight="bold" fill="#c0392b">A</text>
+            <text id="name-ta" font-weight="bold" fill="#fff" font-size="12" pointer-events="none" text-anchor="middle" dominant-baseline="middle">A</text>
             <text id="name-tb" font-weight="bold" fill="#fff" font-size="12" pointer-events="none" text-anchor="middle" dominant-baseline="middle">B</text>
             <text id="name-tc" font-weight="bold" fill="#fff" font-size="12" pointer-events="none" text-anchor="middle" dominant-baseline="middle">C</text>
         </svg>
     </div>
     <div class="equation eq-green" id="equation2">∠A + ∠B + ∠C = 180°</div>
-    <!-- 智能圖形提示框 -->
     <div id="shape-info-2" class="shape-info-box"></div>
 
-    <!-- 分隔線 -->
     <hr class="section-divider">
 
     <!-- =============== 工具 3：四邊形內角和 =============== -->
@@ -257,7 +293,6 @@
         </svg>
     </div>
     <div class="equation eq-blue" id="equation3">∠A + ∠B + ∠C + ∠D = 360°</div>
-    <!-- 智能圖形提示框 -->
     <div id="shape-info-3" class="shape-info-box"></div>
 
 </div>
@@ -266,63 +301,69 @@
     const translations = {
         en: {
             title1: "📐 Straight Line Angle Explorer", subtitle1: "Add or remove angles on a straight line. Notice how they always sum to 180°!",
-            title2: "🔺 Triangle Explorer", subtitle2: "Drag vertices B and C. Notice how the sum of all interior angles is always 180°!",
+            title2: "🔺 Triangle Explorer", subtitle2: "Drag vertices A, B, and C. Notice how the sum of all interior angles is always 180°!",
             title3: "🔲 Quadrilateral Explorer", subtitle3: "Drag vertices A, B, C, and D. The sum of interior angles is always 360°!",
             addAngle: "+ Add Angle", rmAngle: "- Remove Angle", anglePrefix: "Angle",
+            snapGrid: "Snap to Grid (Magnet Effect)",
             acute: "Acute", right: "Right", obtuse: "Obtuse", straight: "Straight", zero: "Zero",
             invalid: "Line", cross: "Self-Intersecting", concave: "Reflex",
+            exploring: "✨ Exploring... Keep dragging to find special shapes!",
             detected: "✨ Detected Shape:",
-            triEquilateral: { name: "Equilateral Triangle", desc: "Identification: All three sides are equal, and all three interior angles are exactly 60°." },
-            triRightIso: { name: "Isosceles Right Triangle", desc: "Identification: Has one 90° right angle, and the two legs forming the right angle are equal in length." },
-            triRight: { name: "Right Triangle", desc: "Identification: Has exactly one 90° right angle." },
-            triIso: { name: "Isosceles Triangle", desc: "Identification: Has two sides of the same length, and the two base angles are equal." },
-            quadSquare: { name: "Square", desc: "Identification: All 4 sides are equal, and all 4 angles are 90° right angles." },
-            quadRect: { name: "Rectangle", desc: "Identification: All 4 angles are 90° right angles. Opposite sides are parallel and equal." },
-            quadRhombus: { name: "Rhombus", desc: "Identification: All 4 sides are equal. Opposite sides are parallel, and opposite angles are equal." },
-            quadPara: { name: "Parallelogram", desc: "Identification: Two pairs of opposite sides are parallel. Opposite sides and angles are equal." },
-            quadIsoTrap: { name: "Isosceles Trapezoid", desc: "Identification: Exactly one pair of parallel sides, and the non-parallel sides are equal in length." },
-            quadTrap: { name: "Trapezoid", desc: "Identification: Exactly one pair of opposite sides is parallel." },
-            quadKite: { name: "Kite", desc: "Identification: Two pairs of adjacent sides are equal in length." }
+            triEquilateral: { name: "Equilateral Triangle", desc: "Identification: All three sides are equal, and all three interior angles are exactly 60°.", tip: "💡 Math Tip: It's actually impossible to draw a perfect equilateral triangle on an integer grid! Can you figure out why?" },
+            triRightIso: { name: "Isosceles Right Triangle", desc: "Identification: Has one 90° right angle, and the two legs forming the right angle are equal in length.", tip: "" },
+            triRight: { name: "Right Triangle", desc: "Identification: Has exactly one 90° right angle.", tip: "" },
+            triIso: { name: "Isosceles Triangle", desc: "Identification: Has two sides of the same length, and the two base angles are equal.", tip: "" },
+            quadSquare: { name: "Square", desc: "Identification: All 4 sides are equal, and all 4 angles are 90° right angles.", tip: "" },
+            quadRect: { name: "Rectangle", desc: "Identification: All 4 angles are 90° right angles. Opposite sides are parallel and equal.", tip: "" },
+            quadRhombus: { name: "Rhombus", desc: "Identification: All 4 sides are equal. Opposite sides are parallel, and opposite angles are equal.", tip: "" },
+            quadPara: { name: "Parallelogram", desc: "Identification: Two pairs of opposite sides are parallel. Opposite sides and angles are equal.", tip: "" },
+            quadIsoTrap: { name: "Isosceles Trapezoid", desc: "Identification: Exactly one pair of parallel sides, and the non-parallel sides are equal in length.", tip: "" },
+            quadTrap: { name: "Trapezoid", desc: "Identification: Exactly one pair of opposite sides is parallel.", tip: "" },
+            quadKite: { name: "Kite", desc: "Identification: Two pairs of adjacent sides are equal in length.", tip: "" }
         },
         zh: {
             title1: "📐 直線平角探險家", subtitle1: "自由新增或減少直線上的角度。觀察看看，無論怎麼切，加起來永遠是 180°！",
-            title2: "🔺 三角形內角和探險", subtitle2: "自由拖曳座標上的頂點 B 和 C。觀察看看內角和是否永遠都是 180°！",
+            title2: "🔺 三角形內角和探險", subtitle2: "自由拖曳座標上的頂點 A、B 和 C。觀察看看內角和是否永遠都是 180°！",
             title3: "🔲 四邊形內角和探險", subtitle3: "拖曳頂點 A、B、C 和 D。試著發現四邊形內角和永遠是 360°！",
             addAngle: "+ 新增角度", rmAngle: "- 減少角度", anglePrefix: "角",
+            snapGrid: "吸附格線 (磁鐵效果)",
             acute: "銳角", right: "直角", obtuse: "鈍角", straight: "平角", zero: "零角",
             invalid: "成一直線", cross: "邊線交叉", concave: "優角",
+            exploring: "✨ 探索中... 試著拉出特殊圖形吧！",
             detected: "✨ 發現特殊圖形：",
-            triEquilateral: { name: "正三角形", desc: "判斷方式：三條邊都等長，且三個內角都是 60°。" },
-            triRightIso: { name: "等腰直角三角形", desc: "判斷方式：有一個 90° 的直角，且形成直角的兩股等長。" },
-            triRight: { name: "直角三角形", desc: "判斷方式：其中一個內角剛好是 90°。" },
-            triIso: { name: "等腰三角形", desc: "判斷方式：有兩條邊等長，且兩個底角相等。" },
-            quadSquare: { name: "正方形", desc: "判斷方式：四個角都是直角 (90°)，且四條邊都等長。" },
-            quadRect: { name: "長方形 (矩形)", desc: "判斷方式：四個角都是直角 (90°)。對邊互相平行且等長。" },
-            quadRhombus: { name: "菱形", desc: "判斷方式：四條邊都等長。對角相等，對邊互相平行。" },
-            quadPara: { name: "平行四邊形", desc: "判斷方式：有兩組對邊互相平行。對邊等長，對角相等。" },
-            quadIsoTrap: { name: "等腰梯形", desc: "判斷方式：只有一組對邊平行，且另外不平行的兩邊等長。" },
-            quadTrap: { name: "梯形", desc: "判斷方式：只有一組對邊互相平行。" },
-            quadKite: { name: "鳶形 (箏形)", desc: "判斷方式：有兩組鄰邊分別等長。對角線會互相垂直。" }
+            triEquilateral: { name: "正三角形", desc: "判斷方式：三條邊都等長，且三個內角都是 60°。", tip: "💡 數學小撇步：在完美的整數方格紙上，其實不可能拉出完美的正三角形喔！你能發現為什麼嗎？" },
+            triRightIso: { name: "等腰直角三角形", desc: "判斷方式：有一個 90° 的直角，且形成直角的兩股等長。", tip: "" },
+            triRight: { name: "直角三角形", desc: "判斷方式：其中一個內角剛好是 90°。", tip: "" },
+            triIso: { name: "等腰三角形", desc: "判斷方式：有兩條邊等長，且兩個底角相等。", tip: "" },
+            quadSquare: { name: "正方形", desc: "判斷方式：四個角都是直角 (90°)，且四條邊都等長。", tip: "" },
+            quadRect: { name: "長方形 (矩形)", desc: "判斷方式：四個角都是直角 (90°)。對邊互相平行且等長。", tip: "" },
+            quadRhombus: { name: "菱形", desc: "判斷方式：四條邊都等長。對角相等，對邊互相平行。", tip: "" },
+            quadPara: { name: "平行四邊形", desc: "判斷方式：有兩組對邊互相平行。對邊等長，對角相等。", tip: "" },
+            quadIsoTrap: { name: "等腰梯形", desc: "判斷方式：只有一組對邊平行，且另外不平行的兩邊等長。", tip: "" },
+            quadTrap: { name: "梯形", desc: "判斷方式：只有一組對邊互相平行。", tip: "" },
+            quadKite: { name: "鳶形 (箏形)", desc: "判斷方式：有兩組鄰邊分別等長。對角線會互相垂直。", tip: "" }
         },
         ja: {
             title1: "📐 直線の角エクスプローラー", subtitle1: "直線上の角を増やしたり減らしたりして、合計が常に180°になることを確認しよう！",
-            title2: "🔺 三角形内角の和エクスプローラー", subtitle2: "頂点BとCをドラッグして動かしてみよう。内角の和は常に180°になります！",
+            title2: "🔺 三角形内角の和エクスプローラー", subtitle2: "頂点A、B、Cをドラッグして動かしてみよう。内角の和は常に180°になります！",
             title3: "🔲 四角形内角の和エクスプローラー", subtitle3: "頂点A、B、C、Dをドラッグしてみよう。内角の和は常に360°です！",
             addAngle: "+ 角を追加", rmAngle: "- 角を減らす", anglePrefix: "角",
+            snapGrid: "グリッドにスナップ",
             acute: "鋭角", right: "直角", obtuse: "鈍角", straight: "平角", zero: "零角",
             invalid: "直線", cross: "交差しています", concave: "優角",
+            exploring: "✨ 探索中... 動かして特殊な図形を見つけよう！",
             detected: "✨ 図形を検出しました：",
-            triEquilateral: { name: "正三角形", desc: "見分け方：3つの辺の長さがすべて等しく、3つの内角がすべて60°です。" },
-            triRightIso: { name: "直角二等辺三角形", desc: "見分け方：90°の直角が1つあり、直角を作る2つの辺の長さが等しいです。" },
-            triRight: { name: "直角三角形", desc: "見分け方：90°の直角が1つあります。" },
-            triIso: { name: "二等辺三角形", desc: "見分け方：2つの辺の長さが等しく、2つの底角が等しいです。" },
-            quadSquare: { name: "正方形", desc: "見分け方：4つの角がすべて直角(90°)で、4つの辺の長さがすべて等しいです。" },
-            quadRect: { name: "長方形", desc: "見分け方：4つの角がすべて直角(90°)です。向かい合う辺は平行で長さが等しいです。" },
-            quadRhombus: { name: "ひし形", desc: "見分け方：4つの辺の長さがすべて等しいです。向かい合う辺は平行です。" },
-            quadPara: { name: "平行四辺形", desc: "見分け方：向かい合う2組の辺が平行です。向かい合う辺と角が等しいです。" },
-            quadIsoTrap: { name: "等脚台形", desc: "見分け方：1組の向かい合う辺だけが平行で、平行でないもう1組の辺の長さが等しいです。" },
-            quadTrap: { name: "台形", desc: "見分け方：1組の向かい合う辺だけが平行です。" },
-            quadKite: { name: "凧形", desc: "見分け方：隣り合う2組の辺の長さがそれぞれ等しいです。" }
+            triEquilateral: { name: "正三角形", desc: "見分け方：3つの辺の長さがすべて等しく、3つの内角がすべて60°です。", tip: "💡 数学のヒント：実は、整数のグリッド上で完璧な正三角形を描くことは不可能なのです！なぜだか分かりますか？" },
+            triRightIso: { name: "直角二等辺三角形", desc: "見分け方：90°の直角が1つあり、直角を作る2つの辺の長さが等しいです。", tip: "" },
+            triRight: { name: "直角三角形", desc: "見分け方：90°の直角が1つあります。", tip: "" },
+            triIso: { name: "二等辺三角形", desc: "見分け方：2つの辺の長さが等しく、2つの底角が等しいです。", tip: "" },
+            quadSquare: { name: "正方形", desc: "見分け方：4つの角がすべて直角(90°)で、4つの辺の長さがすべて等しいです。", tip: "" },
+            quadRect: { name: "長方形", desc: "見分け方：4つの角がすべて直角(90°)です。向かい合う辺は平行で長さが等しいです。", tip: "" },
+            quadRhombus: { name: "ひし形", desc: "見分け方：4つの辺の長さがすべて等しいです。向かい合う辺は平行です。", tip: "" },
+            quadPara: { name: "平行四辺形", desc: "見分け方：向かい合う2組の辺が平行です。向かい合う辺と角が等しいです。", tip: "" },
+            quadIsoTrap: { name: "等脚台形", desc: "見分け方：1組の向かい合う辺だけが平行で、平行でないもう1組の辺の長さが等しいです。", tip: "" },
+            quadTrap: { name: "台形", desc: "見分け方：1組の向かい合う辺だけが平行です。", tip: "" },
+            quadKite: { name: "凧形", desc: "見分け方：隣り合う2組の辺の長さがそれぞれ等しいです。", tip: "" }
         }
     };
 
@@ -337,11 +378,12 @@
 
     // === 工具 2 & 3 狀態 ===
     const snapGrid = 20;
+    let snapEnabled = true; // ★ 吸附格線開關變數
     let activeSvg = null;
     let isDragging = false;
     let draggedPoint = null;
 
-    const tA = { x: 0, y: 0 };
+    let tA = { x: 0, y: 0 }; 
     let tB = { x: 100, y: 0 };
     let tC = { x: 0, y: -100 };
 
@@ -349,6 +391,11 @@
     let qB = { x: 100, y: -100 };
     let qC = { x: 100, y: 100 };
     let qD = { x: -100, y: 100 };
+
+    // === 切換吸附狀態 ===
+    function toggleSnap() {
+        snapEnabled = document.getElementById('snap-toggle').checked;
+    }
 
     // === 語言切換 ===
     function changeLanguage() {
@@ -365,6 +412,7 @@
         
         document.getElementById('btn-add-angle').innerText = t.addAngle;
         document.getElementById('btn-rm-angle').innerText = t.rmAngle;
+        document.getElementById('text-snap').innerText = t.snapGrid;
 
         buildSliders(); 
         updateTool1();
@@ -545,6 +593,10 @@
 
     function updateTool2() {
         document.getElementById('triangle-path').setAttribute('d', `M ${tA.x} ${tA.y} L ${tB.x} ${tB.y} L ${tC.x} ${tC.y} Z`);
+        
+        document.getElementById('point-ta').setAttribute('cx', tA.x); document.getElementById('point-ta').setAttribute('cy', tA.y);
+        document.getElementById('name-ta').setAttribute('x', tA.x); document.getElementById('name-ta').setAttribute('y', tA.y + 1);
+
         document.getElementById('point-tb').setAttribute('cx', tB.x); document.getElementById('point-tb').setAttribute('cy', tB.y);
         document.getElementById('point-tc').setAttribute('cx', tC.x); document.getElementById('point-tc').setAttribute('cy', tC.y);
         document.getElementById('name-tb').setAttribute('x', tB.x); document.getElementById('name-tb').setAttribute('y', tB.y + 1);
@@ -579,7 +631,6 @@
         
         let isRight = (roundA === 90 || roundB === 90 || roundC === 90);
         let isIso = eqAB_BC || eqBC_CA || eqCA_AB;
-        // 由於整數網格限制，如果是 60-60-60，也視為正三角形 (容許1度誤差)
         let isEq = (eqAB_BC && eqBC_CA && eqCA_AB) || (Math.abs(roundA-60)<=1 && Math.abs(roundB-60)<=1 && Math.abs(roundC-60)<=1);
 
         let shapeKey = "";
@@ -591,12 +642,14 @@
         const shapeBox = document.getElementById('shape-info-2');
         if (shapeKey && roundA !== 0 && roundB !== 0 && roundC !== 0 && roundA !== 180 && roundB !== 180 && roundC !== 180) {
             const sData = translations[currentLang][shapeKey];
-            shapeBox.innerHTML = `<h3>${translations[currentLang].detected} <span style="color:#e67e22;">${sData.name}</span></h3><p>${sData.desc}</p>
-            <small style="display:block; margin-top:8px; color:#95a5a6; font-size:0.85rem;">💡 數學小撇步：在完美的整數方格紙上，其實很難拉出完美的正三角形喔！你能發現為什麼嗎？</small>`;
-            shapeBox.style.display = 'block';
+            let tipHtml = sData.tip ? `<small style="display:block; margin-top:8px; color:#95a5a6; font-size:0.85rem;">${sData.tip}</small>` : '';
+            shapeBox.innerHTML = `<h3>${translations[currentLang].detected} <span style="color:#e67e22;">${sData.name}</span></h3><p>${sData.desc}</p>${tipHtml}`;
+            shapeBox.style.borderLeftColor = "#f39c12";
         } else {
-            shapeBox.style.display = 'none';
+            shapeBox.innerHTML = `<p style="color:#7f8c8d; font-style:italic;">${translations[currentLang].exploring}</p>`;
+            shapeBox.style.borderLeftColor = "#bdc3c7";
         }
+        shapeBox.style.display = 'block'; 
     }
 
     // === 工具 3 ===
@@ -623,12 +676,17 @@
 
         const isCrossing = intersect(qA, qB, qC, qD) || intersect(qB, qC, qD, qA);
         const eq = document.getElementById('equation3');
+        const shapeBox = document.getElementById('shape-info-3');
         document.getElementById('quad-markers').innerHTML = '';
 
         if (isCrossing) {
             ['qa', 'qb', 'qc', 'qd'].forEach(id => document.getElementById(`label-${id}`).textContent = "");
             ['a', 'b', 'c', 'd'].forEach(id => document.getElementById(`q-right-${id}`).setAttribute('d', ''));
-            document.getElementById('shape-info-3').style.display = 'none';
+            
+            shapeBox.innerHTML = `<p style="color:#7f8c8d; font-style:italic;">${translations[currentLang].exploring}</p>`;
+            shapeBox.style.borderLeftColor = "#bdc3c7";
+            shapeBox.style.display = 'block';
+
             eq.innerText = `⚠️ ${translations[currentLang].cross}`; eq.style.color = "#e74c3c";
             return;
         }
@@ -689,40 +747,53 @@
             shapeKey = "quadKite";
         }
 
-        const shapeBox = document.getElementById('shape-info-3');
         if (shapeKey && rA!==0 && rB!==0 && rC!==0 && rD!==0 && rA!==180 && rB!==180 && rC!==180 && rD!==180) {
             const sData = translations[currentLang][shapeKey];
             shapeBox.innerHTML = `<h3>${translations[currentLang].detected} <span style="color:#2980b9;">${sData.name}</span></h3><p>${sData.desc}</p>`;
-            shapeBox.style.display = 'block';
+            shapeBox.style.borderLeftColor = "#3498db";
         } else {
-            shapeBox.style.display = 'none';
+            shapeBox.innerHTML = `<p style="color:#7f8c8d; font-style:italic;">${translations[currentLang].exploring}</p>`;
+            shapeBox.style.borderLeftColor = "#bdc3c7";
         }
+        shapeBox.style.display = 'block'; 
     }
 
     // === 拖曳邏輯 ===
     function startDrag(evt, svgId, ptName) {
-        evt.preventDefault(); activeSvg = document.getElementById(svgId); isDragging = true; draggedPoint = ptName;
+        evt.preventDefault(); 
+        activeSvg = document.getElementById(svgId); 
+        isDragging = true; 
+        draggedPoint = ptName;
     }
 
     function drag(evt) {
         if (!isDragging || !activeSvg) return;
         evt.preventDefault();
         let pt = activeSvg.createSVGPoint();
-        if (evt.touches) { pt.x = evt.touches[0].clientX; pt.y = evt.touches[0].clientY; } else { pt.x = evt.clientX; pt.y = evt.clientY; }
+        if (evt.touches) { pt.x = evt.touches[0].clientX; pt.y = evt.touches[0].clientY; } 
+        else { pt.x = evt.clientX; pt.y = evt.clientY; }
         
         let cursorPt = pt.matrixTransform(activeSvg.getScreenCTM().inverse());
-        cursorPt.x = Math.round(cursorPt.x / snapGrid) * snapGrid;
-        cursorPt.y = Math.round(cursorPt.y / snapGrid) * snapGrid;
         
-        if (activeSvg.id === 'svg-tool2' && cursorPt.x === 0 && cursorPt.y === 0) return; 
-
-        if (draggedPoint === 'tB' && (cursorPt.x !== tC.x || cursorPt.y !== tC.y)) { tB.x = cursorPt.x; tB.y = cursorPt.y; updateTool2(); }
-        else if (draggedPoint === 'tC' && (cursorPt.x !== tB.x || cursorPt.y !== tB.y)) { tC.x = cursorPt.x; tC.y = cursorPt.y; updateTool2(); }
+        // ★ 吸附格線邏輯 ★
+        if (snapEnabled) {
+            cursorPt.x = Math.round(cursorPt.x / snapGrid) * snapGrid;
+            cursorPt.y = Math.round(cursorPt.y / snapGrid) * snapGrid;
+        }
         
-        else if (draggedPoint === 'qA' && !(cursorPt.x===qB.x && cursorPt.y===qB.y) && !(cursorPt.x===qC.x && cursorPt.y===qC.y) && !(cursorPt.x===qD.x && cursorPt.y===qD.y)) { qA.x = cursorPt.x; qA.y = cursorPt.y; updateTool3(); }
-        else if (draggedPoint === 'qB' && !(cursorPt.x===qA.x && cursorPt.y===qA.y) && !(cursorPt.x===qC.x && cursorPt.y===qC.y) && !(cursorPt.x===qD.x && cursorPt.y===qD.y)) { qB.x = cursorPt.x; qB.y = cursorPt.y; updateTool3(); }
-        else if (draggedPoint === 'qC' && !(cursorPt.x===qA.x && cursorPt.y===qA.y) && !(cursorPt.x===qB.x && cursorPt.y===qB.y) && !(cursorPt.x===qD.x && cursorPt.y===qD.y)) { qC.x = cursorPt.x; qC.y = cursorPt.y; updateTool3(); }
-        else if (draggedPoint === 'qD' && !(cursorPt.x===qA.x && cursorPt.y===qA.y) && !(cursorPt.x===qB.x && cursorPt.y===qB.y) && !(cursorPt.x===qC.x && cursorPt.y===qC.y)) { qD.x = cursorPt.x; qD.y = cursorPt.y; updateTool3(); }
+        // 三角形拖曳邏輯
+        if (activeSvg.id === 'svg-tool2') {
+            if (draggedPoint === 'tA' && (cursorPt.x !== tB.x || cursorPt.y !== tB.y) && (cursorPt.x !== tC.x || cursorPt.y !== tC.y)) { tA.x = cursorPt.x; tA.y = cursorPt.y; updateTool2(); }
+            else if (draggedPoint === 'tB' && (cursorPt.x !== tA.x || cursorPt.y !== tA.y) && (cursorPt.x !== tC.x || cursorPt.y !== tC.y)) { tB.x = cursorPt.x; tB.y = cursorPt.y; updateTool2(); }
+            else if (draggedPoint === 'tC' && (cursorPt.x !== tA.x || cursorPt.y !== tA.y) && (cursorPt.x !== tB.x || cursorPt.y !== tB.y)) { tC.x = cursorPt.x; tC.y = cursorPt.y; updateTool2(); }
+        }
+        // 四邊形拖曳邏輯
+        else if (activeSvg.id === 'svg-tool3') {
+            if (draggedPoint === 'qA' && !(cursorPt.x===qB.x && cursorPt.y===qB.y) && !(cursorPt.x===qC.x && cursorPt.y===qC.y) && !(cursorPt.x===qD.x && cursorPt.y===qD.y)) { qA.x = cursorPt.x; qA.y = cursorPt.y; updateTool3(); }
+            else if (draggedPoint === 'qB' && !(cursorPt.x===qA.x && cursorPt.y===qA.y) && !(cursorPt.x===qC.x && cursorPt.y===qC.y) && !(cursorPt.x===qD.x && cursorPt.y===qD.y)) { qB.x = cursorPt.x; qB.y = cursorPt.y; updateTool3(); }
+            else if (draggedPoint === 'qC' && !(cursorPt.x===qA.x && cursorPt.y===qA.y) && !(cursorPt.x===qB.x && cursorPt.y===qB.y) && !(cursorPt.x===qD.x && cursorPt.y===qD.y)) { qC.x = cursorPt.x; qC.y = cursorPt.y; updateTool3(); }
+            else if (draggedPoint === 'qD' && !(cursorPt.x===qA.x && cursorPt.y===qA.y) && !(cursorPt.x===qB.x && cursorPt.y===qB.y) && !(cursorPt.x===qC.x && cursorPt.y===qC.y)) { qD.x = cursorPt.x; qD.y = cursorPt.y; updateTool3(); }
+        }
     }
 
     function endDrag() { isDragging = false; activeSvg = null; draggedPoint = null; }
