@@ -90,6 +90,7 @@
             touch-action: none;
         }
 
+        /* 特殊圖形提示框樣式 */
         .shape-info-box {
             background-color: #fdfefe;
             border-left: 6px solid #f39c12;
@@ -270,17 +271,17 @@
             acute: "Acute", right: "Right", obtuse: "Obtuse", straight: "Straight", zero: "Zero",
             invalid: "Line", cross: "Self-Intersecting", concave: "Reflex",
             detected: "✨ Detected Shape:",
-            triEquilateral: { name: "Equilateral Triangle", desc: "Identification: All three sides are equal, and all three interior angles are exactly 60°.", tip: "💡 Math Tip: It's actually impossible to draw a perfect equilateral triangle on an integer grid! Can you figure out why?" },
-            triRightIso: { name: "Isosceles Right Triangle", desc: "Identification: Has one 90° right angle, and the two legs forming the right angle are equal in length.", tip: "" },
-            triRight: { name: "Right Triangle", desc: "Identification: Has exactly one 90° right angle.", tip: "" },
-            triIso: { name: "Isosceles Triangle", desc: "Identification: Has two sides of the same length, and the two base angles are equal.", tip: "" },
-            quadSquare: { name: "Square", desc: "Identification: All 4 sides are equal, and all 4 angles are 90° right angles.", tip: "" },
-            quadRect: { name: "Rectangle", desc: "Identification: All 4 angles are 90° right angles. Opposite sides are parallel and equal.", tip: "" },
-            quadRhombus: { name: "Rhombus", desc: "Identification: All 4 sides are equal. Opposite sides are parallel, and opposite angles are equal.", tip: "" },
-            quadPara: { name: "Parallelogram", desc: "Identification: Two pairs of opposite sides are parallel. Opposite sides and angles are equal.", tip: "" },
-            quadIsoTrap: { name: "Isosceles Trapezoid", desc: "Identification: Exactly one pair of parallel sides, and the non-parallel sides are equal in length.", tip: "" },
-            quadTrap: { name: "Trapezoid", desc: "Identification: Exactly one pair of opposite sides is parallel.", tip: "" },
-            quadKite: { name: "Kite", desc: "Identification: Two pairs of adjacent sides are equal in length.", tip: "" }
+            triEquilateral: { name: "Equilateral Triangle", desc: "Identification: All three sides are equal, and all three interior angles are exactly 60°." },
+            triRightIso: { name: "Isosceles Right Triangle", desc: "Identification: Has one 90° right angle, and the two legs forming the right angle are equal in length." },
+            triRight: { name: "Right Triangle", desc: "Identification: Has exactly one 90° right angle." },
+            triIso: { name: "Isosceles Triangle", desc: "Identification: Has two sides of the same length, and the two base angles are equal." },
+            quadSquare: { name: "Square", desc: "Identification: All 4 sides are equal, and all 4 angles are 90° right angles." },
+            quadRect: { name: "Rectangle", desc: "Identification: All 4 angles are 90° right angles. Opposite sides are parallel and equal." },
+            quadRhombus: { name: "Rhombus", desc: "Identification: All 4 sides are equal. Opposite sides are parallel, and opposite angles are equal." },
+            quadPara: { name: "Parallelogram", desc: "Identification: Two pairs of opposite sides are parallel. Opposite sides and angles are equal." },
+            quadIsoTrap: { name: "Isosceles Trapezoid", desc: "Identification: Exactly one pair of parallel sides, and the non-parallel sides are equal in length." },
+            quadTrap: { name: "Trapezoid", desc: "Identification: Exactly one pair of opposite sides is parallel." },
+            quadKite: { name: "Kite", desc: "Identification: Two pairs of adjacent sides are equal in length." }
         },
         zh: {
             title1: "📐 直線平角探險家", subtitle1: "自由新增或減少直線上的角度。觀察看看，無論怎麼切，加起來永遠是 180°！",
@@ -290,17 +291,17 @@
             acute: "銳角", right: "直角", obtuse: "鈍角", straight: "平角", zero: "零角",
             invalid: "成一直線", cross: "邊線交叉", concave: "優角",
             detected: "✨ 發現特殊圖形：",
-            triEquilateral: { name: "正三角形", desc: "判斷方式：三條邊都等長，且三個內角都是 60°。", tip: "💡 數學小撇步：在完美的整數方格紙上，其實不可能拉出完美的正三角形喔！你能發現為什麼嗎？" },
-            triRightIso: { name: "等腰直角三角形", desc: "判斷方式：有一個 90° 的直角，且形成直角的兩股等長。", tip: "" },
-            triRight: { name: "直角三角形", desc: "判斷方式：其中一個內角剛好是 90°。", tip: "" },
-            triIso: { name: "等腰三角形", desc: "判斷方式：有兩條邊等長，且兩個底角相等。", tip: "" },
-            quadSquare: { name: "正方形", desc: "判斷方式：四個角都是直角 (90°)，且四條邊都等長。", tip: "" },
-            quadRect: { name: "長方形 (矩形)", desc: "判斷方式：四個角都是直角 (90°)。對邊互相平行且等長。", tip: "" },
-            quadRhombus: { name: "菱形", desc: "判斷方式：四條邊都等長。對角相等，對邊互相平行。", tip: "" },
-            quadPara: { name: "平行四邊形", desc: "判斷方式：有兩組對邊互相平行。對邊等長，對角相等。", tip: "" },
-            quadIsoTrap: { name: "等腰梯形", desc: "判斷方式：只有一組對邊平行，且另外不平行的兩邊等長。", tip: "" },
-            quadTrap: { name: "梯形", desc: "判斷方式：只有一組對邊互相平行。", tip: "" },
-            quadKite: { name: "鳶形 (箏形)", desc: "判斷方式：有兩組鄰邊分別等長。對角線會互相垂直。", tip: "" }
+            triEquilateral: { name: "正三角形", desc: "判斷方式：三條邊都等長，且三個內角都是 60°。" },
+            triRightIso: { name: "等腰直角三角形", desc: "判斷方式：有一個 90° 的直角，且形成直角的兩股等長。" },
+            triRight: { name: "直角三角形", desc: "判斷方式：其中一個內角剛好是 90°。" },
+            triIso: { name: "等腰三角形", desc: "判斷方式：有兩條邊等長，且兩個底角相等。" },
+            quadSquare: { name: "正方形", desc: "判斷方式：四個角都是直角 (90°)，且四條邊都等長。" },
+            quadRect: { name: "長方形 (矩形)", desc: "判斷方式：四個角都是直角 (90°)。對邊互相平行且等長。" },
+            quadRhombus: { name: "菱形", desc: "判斷方式：四條邊都等長。對角相等，對邊互相平行。" },
+            quadPara: { name: "平行四邊形", desc: "判斷方式：有兩組對邊互相平行。對邊等長，對角相等。" },
+            quadIsoTrap: { name: "等腰梯形", desc: "判斷方式：只有一組對邊平行，且另外不平行的兩邊等長。" },
+            quadTrap: { name: "梯形", desc: "判斷方式：只有一組對邊互相平行。" },
+            quadKite: { name: "鳶形 (箏形)", desc: "判斷方式：有兩組鄰邊分別等長。對角線會互相垂直。" }
         },
         ja: {
             title1: "📐 直線の角エクスプローラー", subtitle1: "直線上の角を増やしたり減らしたりして、合計が常に180°になることを確認しよう！",
@@ -310,17 +311,17 @@
             acute: "鋭角", right: "直角", obtuse: "鈍角", straight: "平角", zero: "零角",
             invalid: "直線", cross: "交差しています", concave: "優角",
             detected: "✨ 図形を検出しました：",
-            triEquilateral: { name: "正三角形", desc: "見分け方：3つの辺の長さがすべて等しく、3つの内角がすべて60°です。", tip: "💡 数学のヒント：実は、整数のグリッド上で完璧な正三角形を描くことは不可能なのです！なぜだか分かりますか？" },
-            triRightIso: { name: "直角二等辺三角形", desc: "見分け方：90°の直角が1つあり、直角を作る2つの辺の長さが等しいです。", tip: "" },
-            triRight: { name: "直角三角形", desc: "見分け方：90°の直角が1つあります。", tip: "" },
-            triIso: { name: "二等辺三角形", desc: "見分け方：2つの辺の長さが等しく、2つの底角が等しいです。", tip: "" },
-            quadSquare: { name: "正方形", desc: "見分け方：4つの角がすべて直角(90°)で、4つの辺の長さがすべて等しいです。", tip: "" },
-            quadRect: { name: "長方形", desc: "見分け方：4つの角がすべて直角(90°)です。向かい合う辺は平行で長さが等しいです。", tip: "" },
-            quadRhombus: { name: "ひし形", desc: "見分け方：4つの辺の長さがすべて等しいです。向かい合う辺は平行です。", tip: "" },
-            quadPara: { name: "平行四辺形", desc: "見分け方：向かい合う2組の辺が平行です。向かい合う辺と角が等しいです。", tip: "" },
-            quadIsoTrap: { name: "等脚台形", desc: "見分け方：1組の向かい合う辺だけが平行で、平行でないもう1組の辺の長さが等しいです。", tip: "" },
-            quadTrap: { name: "台形", desc: "見分け方：1組の向かい合う辺だけが平行です。", tip: "" },
-            quadKite: { name: "凧形", desc: "見分け方：隣り合う2組の辺の長さがそれぞれ等しいです。", tip: "" }
+            triEquilateral: { name: "正三角形", desc: "見分け方：3つの辺の長さがすべて等しく、3つの内角がすべて60°です。" },
+            triRightIso: { name: "直角二等辺三角形", desc: "見分け方：90°の直角が1つあり、直角を作る2つの辺の長さが等しいです。" },
+            triRight: { name: "直角三角形", desc: "見分け方：90°の直角が1つあります。" },
+            triIso: { name: "二等辺三角形", desc: "見分け方：2つの辺の長さが等しく、2つの底角が等しいです。" },
+            quadSquare: { name: "正方形", desc: "見分け方：4つの角がすべて直角(90°)で、4つの辺の長さがすべて等しいです。" },
+            quadRect: { name: "長方形", desc: "見分け方：4つの角がすべて直角(90°)です。向かい合う辺は平行で長さが等しいです。" },
+            quadRhombus: { name: "ひし形", desc: "見分け方：4つの辺の長さがすべて等しいです。向かい合う辺は平行です。" },
+            quadPara: { name: "平行四辺形", desc: "見分け方：向かい合う2組の辺が平行です。向かい合う辺と角が等しいです。" },
+            quadIsoTrap: { name: "等脚台形", desc: "見分け方：1組の向かい合う辺だけが平行で、平行でないもう1組の辺の長さが等しいです。" },
+            quadTrap: { name: "台形", desc: "見分け方：1組の向かい合う辺だけが平行です。" },
+            quadKite: { name: "凧形", desc: "見分け方：隣り合う2組の辺の長さがそれぞれ等しいです。" }
         }
     };
 
@@ -577,6 +578,7 @@
         
         let isRight = (roundA === 90 || roundB === 90 || roundC === 90);
         let isIso = eqAB_BC || eqBC_CA || eqCA_AB;
+        // 由於整數網格限制，如果是 60-60-60，也視為正三角形 (容許1度誤差)
         let isEq = (eqAB_BC && eqBC_CA && eqCA_AB) || (Math.abs(roundA-60)<=1 && Math.abs(roundB-60)<=1 && Math.abs(roundC-60)<=1);
 
         let shapeKey = "";
@@ -588,8 +590,8 @@
         const shapeBox = document.getElementById('shape-info-2');
         if (shapeKey && roundA !== 0 && roundB !== 0 && roundC !== 0 && roundA !== 180 && roundB !== 180 && roundC !== 180) {
             const sData = translations[currentLang][shapeKey];
-            let tipHtml = sData.tip ? `<small style="display:block; margin-top:8px; color:#95a5a6; font-size:0.85rem;">${sData.tip}</small>` : '';
-            shapeBox.innerHTML = `<h3>${translations[currentLang].detected} <span style="color:#e67e22;">${sData.name}</span></h3><p>${sData.desc}</p>${tipHtml}`;
+            shapeBox.innerHTML = `<h3>${translations[currentLang].detected} <span style="color:#e67e22;">${sData.name}</span></h3><p>${sData.desc}</p>
+            <small style="display:block; margin-top:8px; color:#95a5a6; font-size:0.85rem;">💡 數學小撇步：在完美的整數方格紙上，其實很難拉出完美的正三角形喔！你能發現為什麼嗎？</small>`;
             shapeBox.style.display = 'block';
         } else {
             shapeBox.style.display = 'none';
@@ -734,7 +736,5 @@
         changeLanguage();
     };
 </script>
-</body>
-</html>
 </body>
 </html>
