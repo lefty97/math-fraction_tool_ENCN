@@ -90,6 +90,37 @@
             touch-action: none;
         }
 
+        /* 特殊圖形提示框樣式 */
+        .shape-info-box {
+            background-color: #fdfefe;
+            border-left: 6px solid #f39c12;
+            padding: 15px 20px;
+            margin-top: 15px;
+            border-radius: 0 8px 8px 0;
+            text-align: left;
+            box-shadow: 0 2px 8px rgba(0,0,0,0.08);
+            display: none;
+            animation: fadeIn 0.3s ease-in-out;
+        }
+        .shape-info-box h3 {
+            margin: 0 0 8px 0;
+            color: #2c3e50;
+            font-size: 1.25rem;
+            display: flex;
+            align-items: center;
+            gap: 8px;
+        }
+        .shape-info-box p {
+            margin: 0;
+            color: #555;
+            font-size: 1.05rem;
+            line-height: 1.5;
+        }
+        @keyframes fadeIn {
+            from { opacity: 0; transform: translateY(-5px); }
+            to { opacity: 1; transform: translateY(0); }
+        }
+
         .btn {
             background-color: #3498db; color: white; border: none; padding: 8px 15px;
             font-size: 1.1rem; border-radius: 5px; cursor: pointer; transition: 0.2s; font-weight: bold;
@@ -145,9 +176,7 @@
     </div>
 
     <div class="visual-box">
-        <!-- 色塊圖例區 -->
         <div id="angle-legends" style="display: flex; justify-content: center; gap: 10px; flex-wrap: wrap; padding: 15px 10px 0 10px;"></div>
-        <!-- SVG 動態繪製區 -->
         <svg id="svg-tool1" viewBox="0 0 400 220" style="width: 100%; height: 220px;"></svg>
     </div>
     <div class="equation eq-orange" id="equation1"></div>
@@ -185,6 +214,8 @@
         </svg>
     </div>
     <div class="equation eq-green" id="equation2">∠A + ∠B + ∠C = 180°</div>
+    <!-- 智能圖形提示框 -->
+    <div id="shape-info-2" class="shape-info-box"></div>
 
     <!-- 分隔線 -->
     <hr class="section-divider">
@@ -225,6 +256,8 @@
         </svg>
     </div>
     <div class="equation eq-blue" id="equation3">∠A + ∠B + ∠C + ∠D = 360°</div>
+    <!-- 智能圖形提示框 -->
+    <div id="shape-info-3" class="shape-info-box"></div>
 
 </div>
 
@@ -236,7 +269,19 @@
             title3: "🔲 Quadrilateral Explorer", subtitle3: "Drag vertices A, B, C, and D. The sum of interior angles is always 360°!",
             addAngle: "+ Add Angle", rmAngle: "- Remove Angle", anglePrefix: "Angle",
             acute: "Acute", right: "Right", obtuse: "Obtuse", straight: "Straight", zero: "Zero",
-            invalid: "Line", cross: "Self-Intersecting", concave: "Reflex"
+            invalid: "Line", cross: "Self-Intersecting", concave: "Reflex",
+            detected: "✨ Detected Shape:",
+            triEquilateral: { name: "Equilateral Triangle", desc: "Identification: All three sides are equal, and all three interior angles are exactly 60°." },
+            triRightIso: { name: "Isosceles Right Triangle", desc: "Identification: Has one 90° right angle, and the two legs forming the right angle are equal in length." },
+            triRight: { name: "Right Triangle", desc: "Identification: Has exactly one 90° right angle." },
+            triIso: { name: "Isosceles Triangle", desc: "Identification: Has two sides of the same length, and the two base angles are equal." },
+            quadSquare: { name: "Square", desc: "Identification: All 4 sides are equal, and all 4 angles are 90° right angles." },
+            quadRect: { name: "Rectangle", desc: "Identification: All 4 angles are 90° right angles. Opposite sides are parallel and equal." },
+            quadRhombus: { name: "Rhombus", desc: "Identification: All 4 sides are equal. Opposite sides are parallel, and opposite angles are equal." },
+            quadPara: { name: "Parallelogram", desc: "Identification: Two pairs of opposite sides are parallel. Opposite sides and angles are equal." },
+            quadIsoTrap: { name: "Isosceles Trapezoid", desc: "Identification: Exactly one pair of parallel sides, and the non-parallel sides are equal in length." },
+            quadTrap: { name: "Trapezoid", desc: "Identification: Exactly one pair of opposite sides is parallel." },
+            quadKite: { name: "Kite", desc: "Identification: Two pairs of adjacent sides are equal in length." }
         },
         zh: {
             title1: "📐 直線平角探險家", subtitle1: "自由新增或減少直線上的角度。觀察看看，無論怎麼切，加起來永遠是 180°！",
@@ -244,7 +289,19 @@
             title3: "🔲 四邊形內角和探險", subtitle3: "拖曳頂點 A、B、C 和 D。試著發現四邊形內角和永遠是 360°！",
             addAngle: "+ 新增角度", rmAngle: "- 減少角度", anglePrefix: "角",
             acute: "銳角", right: "直角", obtuse: "鈍角", straight: "平角", zero: "零角",
-            invalid: "成一直線", cross: "邊線交叉", concave: "優角"
+            invalid: "成一直線", cross: "邊線交叉", concave: "優角",
+            detected: "✨ 發現特殊圖形：",
+            triEquilateral: { name: "正三角形", desc: "判斷方式：三條邊都等長，且三個內角都是 60°。" },
+            triRightIso: { name: "等腰直角三角形", desc: "判斷方式：有一個 90° 的直角，且形成直角的兩股等長。" },
+            triRight: { name: "直角三角形", desc: "判斷方式：其中一個內角剛好是 90°。" },
+            triIso: { name: "等腰三角形", desc: "判斷方式：有兩條邊等長，且兩個底角相等。" },
+            quadSquare: { name: "正方形", desc: "判斷方式：四個角都是直角 (90°)，且四條邊都等長。" },
+            quadRect: { name: "長方形 (矩形)", desc: "判斷方式：四個角都是直角 (90°)。對邊互相平行且等長。" },
+            quadRhombus: { name: "菱形", desc: "判斷方式：四條邊都等長。對角相等，對邊互相平行。" },
+            quadPara: { name: "平行四邊形", desc: "判斷方式：有兩組對邊互相平行。對邊等長，對角相等。" },
+            quadIsoTrap: { name: "等腰梯形", desc: "判斷方式：只有一組對邊平行，且另外不平行的兩邊等長。" },
+            quadTrap: { name: "梯形", desc: "判斷方式：只有一組對邊互相平行。" },
+            quadKite: { name: "鳶形 (箏形)", desc: "判斷方式：有兩組鄰邊分別等長。對角線會互相垂直。" }
         },
         ja: {
             title1: "📐 直線の角エクスプローラー", subtitle1: "直線上の角を増やしたり減らしたりして、合計が常に180°になることを確認しよう！",
@@ -252,20 +309,32 @@
             title3: "🔲 四角形内角の和エクスプローラー", subtitle3: "頂点A、B、C、Dをドラッグしてみよう。内角の和は常に360°です！",
             addAngle: "+ 角を追加", rmAngle: "- 角を減らす", anglePrefix: "角",
             acute: "鋭角", right: "直角", obtuse: "鈍角", straight: "平角", zero: "零角",
-            invalid: "直線", cross: "交差しています", concave: "優角"
+            invalid: "直線", cross: "交差しています", concave: "優角",
+            detected: "✨ 図形を検出しました：",
+            triEquilateral: { name: "正三角形", desc: "見分け方：3つの辺の長さがすべて等しく、3つの内角がすべて60°です。" },
+            triRightIso: { name: "直角二等辺三角形", desc: "見分け方：90°の直角が1つあり、直角を作る2つの辺の長さが等しいです。" },
+            triRight: { name: "直角三角形", desc: "見分け方：90°の直角が1つあります。" },
+            triIso: { name: "二等辺三角形", desc: "見分け方：2つの辺の長さが等しく、2つの底角が等しいです。" },
+            quadSquare: { name: "正方形", desc: "見分け方：4つの角がすべて直角(90°)で、4つの辺の長さがすべて等しいです。" },
+            quadRect: { name: "長方形", desc: "見分け方：4つの角がすべて直角(90°)です。向かい合う辺は平行で長さが等しいです。" },
+            quadRhombus: { name: "ひし形", desc: "見分け方：4つの辺の長さがすべて等しいです。向かい合う辺は平行です。" },
+            quadPara: { name: "平行四辺形", desc: "見分け方：向かい合う2組の辺が平行です。向かい合う辺と角が等しいです。" },
+            quadIsoTrap: { name: "等脚台形", desc: "見分け方：1組の向かい合う辺だけが平行で、平行でないもう1組の辺の長さが等しいです。" },
+            quadTrap: { name: "台形", desc: "見分け方：1組の向かい合う辺だけが平行です。" },
+            quadKite: { name: "凧形", desc: "見分け方：隣り合う2組の辺の長さがそれぞれ等しいです。" }
         }
     };
 
     let currentLang = 'en';
 
-    // === 工具 1 (直線平角) 的狀態 ===
-    let lineAngleCount = 2; // 預設 2 個角
+    // === 工具 1 (直線平角) 狀態 ===
+    let lineAngleCount = 2;
     let lineAngles = [60, 120];
     const lineColors = ['#d35400', '#2980b9', '#27ae60', '#8e44ad', '#c0392b'];
     const lineFills = ['rgba(230, 126, 34, 0.25)', 'rgba(41, 128, 185, 0.25)', 'rgba(39, 174, 96, 0.25)', 'rgba(142, 68, 173, 0.25)', 'rgba(192, 57, 43, 0.25)'];
     const angleNames = ['A', 'B', 'C', 'D', 'E'];
 
-    // === 工具 2 & 3 的狀態 ===
+    // === 工具 2 & 3 狀態 ===
     const snapGrid = 20;
     let activeSvg = null;
     let isDragging = false;
@@ -280,7 +349,7 @@
     let qC = { x: 100, y: 100 };
     let qD = { x: -100, y: 100 };
 
-    // === 核心語言切換 ===
+    // === 語言切換 ===
     function changeLanguage() {
         currentLang = document.getElementById('language').value;
         localStorage.setItem('mySiteLang', currentLang);
@@ -296,7 +365,7 @@
         document.getElementById('btn-add-angle').innerText = t.addAngle;
         document.getElementById('btn-rm-angle').innerText = t.rmAngle;
 
-        buildSliders(); // 重新建立滑桿以更新語言標籤
+        buildSliders(); 
         updateTool1();
         updateTool2();
         updateTool3();
@@ -311,19 +380,17 @@
         return t.concave;
     }
 
-    // === 工具 1：直線多角動態邏輯 ===
+    // === 工具 1 ===
     function changeAngleCount(delta) {
         let newCount = lineAngleCount + delta;
-        if (newCount < 2 || newCount > 5) return; // 限制在 2 到 5 個角
+        if (newCount < 2 || newCount > 5) return; 
         
         if (delta === 1) {
-            // 新增角：將最後一個角平分
             let lastIdx = lineAngles.length - 1;
             let half = Math.floor(lineAngles[lastIdx] / 2);
             lineAngles[lastIdx] -= half;
             lineAngles.push(half);
         } else {
-            // 減少角：將最後兩個角合併
             let last = lineAngles.pop();
             lineAngles[lineAngles.length - 1] += last;
         }
@@ -338,7 +405,6 @@
         container.innerHTML = '';
         const t = translations[currentLang];
         
-        // 產生 N-1 個滑桿，最後一個角是自動算出來的
         for (let i = 0; i < lineAngleCount - 1; i++) {
             let div = document.createElement('div');
             div.style.marginBottom = "10px";
@@ -353,7 +419,6 @@
             container.appendChild(div);
         }
         
-        // 更新按鈕狀態 (防呆)
         document.getElementById('btn-add-angle').disabled = lineAngleCount >= 5;
         document.getElementById('btn-rm-angle').disabled = lineAngleCount <= 2;
     }
@@ -362,21 +427,18 @@
         let slider = document.getElementById(`slider-${index}`);
         let newVal = parseInt(slider.value);
         
-        // 計算除了「目前拉動的角」與「最後一個角」之外，其他角的總和
         let fixedSum = 0;
         for(let i = 0; i < lineAngleCount - 1; i++) {
             if (i !== index) fixedSum += lineAngles[i];
         }
         
-        // 這個角可以拉到的最大值 = 180 - 其他固定的角
         let maxAllowed = 180 - fixedSum;
         if (newVal > maxAllowed) {
             newVal = maxAllowed;
-            slider.value = newVal; // 強制將滑桿拉回安全極限
+            slider.value = newVal; 
         }
         
         lineAngles[index] = newVal;
-        // 最後一個自動吸收剩下的度數
         lineAngles[lineAngleCount - 1] = 180 - fixedSum - newVal;
         
         document.getElementById(`val-${index}`).innerText = newVal;
@@ -388,8 +450,6 @@
         svg.innerHTML = '';
         
         const cx = 200, cy = 180, rayLen = 140, arcRadius = 50;
-        
-        // 畫底部的平角直線
         svg.innerHTML += `<line x1="20" y1="${cy}" x2="380" y2="${cy}" stroke="#34495e" stroke-width="4" />`;
         
         let currentAngle = 0;
@@ -399,55 +459,36 @@
         
         for (let i = 0; i < lineAngleCount; i++) {
             let a = lineAngles[i];
-            
             if (a > 0) {
                 let startRad = currentAngle * Math.PI / 180;
                 let endRad = (currentAngle + a) * Math.PI / 180;
+                let x1 = cx + arcRadius * Math.cos(-startRad), y1 = cy + arcRadius * Math.sin(-startRad);
+                let x2 = cx + arcRadius * Math.cos(-endRad), y2 = cy + arcRadius * Math.sin(-endRad);
                 
-                let x1 = cx + arcRadius * Math.cos(-startRad);
-                let y1 = cy + arcRadius * Math.sin(-startRad);
-                let x2 = cx + arcRadius * Math.cos(-endRad);
-                let y2 = cy + arcRadius * Math.sin(-endRad);
-                
-                // 畫扇形色塊
                 let path = '';
-                if (a === 180) {
-                    path = `M ${cx} ${cy} L ${cx+arcRadius} ${cy} A ${arcRadius} ${arcRadius} 0 0 0 ${cx-arcRadius} ${cy} Z`;
-                } else {
-                    path = `M ${cx} ${cy} L ${x1} ${y1} A ${arcRadius} ${arcRadius} 0 0 0 ${x2} ${y2} Z`;
-                }
+                if (a === 180) { path = `M ${cx} ${cy} L ${cx+arcRadius} ${cy} A ${arcRadius} ${arcRadius} 0 0 0 ${cx-arcRadius} ${cy} Z`; } 
+                else { path = `M ${cx} ${cy} L ${x1} ${y1} A ${arcRadius} ${arcRadius} 0 0 0 ${x2} ${y2} Z`; }
                 svg.innerHTML += `<path d="${path}" fill="${lineFills[i]}" stroke="${lineColors[i]}" stroke-width="1.5" />`;
                 
-                // 畫分割線 (射線)，最後一個角不需要畫結束的射線
                 if (i < lineAngleCount - 1) {
-                    let rx = cx + rayLen * Math.cos(-endRad);
-                    let ry = cy + rayLen * Math.sin(-endRad);
+                    let rx = cx + rayLen * Math.cos(-endRad), ry = cy + rayLen * Math.sin(-endRad);
                     svg.innerHTML += `<line x1="${cx}" y1="${cy}" x2="${rx}" y2="${ry}" stroke="${lineColors[i]}" stroke-width="3" stroke-linecap="round" />`;
                 }
                 
-                // 畫文字 A, B, C 在弧形外側
                 let midRad = (currentAngle + a / 2) * Math.PI / 180;
-                let tx = cx + (arcRadius + 22) * Math.cos(-midRad);
-                let ty = cy + (arcRadius + 22) * Math.sin(-midRad);
+                let tx = cx + (arcRadius + 22) * Math.cos(-midRad), ty = cy + (arcRadius + 22) * Math.sin(-midRad);
                 svg.innerHTML += `<text x="${tx}" y="${ty}" font-weight="bold" font-size="16" fill="${lineColors[i]}" text-anchor="middle" dominant-baseline="middle">${angleNames[i]}</text>`;
             }
-            
             currentAngle += a;
             equationText.push(`<span style="color:${lineColors[i]}">${a}°</span>`);
-            
-            let typeStr = getAngleType(a);
-            legends.push(`<span style="display:inline-block; padding:4px 10px; border:2px solid ${lineColors[i]}; border-radius:5px; color:${lineColors[i]}; font-weight:bold; background:rgba(255,255,255,0.9);">${t.anglePrefix} ${angleNames[i]} = ${a}° (${typeStr})</span>`);
+            legends.push(`<span style="display:inline-block; padding:4px 10px; border:2px solid ${lineColors[i]}; border-radius:5px; color:${lineColors[i]}; font-weight:bold; background:rgba(255,255,255,0.9);">${t.anglePrefix} ${angleNames[i]} = ${a}° (${getAngleType(a)})</span>`);
         }
-        
-        // 畫圓心紅點
         svg.innerHTML += `<circle cx="${cx}" cy="${cy}" r="6" fill="#2c3e50" />`;
-        
-        // 更新圖例與算式
         document.getElementById('equation1').innerHTML = equationText.join(' <span style="color:#333">+</span> ') + ' <span style="color:#333">= 180°</span>';
         document.getElementById('angle-legends').innerHTML = legends.join('');
     }
 
-    // === 工具 2 & 3 幾何共用功能 ===
+    // === 幾何數學共用函數 ===
     function getRightAnglePath(pPrev, pCurr, pNext) {
         const L = 15;
         const v1x = pPrev.x - pCurr.x, v1y = pPrev.y - pCurr.y;
@@ -465,71 +506,8 @@
     function drawGrid(id) {
         const grid = document.getElementById(id);
         grid.innerHTML = '';
-        for (let i = -250; i <= 250; i += snapGrid) {
-            grid.innerHTML += `<line x1="${i}" y1="-200" x2="${i}" y2="200" stroke="#ecf0f1" stroke-width="1" />`;
-        }
-        for (let i = -200; i <= 200; i += snapGrid) {
-            grid.innerHTML += `<line x1="-250" y1="${i}" x2="250" y2="${i}" stroke="#ecf0f1" stroke-width="1" />`;
-        }
-    }
-
-    // === 工具 2 (三角形) ===
-    function getTriAngle(p1, center, p2) {
-        let a = Math.atan2(p1.y - center.y, p1.x - center.x);
-        let b = Math.atan2(p2.y - center.y, p2.x - center.x);
-        let deg = Math.abs(a - b) * (180 / Math.PI);
-        if (deg > 180) deg = 360 - deg;
-        return deg;
-    }
-
-    function updateTool2() {
-        document.getElementById('triangle-path').setAttribute('d', `M ${tA.x} ${tA.y} L ${tB.x} ${tB.y} L ${tC.x} ${tC.y} Z`);
-
-        document.getElementById('point-tb').setAttribute('cx', tB.x); document.getElementById('point-tb').setAttribute('cy', tB.y);
-        document.getElementById('point-tc').setAttribute('cx', tC.x); document.getElementById('point-tc').setAttribute('cy', tC.y);
-        document.getElementById('name-tb').setAttribute('x', tB.x); document.getElementById('name-tb').setAttribute('y', tB.y + 1);
-        document.getElementById('name-tc').setAttribute('x', tC.x); document.getElementById('name-tc').setAttribute('y', tC.y + 1);
-
-        let roundA = Math.round(getTriAngle(tB, tA, tC));
-        let roundB = Math.round(getTriAngle(tA, tB, tC));
-        let roundC = 180 - roundA - roundB;
-        if (isNaN(roundA) || isNaN(roundB)) { roundA = 0; roundB = 0; roundC = 0; }
-
-        function setLabel(id, pt, deg) {
-            const label = document.getElementById(id);
-            label.setAttribute('x', pt.x + (pt.x <= 0 ? -40 : 20));
-            label.setAttribute('y', pt.y + (pt.y <= 0 ? -15 : 25));
-            if (deg > 0 && deg < 180) { label.textContent = `${deg}° (${getAngleType(deg, true)})`; } 
-            else { label.textContent = ""; }
-        }
-
-        setLabel('label-ta', tA, roundA); setLabel('label-tb', tB, roundB); setLabel('label-tc', tC, roundC);
-
-        document.getElementById('t-right-a').setAttribute('d', roundA === 90 ? getRightAnglePath(tB, tA, tC) : '');
-        document.getElementById('t-right-b').setAttribute('d', roundB === 90 ? getRightAnglePath(tA, tB, tC) : '');
-        document.getElementById('t-right-c').setAttribute('d', roundC === 90 ? getRightAnglePath(tA, tC, tB) : '');
-
-        const eq = document.getElementById('equation2');
-        if (roundA === 0 || roundB === 0 || roundC === 0) {
-            eq.innerText = `⚠️ ${translations[currentLang].invalid}`;
-            eq.style.color = "#e74c3c";
-        } else {
-            eq.innerText = `∠A + ∠B + ∠C = ${roundA}° + ${roundB}° + ${roundC}° = 180°`;
-            eq.style.color = "#27ae60";
-        }
-    }
-
-    // === 工具 3 (四邊形) ===
-    function ccw(p1, p2, p3) { return (p3.y - p1.y) * (p2.x - p1.x) > (p2.y - p1.y) * (p3.x - p1.x); }
-    function intersect(p1, p2, p3, p4) { return (ccw(p1, p3, p4) !== ccw(p2, p3, p4)) && (ccw(p1, p2, p3) !== ccw(p1, p2, p4)); }
-    
-    function getInteriorAngle(pPrev, pCurr, pNext, isCW) {
-        let aPrev = Math.atan2(pPrev.y - pCurr.y, pPrev.x - pCurr.x);
-        let aNext = Math.atan2(pNext.y - pCurr.y, pNext.x - pCurr.x);
-        let diff = isCW ? (aPrev - aNext) : (aNext - aPrev);
-        while (diff <= 0) diff += 2 * Math.PI;
-        while (diff > 2 * Math.PI) diff -= 2 * Math.PI;
-        return diff * 180 / Math.PI;
+        for (let i = -250; i <= 250; i += snapGrid) { grid.innerHTML += `<line x1="${i}" y1="-200" x2="${i}" y2="200" stroke="#ecf0f1" stroke-width="1" />`; }
+        for (let i = -200; i <= 200; i += snapGrid) { grid.innerHTML += `<line x1="-250" y1="${i}" x2="250" y2="${i}" stroke="#ecf0f1" stroke-width="1" />`; }
     }
 
     function isPar(p1, p2, p3, p4) {
@@ -555,16 +533,91 @@
         document.getElementById('quad-markers').innerHTML += `<path d="${d}" fill="none" stroke="${stroke}" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round" transform="translate(${ox}, ${oy}) rotate(${angle})" />`;
     }
 
+    // === 工具 2 ===
+    function getTriAngle(p1, center, p2) {
+        let a = Math.atan2(p1.y - center.y, p1.x - center.x);
+        let b = Math.atan2(p2.y - center.y, p2.x - center.x);
+        let deg = Math.abs(a - b) * (180 / Math.PI);
+        if (deg > 180) deg = 360 - deg;
+        return deg;
+    }
+
+    function updateTool2() {
+        document.getElementById('triangle-path').setAttribute('d', `M ${tA.x} ${tA.y} L ${tB.x} ${tB.y} L ${tC.x} ${tC.y} Z`);
+        document.getElementById('point-tb').setAttribute('cx', tB.x); document.getElementById('point-tb').setAttribute('cy', tB.y);
+        document.getElementById('point-tc').setAttribute('cx', tC.x); document.getElementById('point-tc').setAttribute('cy', tC.y);
+        document.getElementById('name-tb').setAttribute('x', tB.x); document.getElementById('name-tb').setAttribute('y', tB.y + 1);
+        document.getElementById('name-tc').setAttribute('x', tC.x); document.getElementById('name-tc').setAttribute('y', tC.y + 1);
+
+        let roundA = Math.round(getTriAngle(tB, tA, tC));
+        let roundB = Math.round(getTriAngle(tA, tB, tC));
+        let roundC = 180 - roundA - roundB;
+        if (isNaN(roundA) || isNaN(roundB)) { roundA = 0; roundB = 0; roundC = 0; }
+
+        function setLabel(id, pt, deg) {
+            const label = document.getElementById(id);
+            label.setAttribute('x', pt.x + (pt.x <= 0 ? -40 : 20)); label.setAttribute('y', pt.y + (pt.y <= 0 ? -15 : 25));
+            if (deg > 0 && deg < 180) { label.textContent = `${deg}° (${getAngleType(deg, true)})`; } else { label.textContent = ""; }
+        }
+        setLabel('label-ta', tA, roundA); setLabel('label-tb', tB, roundB); setLabel('label-tc', tC, roundC);
+
+        document.getElementById('t-right-a').setAttribute('d', roundA === 90 ? getRightAnglePath(tB, tA, tC) : '');
+        document.getElementById('t-right-b').setAttribute('d', roundB === 90 ? getRightAnglePath(tA, tB, tC) : '');
+        document.getElementById('t-right-c').setAttribute('d', roundC === 90 ? getRightAnglePath(tA, tC, tB) : '');
+
+        const eq = document.getElementById('equation2');
+        if (roundA === 0 || roundB === 0 || roundC === 0) {
+            eq.innerText = `⚠️ ${translations[currentLang].invalid}`; eq.style.color = "#e74c3c";
+        } else {
+            eq.innerText = `∠A + ∠B + ∠C = ${roundA}° + ${roundB}° + ${roundC}° = 180°`; eq.style.color = "#27ae60";
+        }
+
+        // --- 智能三角形辨識 ---
+        const lenAB = getLen(tA, tB), lenBC = getLen(tB, tC), lenCA = getLen(tC, tA);
+        const eqAB_BC = isEqual(lenAB, lenBC), eqBC_CA = isEqual(lenBC, lenCA), eqCA_AB = isEqual(lenCA, lenAB);
+        
+        let isRight = (roundA === 90 || roundB === 90 || roundC === 90);
+        let isIso = eqAB_BC || eqBC_CA || eqCA_AB;
+        // 由於整數網格限制，如果是 60-60-60，也視為正三角形 (容許1度誤差)
+        let isEq = (eqAB_BC && eqBC_CA && eqCA_AB) || (Math.abs(roundA-60)<=1 && Math.abs(roundB-60)<=1 && Math.abs(roundC-60)<=1);
+
+        let shapeKey = "";
+        if (isEq) shapeKey = "triEquilateral";
+        else if (isRight && isIso) shapeKey = "triRightIso";
+        else if (isRight) shapeKey = "triRight";
+        else if (isIso) shapeKey = "triIso";
+
+        const shapeBox = document.getElementById('shape-info-2');
+        if (shapeKey && roundA !== 0 && roundB !== 0 && roundC !== 0 && roundA !== 180 && roundB !== 180 && roundC !== 180) {
+            const sData = translations[currentLang][shapeKey];
+            shapeBox.innerHTML = `<h3>${translations[currentLang].detected} <span style="color:#e67e22;">${sData.name}</span></h3><p>${sData.desc}</p>
+            <small style="display:block; margin-top:8px; color:#95a5a6; font-size:0.85rem;">💡 數學小撇步：在完美的整數方格紙上，其實很難拉出完美的正三角形喔！你能發現為什麼嗎？</small>`;
+            shapeBox.style.display = 'block';
+        } else {
+            shapeBox.style.display = 'none';
+        }
+    }
+
+    // === 工具 3 ===
+    function ccw(p1, p2, p3) { return (p3.y - p1.y) * (p2.x - p1.x) > (p2.y - p1.y) * (p3.x - p1.x); }
+    function intersect(p1, p2, p3, p4) { return (ccw(p1, p3, p4) !== ccw(p2, p3, p4)) && (ccw(p1, p2, p3) !== ccw(p1, p2, p4)); }
+    
+    function getInteriorAngle(pPrev, pCurr, pNext, isCW) {
+        let aPrev = Math.atan2(pPrev.y - pCurr.y, pPrev.x - pCurr.x);
+        let aNext = Math.atan2(pNext.y - pCurr.y, pNext.x - pCurr.x);
+        let diff = isCW ? (aPrev - aNext) : (aNext - aPrev);
+        while (diff <= 0) diff += 2 * Math.PI;
+        while (diff > 2 * Math.PI) diff -= 2 * Math.PI;
+        return diff * 180 / Math.PI;
+    }
+
     function updateTool3() {
         document.getElementById('quad-path').setAttribute('d', `M ${qA.x} ${qA.y} L ${qB.x} ${qB.y} L ${qC.x} ${qC.y} L ${qD.x} ${qD.y} Z`);
 
-        const pts = [qA, qB, qC, qD];
-        const names = ['a', 'b', 'c', 'd'];
+        const pts = [qA, qB, qC, qD]; const names = ['a', 'b', 'c', 'd'];
         pts.forEach((pt, i) => {
-            document.getElementById(`point-q${names[i]}`).setAttribute('cx', pt.x);
-            document.getElementById(`point-q${names[i]}`).setAttribute('cy', pt.y);
-            document.getElementById(`name-q${names[i]}`).setAttribute('x', pt.x);
-            document.getElementById(`name-q${names[i]}`).setAttribute('y', pt.y + 1);
+            document.getElementById(`point-q${names[i]}`).setAttribute('cx', pt.x); document.getElementById(`point-q${names[i]}`).setAttribute('cy', pt.y);
+            document.getElementById(`name-q${names[i]}`).setAttribute('x', pt.x); document.getElementById(`name-q${names[i]}`).setAttribute('y', pt.y + 1);
         });
 
         const isCrossing = intersect(qA, qB, qC, qD) || intersect(qB, qC, qD, qA);
@@ -574,41 +627,32 @@
         if (isCrossing) {
             ['qa', 'qb', 'qc', 'qd'].forEach(id => document.getElementById(`label-${id}`).textContent = "");
             ['a', 'b', 'c', 'd'].forEach(id => document.getElementById(`q-right-${id}`).setAttribute('d', ''));
-            eq.innerText = `⚠️ ${translations[currentLang].cross}`;
-            eq.style.color = "#e74c3c";
+            document.getElementById('shape-info-3').style.display = 'none';
+            eq.innerText = `⚠️ ${translations[currentLang].cross}`; eq.style.color = "#e74c3c";
             return;
         }
 
         const area = (qA.x*qB.y - qB.x*qA.y) + (qB.x*qC.y - qC.x*qB.y) + (qC.x*qD.y - qD.x*qC.y) + (qD.x*qA.y - qA.x*qD.y);
         const isCW = area > 0;
 
-        let rA = Math.round(getInteriorAngle(qD, qA, qB, isCW));
-        let rB = Math.round(getInteriorAngle(qA, qB, qC, isCW));
-        let rC = Math.round(getInteriorAngle(qB, qC, qD, isCW));
-        let rD = 360 - rA - rB - rC; 
+        let rA = Math.round(getInteriorAngle(qD, qA, qB, isCW)); let rB = Math.round(getInteriorAngle(qA, qB, qC, isCW));
+        let rC = Math.round(getInteriorAngle(qB, qC, qD, isCW)); let rD = 360 - rA - rB - rC; 
 
         function setQuadLabel(id, pt, deg) {
             const label = document.getElementById(id);
-            label.setAttribute('x', pt.x + (pt.x <= 0 ? -40 : 20));
-            label.setAttribute('y', pt.y + (pt.y <= 0 ? -15 : 25));
-            if(deg > 0 && deg < 360) { label.textContent = `${deg}° (${getAngleType(deg, true)})`; }
-            else { label.textContent = ""; }
+            label.setAttribute('x', pt.x + (pt.x <= 0 ? -40 : 20)); label.setAttribute('y', pt.y + (pt.y <= 0 ? -15 : 25));
+            if(deg > 0 && deg < 360) { label.textContent = `${deg}° (${getAngleType(deg, true)})`; } else { label.textContent = ""; }
         }
-
-        setQuadLabel('label-qa', qA, rA); setQuadLabel('label-qb', qB, rB);
-        setQuadLabel('label-qc', qC, rC); setQuadLabel('label-qd', qD, rD);
+        setQuadLabel('label-qa', qA, rA); setQuadLabel('label-qb', qB, rB); setQuadLabel('label-qc', qC, rC); setQuadLabel('label-qd', qD, rD);
 
         document.getElementById('q-right-a').setAttribute('d', rA === 90 ? getRightAnglePath(qD, qA, qB) : '');
         document.getElementById('q-right-b').setAttribute('d', rB === 90 ? getRightAnglePath(qA, qB, qC) : '');
         document.getElementById('q-right-c').setAttribute('d', rC === 90 ? getRightAnglePath(qB, qC, qD) : '');
         document.getElementById('q-right-d').setAttribute('d', rD === 90 ? getRightAnglePath(qC, qD, qA) : '');
 
-        const pAB = isPar(qA, qB, qD, qC);
-        const pBC = isPar(qB, qC, qA, qD);
+        const pAB = isPar(qA, qB, qD, qC), pBC = isPar(qB, qC, qA, qD);
         const lenAB = getLen(qA, qB), lenBC = getLen(qB, qC), lenCD = getLen(qC, qD), lenDA = getLen(qD, qA);
         const allEqual = isEqual(lenAB, lenBC) && isEqual(lenBC, lenCD) && isEqual(lenCD, lenDA);
-        const oppEqual1 = isEqual(lenAB, lenCD);
-        const oppEqual2 = isEqual(lenBC, lenDA);
 
         if (pAB) { drawMarker(qA, qB, 'para1'); drawMarker(qD, qC, 'para1'); } 
         if (pBC) { drawMarker(qB, qC, 'para2'); drawMarker(qA, qD, 'para2'); }
@@ -618,33 +662,52 @@
             drawMarker(qC, qD, 'tick1', pAB ? -20 : 0); drawMarker(qD, qA, 'tick1', pBC ? -20 : 0);
         } else {
             let tickType = 'tick1';
-            if (oppEqual1) { drawMarker(qA, qB, tickType, pAB ? -20 : 0); drawMarker(qC, qD, tickType, pAB ? -20 : 0); tickType = 'tick2'; }
-            if (oppEqual2) { drawMarker(qB, qC, tickType, pBC ? -20 : 0); drawMarker(qD, qA, tickType, pBC ? -20 : 0); }
+            if (isEqual(lenAB, lenCD)) { drawMarker(qA, qB, tickType, pAB ? -20 : 0); drawMarker(qC, qD, tickType, pAB ? -20 : 0); tickType = 'tick2'; }
+            if (isEqual(lenBC, lenDA)) { drawMarker(qB, qC, tickType, pBC ? -20 : 0); drawMarker(qD, qA, tickType, pBC ? -20 : 0); }
         }
 
         if (rA===0 || rB===0 || rC===0 || rD===0 || rA===180 || rB===180 || rC===180 || rD===180) {
-            eq.innerText = `⚠️ ${translations[currentLang].invalid}`;
-            eq.style.color = "#e74c3c";
+            eq.innerText = `⚠️ ${translations[currentLang].invalid}`; eq.style.color = "#e74c3c";
         } else {
-            eq.innerText = `∠A + ∠B + ∠C + ∠D = ${rA}° + ${rB}° + ${rC}° + ${rD}° = 360°`;
-            eq.style.color = "#2980b9";
+            eq.innerText = `∠A + ∠B + ∠C + ∠D = ${rA}° + ${rB}° + ${rC}° + ${rD}° = 360°`; eq.style.color = "#2980b9";
+        }
+
+        // --- 智能四邊形辨識 ---
+        let isRect = (rA === 90 && rB === 90 && rC === 90 && rD === 90);
+        let isKite = (isEqual(lenAB, lenBC) && isEqual(lenCD, lenDA)) || (isEqual(lenAB, lenDA) && isEqual(lenBC, lenCD));
+        let shapeKey = "";
+        
+        if (isRect && allEqual) shapeKey = "quadSquare";
+        else if (isRect) shapeKey = "quadRect";
+        else if (allEqual) shapeKey = "quadRhombus";
+        else if (pAB && pBC) shapeKey = "quadPara";
+        else if (pAB || pBC) {
+            let isIsoTrap = (pAB && !pBC && isEqual(lenBC, lenDA)) || (!pAB && pBC && isEqual(lenAB, lenCD));
+            shapeKey = isIsoTrap ? "quadIsoTrap" : "quadTrap";
+        } else if (isKite) {
+            shapeKey = "quadKite";
+        }
+
+        const shapeBox = document.getElementById('shape-info-3');
+        if (shapeKey && rA!==0 && rB!==0 && rC!==0 && rD!==0 && rA!==180 && rB!==180 && rC!==180 && rD!==180) {
+            const sData = translations[currentLang][shapeKey];
+            shapeBox.innerHTML = `<h3>${translations[currentLang].detected} <span style="color:#2980b9;">${sData.name}</span></h3><p>${sData.desc}</p>`;
+            shapeBox.style.display = 'block';
+        } else {
+            shapeBox.style.display = 'none';
         }
     }
 
     // === 拖曳邏輯 ===
     function startDrag(evt, svgId, ptName) {
-        evt.preventDefault(); 
-        activeSvg = document.getElementById(svgId);
-        isDragging = true;
-        draggedPoint = ptName;
+        evt.preventDefault(); activeSvg = document.getElementById(svgId); isDragging = true; draggedPoint = ptName;
     }
 
     function drag(evt) {
         if (!isDragging || !activeSvg) return;
         evt.preventDefault();
         let pt = activeSvg.createSVGPoint();
-        if (evt.touches) { pt.x = evt.touches[0].clientX; pt.y = evt.touches[0].clientY; } 
-        else { pt.x = evt.clientX; pt.y = evt.clientY; }
+        if (evt.touches) { pt.x = evt.touches[0].clientX; pt.y = evt.touches[0].clientY; } else { pt.x = evt.clientX; pt.y = evt.clientY; }
         
         let cursorPt = pt.matrixTransform(activeSvg.getScreenCTM().inverse());
         cursorPt.x = Math.round(cursorPt.x / snapGrid) * snapGrid;
@@ -668,9 +731,8 @@
         const savedLang = localStorage.getItem('mySiteLang');
         if (savedLang) { document.getElementById('language').value = savedLang; }
         
-        drawGrid('grid2');
-        drawGrid('grid3');
-        buildSliders(); // 生成直線角度的滑桿
+        drawGrid('grid2'); drawGrid('grid3');
+        buildSliders(); 
         changeLanguage();
     };
 </script>
