@@ -79,6 +79,7 @@
         .fraction-display { display: inline-flex; flex-direction: column; align-items: center; vertical-align: middle; }
         .fraction-display span.num { border-bottom: 2px solid #333; padding: 0 5px; }
         .fraction-display span.den { padding: 0 5px; }
+        .mixed-display { display: inline-flex; align-items: center; gap: 5px; }
         .quiz-input { width: 50px; text-align: center; font-size: 1.2rem; margin: 0 2px; border: 2px solid #bdc3c7; border-radius: 4px; }
         .quiz-input.correct { background-color: #d5f5e3; border-color: #27ae60; color: #27ae60; font-weight: bold;}
         .quiz-input.wrong { background-color: #fadedb; border-color: #e74c3c; color: #e74c3c; font-weight: bold;}
@@ -268,43 +269,65 @@
         en: {
             titleConv: "🍕 Fraction Converter 🍫", subConv: "Switch between improper fractions and mixed numbers!",
             modeI2M: "Improper to Mixed", modeM2I: "Mixed to Improper",
-            num: "Num:", den: "Den:", mWhole: "Whole:", shape: "Shape:", pizza: "Pizza", choco: "Choco Bar", properMsg: " is a proper fraction", andMsg: " and ",
+            num: "Num:", den: "Den:", mWhole: "Whole:", shape: "Shape:", pizza: "Pizza", choco: "Choco Bar", bottle: "Bottle", properMsg: " is a proper fraction", andMsg: " and ",
+            
             titleEquiv: "⚖️ Equivalent Fractions Explorer", subEquiv: "Multiply or divide to find equivalent fractions!",
             opMult: "× (Multiply)", opDiv: "÷ (Divide)", errDiv: "Cannot divide evenly!",
+            
             titleArith: "🧮 Fraction Arithmetic Explorer", subArith: "See how fractions are added or subtracted!",
+            
             title2: "📝 Fraction Practice Generator", qtype: "Type:", qyear: "Level:", qcount: "Count:", btnGen: "Generate", btnCheck: "Check Answers", btnSol: "Solution", btnHideSol: "Hide",
             optAll: "All Types", optI2M: "Improper ⇄ Mixed", optEq: "Equivalent Fractions", optAL: "Add/Sub (Like)", optAU: "Add/Sub (Unlike)",
+            
             submitTeacher: "Submit results to teacher", requireName: "⚠️ Please enter your name!", sending: "Sending...", sentSuccess: "✅ Results sent successfully!", sentError: "❌ Error sending results.",
-            scoreMsg: "You scored {score} out of {total}!"
+            scoreMsg: "You scored {score} out of {total}!",
+            
+            solImp2Mix: "Step: {n} ÷ {d} = {w} R{r}. Whole: {w}, Num: {r}.", solMix2Imp: "Step: ({w} × {d}) + {r} = {n}.", solEquivExp: "Multiply top and bottom by {m}.", solEquivRed: "Divide top and bottom by {m}."
         },
         zh: {
             titleConv: "🍕 分數轉換器 🍫", subConv: "在假分數與帶分數之間自由切換與轉換！",
             modeI2M: "假分數 ➔ 帶分數", modeM2I: "帶分數 ➔ 假分數",
-            num: "分子：", den: "分母：", mWhole: "整數：", shape: "圖形：", pizza: "披薩", choco: "巧克力棒", properMsg: " 是真分數", andMsg: " 又 ",
+            num: "分子：", den: "分母：", mWhole: "整數：", shape: "圖形：", pizza: "披薩", choco: "巧克力棒", bottle: "水瓶", properMsg: " 是真分數", andMsg: " 又 ",
+            
             titleEquiv: "⚖️ 等值分數探險家", subEquiv: "將分子和分母同乘或同除以一個數，找出等值分數！",
             opMult: "× (擴分)", opDiv: "÷ (約分)", errDiv: "⚠️ 無法整除！",
+            
             titleArith: "🧮 分數加減法運算", subArith: "支援同分母與異分母的加減法視覺化",
-            title2: "📝 分數互動測驗", qtype: "題型：", qyear: "難度：", qcount: "題數：", btnGen: "產生題目", btnCheck: "對答案", btnSol: "觀看解答", btnHideSol: "隱藏解答",
+            
+            title2: "📝 分數互動測驗", qtype: "題型：", qyear: "難度：", qcount: "題數：", btnGen: "產生題目", btnCheck: "對答案", btnSol: "解答", btnHideSol: "隱藏",
             optAll: "綜合題型", optI2M: "假分數 ⇄ 帶分數", optEq: "等值分數", optAL: "同分母加減", optAU: "異分母加減",
+            
             submitTeacher: "將成績提交給老師", requireName: "⚠️ 請輸入姓名！", sending: "傳送中...", sentSuccess: "✅ 成績已送出！", sentError: "❌ 傳送失敗",
-            scoreMsg: "你答對了 {score} / {total} 題！"
+            scoreMsg: "你答對了 {score} / {total} 題！",
+            
+            solImp2Mix: "步驟：{n} ÷ {d} = {w} 餘 {r}。 整數 {w}，分子 {r}。", solMix2Imp: "步驟：({w} × {d}) + {r} = {n}。", solEquivExp: "分子分母同乘 {m}。", solEquivRed: "分子分母同除以 {m}。"
         },
         ja: {
             titleConv: "🍕 分数変換器 🍫", subConv: "仮分数と帯分数を自由に切り替えて変換しよう！",
             modeI2M: "仮分数 ➔ 帯分数", modeM2I: "帯分数 ➔ 仮分数",
-            num: "分子：", den: "分母：", mWhole: "整数：", shape: "形：", pizza: "ピザ", choco: "チョコバー", properMsg: " は真分数", andMsg: " と ",
+            num: "分子：", den: "分母：", mWhole: "整数：", shape: "形：", pizza: "ピザ", choco: "チョコバー", bottle: "ボトル", properMsg: " は真分数", andMsg: " と ",
+            
             titleEquiv: "⚖️ 等しい分数エクスプローラー", subEquiv: "分母と分子に同じ数を掛けたり割ったりして、等しい分数を見つけよう！",
             opMult: "× (倍分)", opDiv: "÷ (約分)", errDiv: "⚠️ 割り切れません！",
+            
             titleArith: "🧮 分数の加減算", subArith: "同分母・異分母の計算を視覚化します",
+            
             title2: "📝 分数練習問題", qtype: "種類：", qyear: "学年：", qcount: "問題数：", btnGen: "問題作成", btnCheck: "答え合わせ", btnSol: "解答", btnHideSol: "隠す",
             optAll: "すべての種類", optI2M: "仮分数 ⇄ 帯分数", optEq: "等しい分数", optAL: "同分母加減算", optAU: "異分母加減算",
+            
             submitTeacher: "先生に送信する", requireName: "⚠️ 名前を入力！", sending: "送信中...", sentSuccess: "✅ 送信完了！", sentError: "❌ 送信失敗",
-            scoreMsg: "{score} / {total} 問正解！"
+            scoreMsg: "{score} / {total} 問正解！",
+            
+            solImp2Mix: "手順：{n} ÷ {d} = {w} 余り {r}。", solMix2Imp: "手順：({w} × {d}) + {r} = {n}。", solEquivExp: "分母分子に {m} を掛ける。", solEquivRed: "分母分子を {m} で割る。"
         }
     };
 
     let currentLang = 'en';
     let currentQuizData = [];
+
+    // ================= 核心工具：隨機與公因數 =================
+    function randInt(min, max) { return Math.floor(Math.random() * (max - min + 1)) + min; }
+    function gcd(a, b) { return b === 0 ? a : gcd(b, a % b); }
 
     function changeLanguage() {
         currentLang = document.getElementById('language').value;
@@ -443,9 +466,9 @@
         const op = document.getElementById('ar-op').value, shape = document.getElementById('ar-shape').value;
         if ([n1,d1,n2,d2].some(isNaN) || d1<=0 || d2<=0) return;
 
-        const lcd = (d1 === d2) ? d1 : d1 * d2;
-        const nn1 = (d1 === d2) ? n1 : n1 * d2;
-        const nn2 = (d1 === d2) ? n2 : n2 * d1;
+        const lcd = (d1 === d2) ? d1 : (d1 * d2) / gcd(d1, d2);
+        const nn1 = n1 * (lcd / d1);
+        const nn2 = n2 * (lcd / d2);
         const resN = op === 'add' ? nn1 + nn2 : nn1 - nn2;
         
         document.getElementById('ar-op-sign').innerText = op === 'add' ? '+' : '−';
@@ -463,8 +486,6 @@
     ['ar-op', 'ar-shape'].forEach(id => document.getElementById(id).onchange = updateArith);
 
     // ================= 4. 測驗邏輯 =================
-    function gcd(a,b) { return b === 0 ? a : gcd(b, a%b); }
-
     function generateQuiz() {
         const type = document.getElementById('quiz-type').value, year = parseInt(document.getElementById('quiz-year').value), count = parseInt(document.getElementById('quiz-count').value), container = document.getElementById('quiz-container');
         container.innerHTML = ''; document.getElementById('score-display').innerHTML = ''; document.getElementById('submit-status').innerHTML = '';
@@ -474,7 +495,9 @@
         let maxDen = year === 4 ? 10 : (year === 5 ? 20 : 50);
 
         for (let i = 0; i < count; i++) {
-            let qT = type === 'mix' ? ['imp2mix', 'mix2imp', 'equiv', 'arithLike', 'arithUnlike'][Math.floor(Math.random()*5)] : type;
+            let qT = type === 'mix' ? ['imp2mix', 'mix2imp', 'equiv', 'arithLike', 'arithUnlike'][randInt(0,4)] : type;
+            if (qT === 'imp2mix' && type === 'imp2mix') qT = Math.random() > 0.5 ? 'imp2mix' : 'mix2imp';
+
             let qH = "", ans = {}, sol = {};
             
             if (qT === 'imp2mix') {
@@ -486,7 +509,7 @@
                 ans = {n}; sol = {type: 'mix2imp', n, d, w, r};
                 qH = `<div class="mixed-display"><span>${w}</span><div class="fraction-display"><span class="num">${r}</span><span class="den">${d}</span></div></div> = <div class="fraction-display"><span class="num"><input type="number" class="quiz-input" id="q${i}-n" onclick="resetInput(${i})"></span><span class="den">${d}</span></div>`;
             } else if (qT === 'equiv') {
-                let b = randInt(2, Math.floor(maxDen/2)), a = randInt(1, b-1)||1, m = randInt(2, 5), c = a*m, d = b*m;
+                let b = randInt(2, Math.max(2, Math.floor(maxDen/2))), a = randInt(1, b-1)||1, m = randInt(2, 5), c = a*m, d = b*m;
                 if (Math.random() > 0.5) {
                     sol = {type: 'equivExp', a, b, c, d, m};
                     if (Math.random() > 0.5) { ans = {missing: c}; qH = `<div class="fraction-display"><span class="num">${a}</span><span class="den">${b}</span></div> = <div class="fraction-display"><span class="num"><input type="number" class="quiz-input" id="q${i}-missing" onclick="resetInput(${i})"></span><span class="den">${d}</span></div>`; } 
@@ -499,11 +522,14 @@
             } else {
                 let d1 = randInt(2, 8), d2 = qT === 'arithLike' ? d1 : randInt(2, 8);
                 let n1 = randInt(1, 5), n2 = randInt(1, 5);
-                let lcd = d1*d2 / gcd(d1,d2);
                 let op = Math.random() > 0.5 ? 'add' : 'sub';
+                
                 if (op === 'sub' && (n1/d1 < n2/d2)) { let tempN=n1, tempD=d1; n1=n2; d1=d2; n2=tempN; d2=tempD; }
+                
+                let lcd = (d1 * d2) / gcd(d1, d2);
                 let n1Exp = n1*(lcd/d1), n2Exp = n2*(lcd/d2);
                 let resN = op === 'add' ? n1Exp + n2Exp : n1Exp - n2Exp;
+
                 ans = {resN, lcd}; sol = {type: 'arith', lcd, origN1: n1, origD1: d1, origN2: n2, origD2: d2, n1Exp, n2Exp, op: op==='add'?'+':'−', resN};
                 qH = `<div class="fraction-display"><span class="num">${n1}</span><span class="den">${d1}</span></div> ${op==='add'?'+':'−'} <div class="fraction-display"><span class="num">${n2}</span><span class="den">${d2}</span></div> = <div class="fraction-display"><span class="num"><input type="number" class="quiz-input" id="q${i}-resN" onclick="resetInput(${i})"></span><span class="den"><input type="number" class="quiz-input" id="q${i}-lcd" onclick="resetInput(${i})"></span></div>`;
             }
@@ -520,7 +546,6 @@
         document.getElementById(`btn-sol-${idx}`).style.display = 'none'; document.getElementById(`sol-${idx}`).style.display = 'none';
     }
 
-    // ★ 詳細的解答產生器 ★
     function generateSolutionText(d) {
         if (currentLang === 'zh') {
             if (d.type === 'imp2mix') return `<b>步驟 1：</b> 拿分子除以分母 ➔ ${d.n} ÷ ${d.d} = <strong>${d.w}</strong> ... 餘 <strong>${d.r}</strong>。<br><b>步驟 2：</b> 商數 <strong>${d.w}</strong> 就是旁邊的「整數」。<br><b>步驟 3：</b> 餘數 <strong>${d.r}</strong> 就是新的「分子」，分母保持 ${d.d} 不變。`;
