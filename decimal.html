@@ -58,6 +58,11 @@
         .eq-purple { background-color: #f4ecf7; color: #8e44ad; }
         
         .vis-area { display: flex; flex-wrap: wrap; justify-content: center; align-items: center; gap: 40px; margin-top: 20px; min-height: 250px; }
+        .svg-container { filter: drop-shadow(2px 2px 5px rgba(0,0,0,0.15)); }
+
+        .slider-group { display: flex; flex-direction: column; align-items: flex-end; gap: 10px; }
+        .slider-row { display: flex; align-items: center; gap: 15px; font-size: 1.2rem; font-weight: bold; }
+        input[type="range"] { width: 150px; cursor: pointer; }
 
         .jumper-wrapper { margin: 30px auto; width: fit-content; display: flex; flex-direction: column; align-items: center; }
         .jumper-track { position: relative; font-family: 'Courier New', Courier, monospace; font-size: 2.5rem; font-weight: bold; background: #fdfefe; padding: 20px 20px 50px 20px; border-radius: 12px; border: 3px solid #d7bde2; box-shadow: 0 4px 10px rgba(0,0,0,0.05); }
@@ -93,9 +98,6 @@
         
         .submit-area { background-color: #fff; border: 2px dashed #bdc3c7; border-radius: 10px; padding: 15px; margin: 25px auto; display: none; max-width: 500px; }
         #student-name { margin-top: 15px; display: none; width: 80%; }
-        .slider-group { display: flex; flex-direction: column; align-items: flex-end; gap: 10px; }
-        .slider-row { display: flex; align-items: center; gap: 15px; font-size: 1.2rem; font-weight: bold; }
-        input[type="range"] { width: 150px; cursor: pointer; }
     </style>
 </head>
 <body>
@@ -117,19 +119,23 @@
     </div>
 
     <h2 id="text-title1">🟩 Decimal Place Value Explorer</h2>
+    <p id="text-sub1">Build your decimal! See how tenths, hundredths, and thousandths combine to make a whole.</p>
+    
     <div class="vis-area" style="align-items: flex-start; min-height: 250px;">
         <div class="slider-group">
             <div class="slider-row" style="color: #d35400;"><span id="text-tenths">Tenths:</span> <span id="val-t" style="width:20px;">3</span><input type="range" id="slide-t" min="0" max="9" value="3"></div>
             <div class="slider-row" style="color: #2980b9;"><span id="text-hundredths">Hundredths:</span> <span id="val-h" style="width:20px;">4</span><input type="range" id="slide-h" min="0" max="9" value="4"></div>
             <div class="slider-row" style="color: #27ae60;"><span id="text-thousandths">Thousandths:</span> <span id="val-th" style="width:20px;">5</span><input type="range" id="slide-th" min="0" max="9" value="5"></div>
         </div>
-        <svg viewBox="0 0 100 100" width="250" height="250" id="decimal-grid" style="background:#fdf2e9; border:2px solid #333;"></svg>
+        <svg viewBox="0 0 100 100" width="250" height="250" id="decimal-grid" class="svg-container" style="background:#fdf2e9; border:2px solid #333;"></svg>
     </div>
     <div class="equation eq-orange" id="eq-place-value"></div>
 
     <hr class="section-divider">
 
     <h2 id="text-title-jump">🚀 Decimal Point Jumper</h2>
+    <p id="text-sub-jump">Watch the decimal point jump! Ghost zeros will turn solid when needed.</p>
+    
     <div class="controls">
         <input type="text" id="jump-num" class="visual-input" style="width: 110px;" value="465" oninput="initJumper()">
         <select id="jump-op" class="setting-select" style="font-size: 1.5rem; font-weight:bold;" onchange="initJumper()">
@@ -140,9 +146,11 @@
             <option value="10">10 (1 zero)</option>
             <option value="100" selected>100 (2 zeros)</option>
             <option value="1000">1000 (3 zeros)</option>
+            <option value="10000">10000 (4 zeros)</option>
         </select>
-        <button class="btn" style="background:#8e44ad;" id="btn-play-jump" onclick="playJumper()">▶ Play Jump</button>
+        <button class="btn" style="background:#8e44ad; padding: 10px 20px; font-size: 1.2rem; margin-left:10px;" id="btn-play-jump" onclick="playJumper()">▶ Play Jump</button>
     </div>
+    
     <div class="jumper-wrapper">
         <div class="jumper-track">
             <div id="jumper-digits" class="jumper-digits"></div>
@@ -154,7 +162,33 @@
                 </defs>
             </svg>
         </div>
-        <div class="equation eq-purple" id="eq-jump" style="min-height: 40px; margin-top:20px;"></div>
+        <div class="equation eq-purple" id="eq-jump" style="width: 100%; min-height: 40px; margin-top:20px;"></div>
+    </div>
+
+    <hr class="section-divider">
+
+    <h2 id="text-title2">🔄 Decimal ⇄ Fraction Converter</h2>
+    <div class="controls">
+        <select id="conv-mode" class="setting-select" onchange="toggleConvMode()" style="background-color: #ebf5fb; font-weight: bold;">
+            <option value="d2f" id="opt-d2f">Decimal ➔ Fraction</option>
+            <option value="f2d" id="opt-f2d">Fraction ➔ Decimal</option>
+        </select>
+        <select id="shape-mode" class="setting-select">
+            <option value="pie">Pie Chart</option>
+            <option value="bar">Grid Bar</option>
+        </select>
+    </div>
+
+    <div class="controls">
+        <div id="input-d2f" style="display: flex; align-items: center; gap: 5px;"><span style="font-size: 1.5rem; font-weight: bold;">0 . </span><input type="number" id="conv-dec" class="visual-input" value="75" min="1" max="999"></div>
+        <div id="input-f2d" style="display: none; align-items: center; gap: 10px;">
+            <div class="input-fraction"><input type="number" id="conv-num" value="3" min="1"><div class="divider"></div><input type="number" id="conv-den" value="4" min="1"></div>
+        </div>
+    </div>
+
+    <div class="equation eq-blue" id="eq-converter"></div>
+    <div id="conv-visualization" class="vis-area" style="min-height: 150px;">
+        <svg viewBox="0 0 100 100" width="150" height="150" id="pie-chart" class="svg-container"></svg>
     </div>
 
     <hr class="section-divider">
@@ -162,23 +196,29 @@
     <h2 id="text-title3">📝 Decimal Practice Generator</h2>
     <div class="quiz-panel">
         <div class="quiz-settings">
-            <select id="quiz-type" class="setting-select">
-                <option value="mix" id="opt-q-all">All Types</option>
-                <option value="d2f">Decimal ➔ Fraction</option>
-                <option value="f2d">Fraction ➔ Decimal</option>
-                <option value="compare">Comparing</option>
-                <option value="powers">×/÷ 10, 100, 1000</option>
-            </select>
-            <select id="quiz-year" class="setting-select">
-                <option value="4" selected>Year 4</option>
-                <option value="5">Year 5</option>
-                <option value="6">Year 6</option>
-            </select>
-            <select id="quiz-count" class="setting-select">
-                <option value="4">4</option>
-                <option value="10" selected>10</option>
-                <option value="20">20</option>
-            </select>
+            <label><span id="text-qtype">Type: </span>
+                <select id="quiz-type" class="setting-select">
+                    <option value="mix" id="opt-q-all">All Types</option>
+                    <option value="d2f">Decimal ➔ Fraction</option>
+                    <option value="f2d">Fraction ➔ Decimal</option>
+                    <option value="compare" id="opt-q-comp">Comparing (<, >, =)</option>
+                    <option value="powers" id="opt-q-pow">×/÷ 10, 100, 1000</option>
+                </select>
+            </label>
+            <label><span id="text-qyear">Level: </span>
+                <select id="quiz-year" class="setting-select">
+                    <option value="4" selected>Year 4</option>
+                    <option value="5">Year 5</option>
+                    <option value="6">Year 6</option>
+                </select>
+            </label>
+            <label><span id="text-qcount">Count: </span>
+                <select id="quiz-count" class="setting-select">
+                    <option value="4">4</option>
+                    <option value="10" selected>10</option>
+                    <option value="20">20</option>
+                </select>
+            </label>
             <button class="btn" id="btn-generate" onclick="generateQuiz()">Generate</button>
         </div>
 
@@ -187,7 +227,7 @@
         <div id="submit-area" class="submit-area">
             <label><input type="checkbox" id="chk-submit" onchange="toggleNameInput()"> <span id="text-submit-teacher">Submit to teacher</span></label><br>
             <input type="text" id="student-name" placeholder="Name">
-            <div id="submit-status" style="margin-top:10px; font-weight:bold;"></div>
+            <div id="submit-status"></div>
         </div>
         <button class="btn btn-check" id="btn-check" style="display:none" onclick="checkAnswers()">Check Answers</button>
         <div id="score-display" class="score-display"></div>
@@ -196,14 +236,76 @@
 
 <script>
     const teacherEmail = "anita20700@gmail.com";
+    
     const translations = {
         en: {
+            tTitle1: "🟩 Decimal Place Value Explorer", tSub1: "Build your decimal! See how tenths, hundredths, and thousandths combine.",
+            tTenths: "Tenths:", tHunds: "Hundredths:", tThous: "Thousandths:",
+            
+            tTitleJump: "🚀 Decimal Point Jumper", tSubJump: "Watch the decimal point jump! Ghost zeros will turn solid when needed.",
+            optPow10: "10 (1 zero)", optPow100: "100 (2 zeros)", optPow1000: "1000 (3 zeros)", optPow10000: "10000 (4 zeros)",
+            btnPlayJump: "▶ Play Jump",
+            
+            tTitle2: "🔄 Decimal ⇄ Fraction Converter", optD2F: "Decimal ➔ Fraction", optF2D: "Fraction ➔ Decimal",
+            
+            tTitle3: "📝 Decimal Practice Generator", qtype: "Type:", qcount: "Count:", qyear: "Level:",
+            optQAll: "All Types", optQComp: "Comparing (<, >, =)", optQPow: "×/÷ 10, 100, 1000",
+            btnGen: "Generate", btnCheck: "Check Answers", btnSol: "Solution", btnHideSol: "Hide",
+            
+            submitTeacher: "Submit to teacher", requireName: "⚠️ Enter name!", sentSuccess: "✅ Sent!", sentError: "❌ Error",
             scoreMsg: "You scored {score} / {total}!",
-            sentSuccess: "✅ Sent!", sentError: "❌ Error", requireName: "⚠️ Enter name!"
+            
+            solD2F: "Step 1: Write {dec} as {origNum}/{origDen}.<br>Step 2: Divide both by {gcd} to simplify.<br>Result: <strong>{n}/{d}</strong>.",
+            solF2D: "Step: Divide numerator by denominator ({n} ÷ {d}).<br>Result: <strong>{dec}</strong>.",
+            solComp: "Step: Compare digit by digit. <strong>{v1} {op} {v2}</strong>.",
+            solPowMult: "Step: {pow} has <strong>{zeros} zero(s)</strong>.<br>Multiply ➔ Move decimal point <strong>{zeros} place(s) to the RIGHT</strong>.<br>Result: <strong>{ans}</strong>",
+            solPowDiv: "Step: {pow} has <strong>{zeros} zero(s)</strong>.<br>Divide ➔ Move decimal point <strong>{zeros} place(s) to the LEFT</strong>.<br>Result: <strong>{ans}</strong>"
         },
         zh: {
+            tTitle1: "🟩 小數位值積木探險家", tSub1: "動手拉滑桿！看看十分位、百分位、千分位是如何組成的。",
+            tTenths: "十分位：", tHunds: "百分位：", tThous: "千分位：",
+            
+            tTitleJump: "🚀 小數點跳跳蛙", tSubJump: "數數看有幾個 0，小數點就會向右或向左跳幾步！注意淺灰色的幽靈 0 是如何被點亮的喔！",
+            optPow10: "10 (1 個 0)", optPow100: "100 (2 個 0)", optPow1000: "1000 (3 個 0)", optPow10000: "10000 (4 個 0)",
+            btnPlayJump: "▶ 開始跳躍",
+            
+            tTitle2: "🔄 小數與分數轉換器", optD2F: "小數 ➔ 分數", optF2D: "分數 ➔ 小數",
+            
+            tTitle3: "📝 小數互動測驗", qtype: "題型：", qcount: "題數：", qyear: "年級：",
+            optQAll: "綜合題型", optQComp: "比較大小 (<, >, =)", optQPow: "乘除 10, 100, 1000",
+            btnGen: "產生題目", btnCheck: "對答案", btnSol: "觀看解答", btnHideSol: "隱藏",
+            
+            submitTeacher: "提交給老師", requireName: "⚠️ 請輸入名字！", sentSuccess: "✅ 成績已送出！", sentError: "❌ 傳送失敗",
             scoreMsg: "你答對了 {score} / {total} 題！",
-            sentSuccess: "✅ 成績已送出！", sentError: "❌ 傳送失敗", requireName: "⚠️ 請輸入名字！"
+            
+            solD2F: "步驟 1：將 {dec} 寫成分數 ➔ {origNum}/{origDen}。<br>步驟 2：分子分母同除以最大公因數 {gcd} 來約分。<br>答案：<strong>{n}/{d}</strong>。",
+            solF2D: "步驟：拿分子除以分母 ➔ {n} ÷ {d}。<br>答案：<strong>{dec}</strong>。",
+            solComp: "步驟：從最高位開始比起。<strong>{v1} {op} {v2}</strong>。",
+            solPowMult: "步驟：{pow} 有 <strong>{zeros} 個 0</strong>。<br>「乘法」變大 ➔ 小數點向 <strong>右跳 {zeros} 步</strong> (不夠補0)。<br>答案：<strong>{ans}</strong>",
+            solPowDiv: "步驟：{pow} 有 <strong>{zeros} 個 0</strong>。<br>「除法」變小 ➔ 小數點向 <strong>左跳 {zeros} 步</strong> (不夠補0)。<br>答案：<strong>{ans}</strong>"
+        },
+        ja: {
+            tTitle1: "🟩 小数の位取りエクスプローラー", tSub1: "小数第一位、第二位、第三位の仕組みを見てみよう！",
+            tTenths: "1/10の位:", tHunds: "1/100の位:", tThous: "1/1000の位:",
+            
+            tTitleJump: "🚀 小数点ジャンプ", tSubJump: "0の数を数えて、小数点が左右に何歩ジャンプするか確認しよう！ゴーストの0が実体化するよ！",
+            optPow10: "10 (0が1つ)", optPow100: "100 (0が2つ)", optPow1000: "1000 (0が3つ)", optPow10000: "10000 (0が4つ)",
+            btnPlayJump: "▶ ジャンプ開始",
+            
+            tTitle2: "🔄 小数 ⇄ 分数 変換器", optD2F: "小数 ➔ 分数", optF2D: "分数 ➔ 小数",
+            
+            tTitle3: "📝 小数練習問題", qtype: "種類:", qcount: "問題数:", qyear: "学年:",
+            optQAll: "すべての種類", optQComp: "大きさの比較 (<, >, =)", optQPow: "×/÷ 10, 100, 1000",
+            btnGen: "問題作成", btnCheck: "答え合わせ", btnSol: "解答", btnHideSol: "隠す",
+            
+            submitTeacher: "先生に送信", requireName: "⚠️ 名前を入力！", sentSuccess: "✅ 送信完了！", sentError: "❌ 失敗",
+            scoreMsg: "{score} / {total} 問正解！",
+            
+            solD2F: "手順 1: {dec} を分数にする ➔ {origNum}/{origDen}。<br>手順 2: {gcd} で約分する。<br>答え: <strong>{n}/{d}</strong>。",
+            solF2D: "手順: 分子を分母で割る ({n} ÷ {d})。<br>答え: <strong>{dec}</strong>。",
+            solComp: "手順: 左から位ごとに比較します。<strong>{v1} {op} {v2}</strong>。",
+            solPowMult: "手順：{pow} には <strong>0が {zeros} 個</strong> あります。<br>「掛け算」➔ 小数点を <strong>右に {zeros} 歩ジャンプ</strong>。<br>答え：<strong>{ans}</strong>",
+            solPowDiv: "手順：{pow} には <strong>0が {zeros} 個</strong> あります。<br>「割り算」➔ 小数点を <strong>左に {zeros} 歩ジャンプ</strong>。<br>答え：<strong>{ans}</strong>"
         }
     };
 
@@ -216,15 +318,57 @@
     function changeLanguage() {
         currentLang = document.getElementById('language').value;
         localStorage.setItem('mySiteLang', currentLang);
-        updatePlaceValue(); initJumper();
+        const t = translations[currentLang];
+        
+        document.getElementById('text-title1').innerText = t.tTitle1; document.getElementById('text-sub1').innerText = t.tSub1;
+        document.getElementById('text-tenths').innerText = t.tTenths; document.getElementById('text-hundredths').innerText = t.tHunds; document.getElementById('text-thousandths').innerText = t.tThous;
+        
+        document.getElementById('text-title-jump').innerText = t.tTitleJump; document.getElementById('text-sub-jump').innerText = t.tSubJump;
+        document.getElementById('jump-pow').options[0].text = t.optPow10; document.getElementById('jump-pow').options[1].text = t.optPow100; 
+        document.getElementById('jump-pow').options[2].text = t.optPow1000; document.getElementById('jump-pow').options[3].text = t.optPow10000;
+        document.getElementById('btn-play-jump').innerText = t.btnPlayJump;
+        
+        document.getElementById('text-title2').innerText = t.tTitle2; document.getElementById('opt-d2f').innerText = t.optD2F; document.getElementById('opt-f2d').innerText = t.optF2D;
+        
+        document.getElementById('text-title3').innerText = t.tTitle3; document.getElementById('text-qtype').innerText = t.qtype; document.getElementById('text-qyear').innerText = t.qyear; document.getElementById('text-qcount').innerText = t.qcount;
+        document.getElementById('opt-q-all').innerText = t.optQAll; document.getElementById('opt-q-comp').innerText = t.optQComp; document.getElementById('opt-q-pow').innerText = t.optQPow;
+        
+        document.getElementById('btn-generate').innerText = t.btnGen; document.getElementById('btn-check').innerText = t.btnCheck;
+        document.getElementById('text-submit-teacher').innerText = t.submitTeacher; document.getElementById('student-name').placeholder = t.requireName.replace('⚠️ ', '');
+
+        updatePlaceValue(); initJumper(); updateConverter();
+        
+        for (let i = 0; i < currentQuizData.length; i++) {
+            const btn = document.getElementById(`btn-sol-${i}`);
+            if (btn) btn.innerText = (document.getElementById(`sol-${i}`).style.display === 'block') ? t.btnHideSol : t.btnSol;
+            const solBox = document.getElementById(`sol-${i}`);
+            if (solBox && solBox.style.display === 'block') solBox.innerHTML = generateSolutionText(currentQuizData[i].solData);
+        }
+        if(document.getElementById('score-display').innerHTML !== "") checkAnswers(false);
     }
 
-    // --- 位值視覺化 ---
+    // ================= 1. 位值視覺化 (加入雙行算式) =================
     function updatePlaceValue() {
         const t = parseInt(document.getElementById('slide-t').value), h = parseInt(document.getElementById('slide-h').value), th = parseInt(document.getElementById('slide-th').value);
         document.getElementById('val-t').innerText = t; document.getElementById('val-h').innerText = h; document.getElementById('val-th').innerText = th;
         const decVal = ((t * 100 + h * 10 + th) / 1000).toFixed(3);
-        document.getElementById('eq-place-value').innerText = `${decVal} = ${t}/10 + ${h}/100 + ${th}/1000`;
+        
+        // ★ 核心變更：使用隱藏的 table 來達成完美的等號對齊
+        document.getElementById('eq-place-value').innerHTML = `
+            <table style="margin: 0 auto; text-align: left; border-collapse: collapse; width: fit-content;">
+                <tr>
+                    <td style="text-align: right; padding-right: 10px;">${decVal}</td>
+                    <td style="padding-right: 10px;">=</td>
+                    <td>0.${t} + 0.0${h} + 0.00${th}</td>
+                </tr>
+                <tr>
+                    <td></td>
+                    <td style="padding-right: 10px;">=</td>
+                    <td>${t}/10 + ${h}/100 + ${th}/1000</td>
+                </tr>
+            </table>
+        `;
+        
         const svg = document.getElementById('decimal-grid'); svg.innerHTML = '';
         for (let i = 0; i <= 100; i+=10) {
             svg.innerHTML += `<line x1="${i}" y1="0" x2="${i}" y2="100" stroke="#bdc3c7" stroke-width="0.3"/><line x1="0" y1="${i}" x2="100" y2="${i}" stroke="#bdc3c7" stroke-width="0.3"/>`;
@@ -235,15 +379,25 @@
     }
     ['slide-t', 'slide-h', 'slide-th'].forEach(id => document.getElementById(id).addEventListener('input', updatePlaceValue));
 
-    // --- 跳跳蛙動畫 ---
+    // ================= 1.5 小數點跳跳蛙 =================
+    let jumpInterval = null;
     let jumperState = {};
+
     function initJumper() {
-        document.getElementById('jump-svg').innerHTML = '';
+        clearInterval(jumpInterval);
+        document.getElementById('btn-play-jump').disabled = false;
+        document.getElementById('eq-jump').innerText = '';
+        document.getElementById('jump-svg').innerHTML = ''; 
+
         let valStr = document.getElementById('jump-num').value.trim();
         if(!valStr || isNaN(valStr)) return;
+        if(valStr.startsWith('.')) valStr = '0' + valStr;
+        if(valStr.endsWith('.')) valStr = valStr.slice(0, -1);
+
         let isInt = !valStr.includes('.');
         let cleanStr = valStr.replace('.', '');
         let origDot = isInt ? valStr.length : valStr.indexOf('.');
+
         let leftPad = 6, rightPad = 6;
         jumperState.currDot = leftPad + origDot;
         jumperState.digits = Array(leftPad).fill('0').concat(cleanStr.split('')).concat(Array(rightPad).fill('0'));
@@ -266,78 +420,174 @@
         let steps = document.getElementById('jump-pow').value.length - 1;
         let dir = document.getElementById('jump-op').value === 'mult' ? 1 : -1;
         let c = 0;
-        let timer = setInterval(() => {
-            if(c >= steps) { clearInterval(timer); return; }
+        document.getElementById('btn-play-jump').disabled = true;
+        
+        jumpInterval = setInterval(() => {
+            if(c >= steps) { 
+                clearInterval(jumpInterval);
+                document.getElementById('btn-play-jump').disabled = false;
+                let finalVal = dir === 1 ? parseFloat(document.getElementById('jump-num').value) * Math.pow(10, steps) : parseFloat(document.getElementById('jump-num').value) / Math.pow(10, steps);
+                document.getElementById('eq-jump').innerText = `${document.getElementById('jump-num').value} ${dir === 1 ? '×' : '÷'} ${Math.pow(10, steps)} = ${parseFloat(finalVal.toPrecision(12))}`;
+                return; 
+            }
             let startX = jumperState.currDot * 36, endX = (jumperState.currDot + dir) * 36;
             let path = document.createElementNS('http://www.w3.org/2000/svg', 'path');
             path.setAttribute('d', `M ${startX} 0 Q ${(startX+endX)/2} 35 ${endX} 0`);
             path.setAttribute('fill', 'none'); path.setAttribute('stroke', dir > 0 ? '#e74c3c' : '#3498db');
-            path.setAttribute('stroke-width', '3'); svg = document.getElementById('jump-svg'); svg.appendChild(path);
+            path.setAttribute('stroke-width', '3'); path.setAttribute('marker-end', dir > 0 ? 'url(#arrow-mult)' : 'url(#arrow-div)');
+            document.getElementById('jump-svg').appendChild(path);
             jumperState.currDot += dir; renderJumper(); c++;
         }, 600);
     }
 
-    // --- 測驗系統 ---
+    // ================= 2. 轉換器 =================
+    function toggleConvMode() {
+        document.getElementById('input-d2f').style.display = document.getElementById('conv-mode').value === 'd2f' ? 'flex' : 'none';
+        document.getElementById('input-f2d').style.display = document.getElementById('conv-mode').value === 'f2d' ? 'flex' : 'none';
+        updateConverter();
+    }
+    function updateConverter() {
+        const mode = document.getElementById('conv-mode').value, shape = document.getElementById('shape-mode').value, eq = document.getElementById('eq-converter');
+        let val = 0;
+        if (mode === 'd2f') {
+            let s = document.getElementById('conv-dec').value; if(!s) return;
+            let n = parseInt(s), d = Math.pow(10, s.length), common = gcd(n, d);
+            val = n/d; eq.innerText = `0.${s} = ${n}/${d} = ${n/common}/${d/common}`;
+        } else {
+            let n = parseInt(document.getElementById('conv-num').value), d = parseInt(document.getElementById('conv-den').value);
+            if(d<=0) return; val = n/d; eq.innerText = `${n}/${d} = ${val.toFixed(3).replace(/\.?0+$/, "")}`;
+        }
+        const svg = document.getElementById('pie-chart'); svg.innerHTML = '';
+        if (shape === 'pie') {
+            svg.innerHTML = `<circle cx="50" cy="50" r="45" fill="#fdf2e9" stroke="#333" stroke-width="1"/>`;
+            if(val>0) {
+                let a = Math.min(val, 0.9999) * 2 * Math.PI, x = 50 + 45*Math.cos(-Math.PI/2+a), y = 50 + 45*Math.sin(-Math.PI/2+a);
+                svg.innerHTML += `<path d="M 50 50 L 50 5 A 45 45 0 ${val>0.5?1:0} 1 ${x} ${y} Z" fill="#3498db" stroke="#2980b9"/>`;
+            }
+        } else {
+            svg.innerHTML = `<rect x="10" y="10" width="80" height="80" fill="#fdf2e9" stroke="#333"/><rect x="10" y="${90-80*val}" width="80" height="${80*val}" fill="#3498db"/>`;
+        }
+    }
+    ['conv-dec', 'conv-num', 'conv-den', 'shape-mode'].forEach(id => document.getElementById(id).addEventListener('input', updateConverter));
+
+    // ================= 3. 測驗系統 =================
+    const denomsY4 = [2, 4, 5, 10, 20, 100];
+    const denomsY5 = [2, 4, 5, 8, 10, 20, 25, 50, 100, 1000];
+
     function generateQuiz() {
         const type = document.getElementById('quiz-type').value, year = parseInt(document.getElementById('quiz-year').value), count = parseInt(document.getElementById('quiz-count').value);
-        const container = document.getElementById('quiz-container'); container.innerHTML = ''; currentQuizData = [];
+        const container = document.getElementById('quiz-container');
+        container.innerHTML = ''; currentQuizData = [];
         document.getElementById('btn-check').style.display = 'inline-block'; document.getElementById('submit-area').style.display = 'block';
 
         for (let i = 0; i < count; i++) {
             let qT = type === 'mix' ? ['d2f', 'f2d', 'compare', 'powers'][randInt(0, 3)] : type;
-            let qH = "", ans = {}, qText = "";
+            let qH = "", ans = {}, sol = {}, qText = "";
 
             if (qT === 'compare') {
                 let v1 = (randInt(1, 99) / 100).toFixed(year == 4 ? 2 : 3), v2 = (randInt(1, 99) / 100).toFixed(year == 4 ? 2 : 3);
-                ans = { op: v1 > v2 ? ">" : (v1 < v2 ? "<" : "=") }; qText = `${v1} _ ${v2}`;
+                ans = { op: v1 > v2 ? ">" : (v1 < v2 ? "<" : "=") }; sol = { type: 'compare', v1, v2, op: ans.op }; qText = `${v1} _ ${v2}`;
                 qH = `<b>${v1}</b> <input type="text" class="quiz-input" style="width:50px" id="q${i}-op"> <b>${v2}</b>`;
             } else if (qT === 'powers') {
                 let n = (randInt(1, 999) / 10).toFixed(1), p = [10, 100, 1000][randInt(0, 2)], isM = Math.random() > 0.5;
                 let res = isM ? n * p : n / p; res = parseFloat(res.toPrecision(12));
-                ans = { res }; qText = `${n} ${isM ? '×' : '÷'} ${p}`;
-                qH = `${n} ${isM ? '×' : '÷'} ${p} = <input type="number" class="quiz-input" id="q${i}-res">`;
+                ans = { res }; sol = { type: 'powers', n, pow: p, op: isM?'mult':'div', ans: res, zeros: p.toString().length - 1 }; qText = `${n} ${isM ? '×' : '÷'} ${p}`;
+                qH = `${n} ${isM ? '×' : '÷'} ${p} = <input type="number" step="any" class="quiz-input" style="width:90px" id="q${i}-res">`;
             } else {
-                let d = [2,4,5,8,10,20,25,50,100][randInt(0, 8)], n = randInt(1, d-1);
-                let c = gcd(n, d); n /= c; d /= c; let dec = (n/d).toString();
+                let dList = year === 4 ? denomsY4 : denomsY5;
+                let d = dList[randInt(0, dList.length - 1)], n = randInt(1, d - 1), c = gcd(n, d); n /= c; d /= c;
+                let dec = (n/d).toString(); let decPart = dec.split('.')[1] || "0";
+
                 if (qT === 'd2f') {
-                    ans = { n, d }; qText = `Convert ${dec} to fraction`;
-                    qH = `${dec} = <div class="fraction-display"><span><input type="number" class="quiz-input" id="q${i}-n"></span><span class="den"><input type="number" class="quiz-input" id="q${i}-d"></span></div>`;
+                    let origDen = Math.pow(10, decPart.length), origNum = parseInt(decPart);
+                    ans = {n, d}; sol = {type: 'd2f', dec, origNum, origDen, gcd: gcd(origNum, origDen), n, d}; qText = `Convert ${dec} to fraction`;
+                    if(year === 6 && Math.random() > 0.6) {
+                        let w = randInt(1, 5); dec = (w + n/d).toFixed(2); ans = { w, n, d };
+                        qH = `${dec} = <input type="number" class="quiz-input" id="q${i}-w"> <div class="fraction-display"><span class="num"><input type="number" class="quiz-input" id="q${i}-n"></span><span class="den"><input type="number" class="quiz-input" id="q${i}-d"></span></div>`;
+                    } else {
+                        qH = `<span style="font-size:1.6rem; font-weight:bold;">${dec}</span> = <div class="fraction-display"><span class="num"><input type="number" class="quiz-input" id="q${i}-n"></span><span class="den"><input type="number" class="quiz-input" id="q${i}-d"></span></div>`;
+                    }
                 } else {
-                    ans = { dec: dec.split('.')[1] || '0' }; qText = `Convert ${n}/${d} to decimal`;
-                    qH = `<div class="fraction-display"><span>${n}</span><span class="den">${d}</span></div> = 0 . <input type="text" class="quiz-input" id="q${i}-dec">`;
+                    ans = { dec: decPart }; sol = { type: 'f2d', n, d, dec }; qText = `Convert ${n}/${d} to decimal`;
+                    qH = `<div class="fraction-display"><span class="num">${n}</span><span class="den">${d}</span></div> = <span style="font-size:1.6rem; font-weight:bold;">0 . </span> <input type="text" class="quiz-input" style="width:70px;" id="q${i}-dec">`;
                 }
             }
-            currentQuizData.push({ answers: ans, qText });
+            currentQuizData.push({ answers: ans, solData: sol, qText });
             let item = document.createElement('div'); item.className = 'question-item';
-            item.innerHTML = `<div class="question-row">Q${i+1}. ${qH}</div><div class="solution-box" id="sol-${i}"></div>`;
+            item.innerHTML = `<div class="question-row"><span style="color:#7f8c8d; font-weight:bold;">Q${i+1}.</span> ${qH} <button class="btn-sol" id="btn-sol-${i}" onclick="toggleSolution(${i})">Sol</button></div><div class="solution-box" id="sol-${i}"></div>`;
             container.appendChild(item);
         }
+    }
+
+    function toggleSolution(idx) {
+        const box = document.getElementById(`sol-${idx}`), btn = document.getElementById(`btn-sol-${idx}`);
+        if(box.style.display === 'block') { box.style.display = 'none'; btn.innerText = "Sol"; }
+        else { box.innerHTML = generateSolutionText(currentQuizData[idx].solData); box.style.display = 'block'; btn.innerText = "Hide"; }
+    }
+
+    function generateSolutionText(d) {
+        const t = translations[currentLang];
+        if (d.type === 'd2f') return t.solD2F.replace('{dec}', d.dec).replace('{origNum}', d.origNum).replace('{origDen}', d.origDen).replace('{gcd}', d.gcd).replace('{n}', d.n).replace('{d}', d.d);
+        if (d.type === 'f2d') return t.solF2D.replace('{n}', d.n).replace('{d}', d.d).replace('{dec}', d.dec);
+        if (d.type === 'compare') return t.solComp.replace('{v1}', d.v1).replace('{v2}', d.v2).replace('{op}', d.op);
+        if (d.type === 'powers') {
+            if(d.op === 'mult') return t.solPowMult.replace('{pow}', d.pow).replace(/\{zeros\}/g, d.zeros).replace('{ans}', d.ans);
+            else return t.solPowDiv.replace('{pow}', d.pow).replace(/\{zeros\}/g, d.zeros).replace('{ans}', d.ans);
+        }
+        return "";
     }
 
     async function checkAnswers() {
         const studentName = document.getElementById('student-name').value.trim();
         const statusDiv = document.getElementById('submit-status');
-        if (document.getElementById('chk-submit').checked && !studentName) { statusDiv.innerText = translations[currentLang].requireName; return; }
+        if (document.getElementById('chk-submit').checked && !studentName) { statusDiv.innerText = translations[currentLang].requireName; statusDiv.style.color = "#e74c3c"; return; }
 
         let score = 0, total = currentQuizData.length, wrongList = "";
         
         currentQuizData.forEach((data, i) => {
             let isCorrect = true, userInputs = [];
-            for (let key in data.answers) {
-                let el = document.getElementById(`q${i}-${key}`), val = el.value.trim();
-                el.classList.remove('correct', 'wrong');
-                userInputs.push(val);
-                if (key === 'n' || key === 'd') {
-                    let valN = parseInt(document.getElementById(`q${i}-n`).value), valD = parseInt(document.getElementById(`q${i}-d`).value);
+            
+            if (data.answers.n !== undefined && data.answers.d !== undefined) {
+                const elN = document.getElementById(`q${i}-n`), elD = document.getElementById(`q${i}-d`);
+                const valN = parseInt(elN.value), valD = parseInt(elD.value);
+                elN.classList.remove('correct', 'wrong'); elD.classList.remove('correct', 'wrong');
+                
+                let wCorrect = true;
+                if (data.answers.w !== undefined) {
+                    const elW = document.getElementById(`q${i}-w`);
+                    const valW = parseInt(elW.value);
+                    elW.classList.remove('correct', 'wrong'); userInputs.push(`W:${valW||'Empty'}`);
+                    if (valW === data.answers.w) elW.classList.add('correct');
+                    else { elW.classList.add('wrong'); wCorrect = false; }
+                }
+                
+                userInputs.push(`N:${valN||'Empty'}`, `D:${valD||'Empty'}`);
+                
+                if (wCorrect && !isNaN(valN) && !isNaN(valD) && valD !== 0 && (valN * data.answers.d === data.answers.n * valD)) {
+                    elN.classList.add('correct'); elD.classList.add('correct');
+                } else {
                     if (!isNaN(valN) && !isNaN(valD) && valD !== 0 && (valN * data.answers.d === data.answers.n * valD)) {
-                        document.getElementById(`q${i}-n`).classList.add('correct'); document.getElementById(`q${i}-d`).classList.add('correct');
-                    } else { isCorrect = false; el.classList.add('wrong'); }
-                } else if (val != data.answers[key]) { isCorrect = false; el.classList.add('wrong'); }
-                else { el.classList.add('correct'); }
+                        elN.classList.add('correct'); elD.classList.add('correct');
+                    } else {
+                        elN.classList.add('wrong'); elD.classList.add('wrong');
+                    }
+                    isCorrect = false; 
+                }
+            } else {
+                for (let key in data.answers) {
+                    let el = document.getElementById(`q${i}-${key}`);
+                    let val = (key === 'dec' || key === 'op') ? el.value.trim() : parseFloat(el.value);
+                    el.classList.remove('correct', 'wrong'); userInputs.push(val||'Empty');
+                    if (val == data.answers[key]) el.classList.add('correct'); 
+                    else { el.classList.add('wrong'); isCorrect = false; }
+                }
             }
-            if (isCorrect) score++;
-            else {
-                wrongList += `❌ Q${i+1}: ${data.qText}\n   Correct Answer: ${JSON.stringify(data.answers)}\n   Student Answer: ${userInputs.join('/')}\n\n`;
+
+            const solBtn = document.getElementById(`btn-sol-${i}`), solBox = document.getElementById(`sol-${i}`);
+            if (isCorrect) { score++; solBtn.style.display = 'none'; solBox.style.display = 'none'; } 
+            else { 
+                solBtn.style.display = 'inline-block'; solBox.style.display = 'none';
+                wrongList += `❌ Q${i+1}: ${data.qText}\n   Correct Answer: ${JSON.stringify(data.answers)}\n   Student Answer: ${userInputs.join(', ')}\n\n`;
             }
         });
 
@@ -353,17 +603,20 @@
 
             statusDiv.innerText = "Sending...";
             try {
-                await fetch(`https://formsubmit.co/ajax/${teacherEmail}`, {
+                fetch(`https://formsubmit.co/ajax/${teacherEmail}`, {
                     method: "POST", headers: { 'Content-Type': 'application/json' },
                     body: JSON.stringify({ name: studentName, _subject: `Decimal Quiz: ${studentName} (${score}/${total})`, message: body })
-                });
-                statusDiv.innerText = "✅ Sent Success!";
-            } catch (e) { statusDiv.innerText = "❌ Error"; }
+                }).then(() => { statusDiv.innerText = "✅ Sent Success!"; statusDiv.style.color = "#27ae60"; });
+            } catch (e) { statusDiv.innerText = "❌ Error"; statusDiv.style.color = "#e74c3c"; }
         }
     }
 
     function toggleNameInput() { document.getElementById('student-name').style.display = document.getElementById('chk-submit').checked ? 'inline-block' : 'none'; }
-    window.onload = () => { changeLanguage(); initJumper(); };
+
+    window.onload = () => {
+        const s = localStorage.getItem('mySiteLang'); if (s) document.getElementById('language').value = s;
+        changeLanguage(); initJumper(); 
+    };
 </script>
 </body>
 </html>
