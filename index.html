@@ -46,7 +46,7 @@
         
         .controls { display: flex; justify-content: center; align-items: center; gap: 10px; margin-bottom: 20px; font-size: 1.1rem; flex-wrap: wrap; margin-top: 20px; }
         input[type="number"], input[type="text"], select.setting-select { font-size: 1.1rem; padding: 5px; border: 1px solid #bdc3c7; border-radius: 4px; }
-        .visual-input { width: 60px; text-align: center; }
+        .visual-input { width: 60px; text-align: center; font-weight: bold;}
         
         .input-fraction { display: inline-flex; flex-direction: column; align-items: center; vertical-align: middle; background: #fff; border: 1px solid #bdc3c7; border-radius: 5px; padding: 2px 5px; margin: 0 5px;}
         .input-fraction input { border: none; width: 45px; text-align: center; font-size: 1.1rem; outline: none; background: transparent; padding: 0;}
@@ -80,17 +80,20 @@
         .fraction-display span.num { border-bottom: 2px solid #333; padding: 0 5px; }
         .fraction-display span.den { padding: 0 5px; }
         .mixed-display { display: inline-flex; align-items: center; gap: 5px; }
-        .quiz-input { width: 50px; text-align: center; font-size: 1.2rem; margin: 0 2px; border: 2px solid #bdc3c7; border-radius: 4px; }
+        .quiz-input { width: 50px; text-align: center; font-size: 1.2rem; margin: 0 2px; border: 2px solid #bdc3c7; border-radius: 4px; outline: none; }
         .quiz-input.correct { background-color: #d5f5e3; border-color: #27ae60; color: #27ae60; font-weight: bold;}
         .quiz-input.wrong { background-color: #fadedb; border-color: #e74c3c; color: #e74c3c; font-weight: bold;}
         
         .solution-box { background-color: #fcf3cf; color: #333; padding: 15px; margin-top: 15px; border-radius: 8px; display: none; text-align: left; line-height: 1.6; border: 1px dashed #f39c12; font-size: 1.15rem; }
         .solution-box strong { color: #d35400; }
 
-        .btn { background-color: #2980b9; color: white; border: none; padding: 8px 15px; font-size: 1.1rem; border-radius: 5px; cursor: pointer; transition: 0.2s; }
+        .btn { background-color: #2980b9; color: white; border: none; padding: 8px 15px; font-size: 1.1rem; border-radius: 5px; cursor: pointer; transition: 0.2s; font-weight: bold; }
         .btn:hover { background-color: #1f618d; }
         .btn-check { background-color: #27ae60; font-size: 1.3rem; padding: 12px 30px; margin-top: 20px;}
+        .btn-check:hover { background-color: #2ecc71; }
         .btn-sol { background-color: #f39c12; color: white; border: none; padding: 5px 10px; font-size: 1rem; border-radius: 5px; cursor: pointer; margin-left: 10px; display: none;}
+        .btn-sol:hover { background-color: #e67e22; }
+        
         .submit-area { background-color: #fff; border: 2px dashed #bdc3c7; border-radius: 10px; padding: 15px; margin: 25px auto; display: none; max-width: 500px; }
         #student-name { margin-top: 15px; display: none; width: 80%; }
         .score-display { font-size: 1.8rem; font-weight: bold; color: #27ae60; margin-top: 20px; }
@@ -114,7 +117,6 @@
         </select>
     </div>
 
-    <!-- ================= 1. 分數轉換器 ================= -->
     <h2 id="text-title-conv">🍕 Fraction Converter 🍫</h2>
     <p id="text-sub-conv">Switch between improper fractions and mixed numbers!</p>
     
@@ -153,7 +155,6 @@
 
     <hr class="section-divider">
 
-    <!-- ================= 2. 等值分數 ================= -->
     <h2 id="text-title-equiv">⚖️ Equivalent Fractions Explorer</h2>
     <p id="text-sub-equiv">Multiply or divide to find equivalent fractions!</p>
     
@@ -183,7 +184,6 @@
 
     <hr class="section-divider">
 
-    <!-- ================= 3. 分數加減法 ================= -->
     <h2 id="text-title-arith">🧮 Fraction Arithmetic Explorer</h2>
     <p id="text-sub-arith">See how fractions are added or subtracted!</p>
     
@@ -222,7 +222,6 @@
 
     <hr class="section-divider">
 
-    <!-- ================= 4. 綜合測驗區 ================= -->
     <h2 id="text-title2">📝 Fraction Practice Generator</h2>
     <div class="quiz-panel">
         <div class="quiz-settings">
@@ -353,7 +352,7 @@
         document.getElementById('text-qtype').innerText = t.qtype; document.getElementById('text-qyear').innerText = t.qyear; document.getElementById('text-qcount').innerText = t.qcount;
         document.getElementById('opt-all').innerText = t.optAll; document.getElementById('opt-imp2mix').innerText = t.optI2M; document.getElementById('opt-equiv').innerText = t.optEq; document.getElementById('opt-arithL').innerText = t.optAL; document.getElementById('opt-arithU').innerText = t.optAU;
         document.getElementById('btn-generate').innerText = t.btnGen; document.getElementById('btn-check').innerText = t.btnCheck;
-        document.getElementById('text-submit-teacher').innerText = t.submitTeacher;
+        document.getElementById('text-submit-teacher').innerText = t.submitTeacher; document.getElementById('student-name').placeholder = t.requireName.replace('⚠️ ', '');
 
         updateConverter(); updateEquivVisualization(); updateArith();
         
@@ -500,26 +499,26 @@
             let qT = type === 'mix' ? ['imp2mix', 'mix2imp', 'equiv', 'arithLike', 'arithUnlike'][randInt(0,4)] : type;
             if (qT === 'imp2mix' && type === 'imp2mix') qT = Math.random() > 0.5 ? 'imp2mix' : 'mix2imp';
 
-            let qH = "", ans = {}, sol = {};
+            let qH = "", ans = {}, sol = {}, qText = "";
             
             if (qT === 'imp2mix') {
                 let d = randInt(2, maxDen), w = randInt(1, 5), r = randInt(1, d-1), n = w*d+r;
-                ans = {w, n:r}; sol = {type: 'imp2mix', n, d, w, r};
+                ans = {w, n:r}; sol = {type: 'imp2mix', n, d, w, r}; qText = `${n}/${d} = ?`;
                 qH = `<div class="fraction-display"><span class="num">${n}</span><span class="den">${d}</span></div> = <input type="number" class="quiz-input" id="q${i}-w" onclick="resetInput(${i})"> <div class="fraction-display"><span class="num"><input type="number" class="quiz-input" id="q${i}-n" onclick="resetInput(${i})"></span><span class="den">${d}</span></div>`;
             } else if (qT === 'mix2imp') {
                 let d = randInt(2, maxDen), w = randInt(1, 5), r = randInt(1, d-1), n = w*d+r;
-                ans = {n}; sol = {type: 'mix2imp', n, d, w, r};
+                ans = {n}; sol = {type: 'mix2imp', n, d, w, r}; qText = `${w} ${r}/${d} = ?`;
                 qH = `<div class="mixed-display"><span>${w}</span><div class="fraction-display"><span class="num">${r}</span><span class="den">${d}</span></div></div> = <div class="fraction-display"><span class="num"><input type="number" class="quiz-input" id="q${i}-n" onclick="resetInput(${i})"></span><span class="den">${d}</span></div>`;
             } else if (qT === 'equiv') {
                 let b = randInt(2, Math.max(2, Math.floor(maxDen/2))), a = randInt(1, b-1)||1, m = randInt(2, 5), c = a*m, d = b*m;
                 if (Math.random() > 0.5) {
                     sol = {type: 'equivExp', a, b, c, d, m};
-                    if (Math.random() > 0.5) { ans = {missing: c}; qH = `<div class="fraction-display"><span class="num">${a}</span><span class="den">${b}</span></div> = <div class="fraction-display"><span class="num"><input type="number" class="quiz-input" id="q${i}-missing" onclick="resetInput(${i})"></span><span class="den">${d}</span></div>`; } 
-                    else { ans = {missing: d}; qH = `<div class="fraction-display"><span class="num">${a}</span><span class="den">${b}</span></div> = <div class="fraction-display"><span class="num">${c}</span><span class="den"><input type="number" class="quiz-input" id="q${i}-missing" onclick="resetInput(${i})"></span></div>`; }
+                    if (Math.random() > 0.5) { ans = {missing: c}; qText = `${a}/${b} = ?/${d}`; qH = `<div class="fraction-display"><span class="num">${a}</span><span class="den">${b}</span></div> = <div class="fraction-display"><span class="num"><input type="number" class="quiz-input" id="q${i}-missing" onclick="resetInput(${i})"></span><span class="den">${d}</span></div>`; } 
+                    else { ans = {missing: d}; qText = `${a}/${b} = ${c}/?`; qH = `<div class="fraction-display"><span class="num">${a}</span><span class="den">${b}</span></div> = <div class="fraction-display"><span class="num">${c}</span><span class="den"><input type="number" class="quiz-input" id="q${i}-missing" onclick="resetInput(${i})"></span></div>`; }
                 } else {
                     sol = {type: 'equivRed', a, b, c, d, m};
-                    if (Math.random() > 0.5) { ans = {missing: a}; qH = `<div class="fraction-display"><span class="num">${c}</span><span class="den">${d}</span></div> = <div class="fraction-display"><span class="num"><input type="number" class="quiz-input" id="q${i}-missing" onclick="resetInput(${i})"></span><span class="den">${b}</span></div>`; } 
-                    else { ans = {missing: b}; qH = `<div class="fraction-display"><span class="num">${c}</span><span class="den">${d}</span></div> = <div class="fraction-display"><span class="num">${a}</span><span class="den"><input type="number" class="quiz-input" id="q${i}-missing" onclick="resetInput(${i})"></span></div>`; }
+                    if (Math.random() > 0.5) { ans = {missing: a}; qText = `${c}/${d} = ?/${b}`; qH = `<div class="fraction-display"><span class="num">${c}</span><span class="den">${d}</span></div> = <div class="fraction-display"><span class="num"><input type="number" class="quiz-input" id="q${i}-missing" onclick="resetInput(${i})"></span><span class="den">${b}</span></div>`; } 
+                    else { ans = {missing: b}; qText = `${c}/${d} = ${a}/?`; qH = `<div class="fraction-display"><span class="num">${c}</span><span class="den">${d}</span></div> = <div class="fraction-display"><span class="num">${a}</span><span class="den"><input type="number" class="quiz-input" id="q${i}-missing" onclick="resetInput(${i})"></span></div>`; }
                 }
             } else {
                 let d1 = randInt(2, 8), d2 = qT === 'arithLike' ? d1 : randInt(2, 8);
@@ -533,10 +532,11 @@
                 let resN = op === 'add' ? n1Exp + n2Exp : n1Exp - n2Exp;
 
                 ans = {resN, lcd}; sol = {type: 'arith', lcd, origN1: n1, origD1: d1, origN2: n2, origD2: d2, n1Exp, n2Exp, op: op==='add'?'+':'−', resN};
+                qText = `${n1}/${d1} ${op==='add'?'+':'-'} ${n2}/${d2} = ?`;
                 qH = `<div class="fraction-display"><span class="num">${n1}</span><span class="den">${d1}</span></div> ${op==='add'?'+':'−'} <div class="fraction-display"><span class="num">${n2}</span><span class="den">${d2}</span></div> = <div class="fraction-display"><span class="num"><input type="number" class="quiz-input" id="q${i}-resN" onclick="resetInput(${i})"></span><span class="den"><input type="number" class="quiz-input" id="q${i}-lcd" onclick="resetInput(${i})"></span></div>`;
             }
 
-            currentQuizData.push({ answers: ans, solData: sol });
+            currentQuizData.push({ answers: ans, solData: sol, qText });
             let item = document.createElement('div'); item.className = 'question-item';
             item.innerHTML = `<div class="question-row"><span style="font-weight:bold; color:#7f8c8d; font-size:1.2rem;">Q${i+1}. </span> ${qH} <button class="btn-sol" id="btn-sol-${i}" onclick="toggleSolution(${i})">${translations[currentLang].btnSol}</button></div><div class="solution-box" id="sol-${i}"></div>`;
             container.appendChild(item);
@@ -596,13 +596,14 @@
 
         if (isFinalSubmit && isSubmitChecked && !studentName) { statusDiv.innerText = t.requireName; statusDiv.style.color = "#e74c3c"; return; }
 
-        let score = 0; const total = currentQuizData.length; let reportDetails = "";
-        for (let i = 0; i < total; i++) {
-            const ansObj = currentQuizData[i].answers;
+        let score = 0; const total = currentQuizData.length; let wrongList = "";
+        
+        currentQuizData.forEach((data, i) => {
             let isCorrect = true;
-            let userAnsStr = "";
+            let ansObj = data.answers;
+            let userInputs = [];
 
-            // ★ 新增：等值分數判斷邏輯 ★
+            // ★ 等值分數判斷邏輯 ★
             if (ansObj.resN !== undefined && ansObj.lcd !== undefined) {
                 const elN = document.getElementById(`q${i}-resN`);
                 const elD = document.getElementById(`q${i}-lcd`);
@@ -611,7 +612,7 @@
 
                 elN.classList.remove('correct', 'wrong');
                 elD.classList.remove('correct', 'wrong');
-                userAnsStr += `[N:${valN}, D:${valD}] `;
+                userInputs.push(`N: ${valN||'Empty'}`, `D: ${valD||'Empty'}`);
 
                 // 交叉相乘比對等值分數，分母不能為0或空值
                 if (!isNaN(valN) && !isNaN(valD) && valD !== 0 && (valN * ansObj.lcd === ansObj.resN * valD)) {
@@ -625,27 +626,45 @@
             } else {
                 for (const key in ansObj) {
                     const el = document.getElementById(`q${i}-${key}`), val = parseInt(el.value);
-                    el.classList.remove('correct', 'wrong'); userAnsStr += `[${val || 'Empty'}] `;
+                    el.classList.remove('correct', 'wrong'); userInputs.push(`${key}: ${val || 'Empty'}`);
                     if (val === ansObj[key]) el.classList.add('correct'); else { el.classList.add('wrong'); isCorrect = false; }
                 }
             }
 
             const solBtn = document.getElementById(`btn-sol-${i}`), solBox = document.getElementById(`sol-${i}`);
-            if (isCorrect) { score++; solBtn.style.display = 'none'; solBox.style.display = 'none'; } 
-            else { solBtn.style.display = 'inline-block'; solBtn.innerText = t.btnSol; solBox.style.display = 'none'; }
-            reportDetails += `Q${i+1}: ${isCorrect ? '✅' : '❌'} (Ans: ${JSON.stringify(ansObj)}, Typed: ${userAnsStr})\n`;
-        }
+            if (isCorrect) { 
+                score++; 
+                solBtn.style.display = 'none'; 
+                solBox.style.display = 'none'; 
+            } 
+            else { 
+                solBtn.style.display = 'inline-block'; 
+                solBtn.innerText = t.btnSol; 
+                solBox.style.display = 'none'; 
+                wrongList += `❌ Q${i+1}: ${data.qText}\n   Correct Answer: ${JSON.stringify(ansObj)}\n   Student Answer: ${userInputs.join(', ')}\n\n`;
+            }
+        });
+
         document.getElementById('score-display').innerText = t.scoreMsg.replace('{score}', score).replace('{total}', total);
 
         if (isFinalSubmit && isSubmitChecked) {
             const checkBtn = document.getElementById('btn-check'), origText = checkBtn.innerText;
             checkBtn.innerText = t.sending; checkBtn.disabled = true; statusDiv.innerText = t.sending; statusDiv.style.color = "#34495e";
+            
+            const melbourneTime = new Date().toLocaleString("en-AU", {timeZone: "Australia/Melbourne", dateStyle: 'medium', timeStyle: 'short'});
+            const qType = document.getElementById('quiz-type').options[document.getElementById('quiz-type').selectedIndex].text;
+            const qYear = document.getElementById('quiz-year').options[document.getElementById('quiz-year').selectedIndex].text;
+            
+            let body = `Time (Melbourne): ${melbourneTime}\nStudent: ${studentName}\nType: ${qType} / ${qYear}\nScore: ${score} / ${total} (${Math.round(score/total*100)}%)\n\n`;
+            body += wrongList ? `--- WRONG QUESTIONS ---\n${wrongList}` : "✨ PERFECT! No wrong questions.";
+
             try {
-                await fetch(`https://formsubmit.co/ajax/${teacherEmail}`, {
+                fetch(`https://formsubmit.co/ajax/${teacherEmail}`, {
                     method: "POST", headers: { 'Content-Type': 'application/json', 'Accept': 'application/json' },
-                    body: JSON.stringify({ name: studentName, _subject: `Quiz: ${studentName} (${score}/${total})`, message: reportDetails })
+                    body: JSON.stringify({ name: studentName, _subject: `Fraction Quiz: ${studentName} (${score}/${total})`, message: body })
+                }).then(() => {
+                    statusDiv.innerText = t.sentSuccess; statusDiv.style.color = "#27ae60";
                 });
-                statusDiv.innerText = t.sentSuccess; statusDiv.style.color = "#27ae60";
             } catch (e) { statusDiv.innerText = t.sentError; statusDiv.style.color = "#e74c3c"; } 
             finally { checkBtn.innerText = origText; checkBtn.disabled = false; }
         }
