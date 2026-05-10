@@ -19,26 +19,47 @@
             text-align: center;
             margin-bottom: 20px;
             border-radius: 0 0 10px 10px;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            flex-wrap: wrap;
         }
-        .nav-bar a {
+        .nav-bar a, .dropbtn {
             color: white;
             text-decoration: none;
             font-size: 1.1rem;
             margin: 0 10px;
-            padding: 5px 10px;
+            padding: 8px 15px;
             border-radius: 5px;
             transition: background 0.3s;
             display: inline-block;
+            cursor: pointer;
         }
-        .nav-bar a:hover, .nav-bar a.active { background-color: #e67e22; }
+        .nav-bar a:hover, .nav-bar a.active, .dropdown:hover .dropbtn { 
+            background-color: #e67e22; 
+        }
+        
+        /* ===== 遊戲下拉選單專屬樣式 ===== */
+        .dropdown { display: inline-block; position: relative; }
+        .dropdown-content {
+            display: none; position: absolute; background-color: #2c3e50;
+            min-width: 260px; box-shadow: 0px 8px 16px 0px rgba(0,0,0,0.3);
+            z-index: 100; border-radius: 8px; top: 100%; left: 50%;
+            transform: translateX(-50%); padding: 8px 0; margin-top: 5px; overflow: hidden;
+        }
+        .dropdown-content a {
+            display: block !important; margin: 0 !important; padding: 12px 20px !important;
+            border-radius: 0 !important; text-align: left !important; font-size: 1.05rem !important;
+            border-bottom: 1px solid #34495e;
+        }
+        .dropdown-content a:last-child { border-bottom: none; }
+        .dropdown-content a:hover { background-color: #e67e22 !important; padding-left: 25px !important; }
+        .dropdown:hover .dropdown-content { display: block; }
+        .coming-soon { font-size: 0.8rem; color: #bdc3c7; margin-left: 5px; font-style: italic; }
+
         .container {
-            background-color: white;
-            max-width: 950px;
-            margin: 0 auto;
-            padding: 30px;
-            border-radius: 15px;
-            box-shadow: 0 4px 8px rgba(0,0,0,0.1);
-            position: relative;
+            background-color: white; max-width: 950px; margin: 0 auto;
+            padding: 30px; border-radius: 15px; box-shadow: 0 4px 8px rgba(0,0,0,0.1); position: relative;
         }
         .lang-switch { position: absolute; top: 20px; right: 20px; }
         .lang-switch select { font-size: 1rem; padding: 5px 10px; border-radius: 5px; border: 1px solid #ccc; cursor: pointer; }
@@ -94,10 +115,12 @@
         .btn { background-color: #e67e22; color: white; border: none; padding: 8px 15px; font-size: 1.1rem; border-radius: 5px; cursor: pointer; transition: 0.2s; font-weight: bold;}
         .btn:hover { background-color: #d35400; }
         .btn-check { background-color: #27ae60; font-size: 1.3rem; padding: 12px 30px; margin-top: 20px;}
+        .btn-check:hover { background-color: #2ecc71; }
         .btn-sol { background-color: #2980b9; color: white; border: none; padding: 5px 10px; font-size: 1rem; border-radius: 5px; cursor: pointer; margin-left: 10px; display: none;}
+        .btn-sol:hover { background-color: #1f618d; }
         
         .submit-area { background-color: #fff; border: 2px dashed #bdc3c7; border-radius: 10px; padding: 15px; margin: 25px auto; display: none; max-width: 500px; }
-        #student-name { margin-top: 15px; display: none; width: 80%; }
+        #student-name { margin-top: 15px; display: none; width: 80%; font-size: 1.2rem; padding: 8px;}
     </style>
 </head>
 <body>
@@ -105,8 +128,16 @@
 <div class="nav-bar">
     <a href="index.html">🍕 Fractions</a>
     <a href="decimal.html" class="active">🎯 Decimals</a>
-    <a href="1a2b.html">🔢 1A2B Game</a>
     <a href="angles.html">📐 Geometry Explorer</a>
+    
+    <div class="dropdown">
+        <a href="javascript:void(0)" class="dropbtn">🎮 Games Playroom ▾</a>
+        <div class="dropdown-content">
+            <a href="1a2b.html">🔢 1A2B Number Game</a>
+            <a href="#">✖️ 99 Multiplication <span class="coming-soon">(Coming Soon)</span></a>
+            <a href="#">🕵️ Logic Puzzle <span class="coming-soon">(Coming Soon)</span></a>
+        </div>
+    </div>
 </div>
 
 <div class="container">
@@ -206,7 +237,7 @@
                 </select>
             </label>
             <label><span id="text-qyear">Level: </span>
-                <select id="quiz-year" class="setting-select">
+                <select id="quiz-year" class="setting-select" onchange="generateQuiz()">
                     <option value="4" selected>Year 4</option>
                     <option value="5">Year 5</option>
                     <option value="6">Year 6</option>
@@ -225,9 +256,9 @@
         <div id="quiz-container"></div>
         
         <div id="submit-area" class="submit-area">
-            <label><input type="checkbox" id="chk-submit" onchange="toggleNameInput()"> <span id="text-submit-teacher">Submit to teacher</span></label><br>
+            <label><input type="checkbox" id="chk-submit" onchange="toggleNameInput()"> <span id="text-submit-teacher">Submit results to teacher</span></label><br>
             <input type="text" id="student-name" placeholder="Name">
-            <div id="submit-status"></div>
+            <div id="submit-status" style="margin-top: 10px; font-weight: bold;"></div>
         </div>
         <button class="btn btn-check" id="btn-check" style="display:none" onclick="checkAnswers()">Check Answers</button>
         <div id="score-display" class="score-display"></div>
@@ -252,8 +283,8 @@
             optQAll: "All Types", optQComp: "Comparing (<, >, =)", optQPow: "×/÷ 10, 100, 1000",
             btnGen: "Generate", btnCheck: "Check Answers", btnSol: "Solution", btnHideSol: "Hide",
             
-            submitTeacher: "Submit to teacher", requireName: "⚠️ Enter name!", sentSuccess: "✅ Sent!", sentError: "❌ Error",
-            scoreMsg: "You scored {score} / {total}!",
+            submitTeacher: "Submit results to teacher", requireName: "⚠️ Please enter your name!", sending: "Sending...", sentSuccess: "✅ Results sent successfully!", sentError: "❌ Error sending results.",
+            scoreMsg: "You scored {score} out of {total}!",
             
             solD2F: "Step 1: Write {dec} as {origNum}/{origDen}.<br>Step 2: Divide both by {gcd} to simplify.<br>Result: <strong>{n}/{d}</strong>.",
             solF2D: "Step: Divide numerator by denominator ({n} ÷ {d}).<br>Result: <strong>{dec}</strong>.",
@@ -275,7 +306,7 @@
             optQAll: "綜合題型", optQComp: "比較大小 (<, >, =)", optQPow: "乘除 10, 100, 1000",
             btnGen: "產生題目", btnCheck: "對答案", btnSol: "觀看解答", btnHideSol: "隱藏",
             
-            submitTeacher: "提交給老師", requireName: "⚠️ 請輸入名字！", sentSuccess: "✅ 成績已送出！", sentError: "❌ 傳送失敗",
+            submitTeacher: "將成績提交給老師", requireName: "⚠️ 請輸入姓名！", sending: "傳送中...", sentSuccess: "✅ 成績已送出！", sentError: "❌ 傳送失敗",
             scoreMsg: "你答對了 {score} / {total} 題！",
             
             solD2F: "步驟 1：將 {dec} 寫成分數 ➔ {origNum}/{origDen}。<br>步驟 2：分子分母同除以最大公因數 {gcd} 來約分。<br>答案：<strong>{n}/{d}</strong>。",
@@ -298,7 +329,7 @@
             optQAll: "すべての種類", optQComp: "大きさの比較 (<, >, =)", optQPow: "×/÷ 10, 100, 1000",
             btnGen: "問題作成", btnCheck: "答え合わせ", btnSol: "解答", btnHideSol: "隠す",
             
-            submitTeacher: "先生に送信", requireName: "⚠️ 名前を入力！", sentSuccess: "✅ 送信完了！", sentError: "❌ 失敗",
+            submitTeacher: "先生に送信する", requireName: "⚠️ 名前を入力！", sending: "送信中...", sentSuccess: "✅ 送信完了！", sentError: "❌ 送信失敗",
             scoreMsg: "{score} / {total} 問正解！",
             
             solD2F: "手順 1: {dec} を分数にする ➔ {origNum}/{origDen}。<br>手順 2: {gcd} で約分する。<br>答え: <strong>{n}/{d}</strong>。",
@@ -353,7 +384,6 @@
         document.getElementById('val-t').innerText = t; document.getElementById('val-h').innerText = h; document.getElementById('val-th').innerText = th;
         const decVal = ((t * 100 + h * 10 + th) / 1000).toFixed(3);
         
-        // ★ 核心變更：使用隱藏的 table 來達成完美的等號對齊
         document.getElementById('eq-place-value').innerHTML = `
             <table style="margin: 0 auto; text-align: left; border-collapse: collapse; width: fit-content;">
                 <tr>
@@ -501,11 +531,15 @@
                 if (qT === 'd2f') {
                     let origDen = Math.pow(10, decPart.length), origNum = parseInt(decPart);
                     ans = {n, d}; sol = {type: 'd2f', dec, origNum, origDen, gcd: gcd(origNum, origDen), n, d}; qText = `Convert ${dec} to fraction`;
+                    
+                    // ★ Year 4 分母免填邏輯
+                    let dInput = year === 4 ? `<span style="font-weight:bold; font-size:1.4rem;">${origDen}</span>` : `<input type="number" class="quiz-input" id="q${i}-d">`;
+
                     if(year === 6 && Math.random() > 0.6) {
                         let w = randInt(1, 5); dec = (w + n/d).toFixed(2); ans = { w, n, d };
-                        qH = `${dec} = <input type="number" class="quiz-input" id="q${i}-w"> <div class="fraction-display"><span class="num"><input type="number" class="quiz-input" id="q${i}-n"></span><span class="den"><input type="number" class="quiz-input" id="q${i}-d"></span></div>`;
+                        qH = `${dec} = <input type="number" class="quiz-input" id="q${i}-w"> <div class="fraction-display"><span class="num"><input type="number" class="quiz-input" id="q${i}-n"></span><span class="den">${dInput}</span></div>`;
                     } else {
-                        qH = `<span style="font-size:1.6rem; font-weight:bold;">${dec}</span> = <div class="fraction-display"><span class="num"><input type="number" class="quiz-input" id="q${i}-n"></span><span class="den"><input type="number" class="quiz-input" id="q${i}-d"></span></div>`;
+                        qH = `<span style="font-size:1.6rem; font-weight:bold;">${dec}</span> = <div class="fraction-display"><span class="num"><input type="number" class="quiz-input" id="q${i}-n"></span><span class="den">${dInput}</span></div>`;
                     }
                 } else {
                     ans = { dec: decPart }; sol = { type: 'f2d', n, d, dec }; qText = `Convert ${n}/${d} to decimal`;
@@ -537,63 +571,99 @@
         return "";
     }
 
-    async function checkAnswers() {
-        const studentName = document.getElementById('student-name').value.trim();
-        const statusDiv = document.getElementById('submit-status');
-        if (document.getElementById('chk-submit').checked && !studentName) { statusDiv.innerText = translations[currentLang].requireName; statusDiv.style.color = "#e74c3c"; return; }
+    async function checkAnswers(isFinalSubmit = true) {
+        if (currentQuizData.length === 0) return;
+        const t = translations[currentLang], isSubmitChecked = document.getElementById('chk-submit').checked;
+        const studentName = document.getElementById('student-name').value.trim(), statusDiv = document.getElementById('submit-status');
 
-        let score = 0, total = currentQuizData.length, wrongList = "";
+        if (isFinalSubmit && isSubmitChecked && !studentName) { statusDiv.innerText = t.requireName; statusDiv.style.color = "#e74c3c"; return; }
+
+        let score = 0; const total = currentQuizData.length; let wrongList = "";
         
         currentQuizData.forEach((data, i) => {
-            let isCorrect = true, userInputs = [];
-            
-            if (data.answers.n !== undefined && data.answers.d !== undefined) {
-                const elN = document.getElementById(`q${i}-n`), elD = document.getElementById(`q${i}-d`);
-                const valN = parseInt(elN.value), valD = parseInt(elD.value);
-                elN.classList.remove('correct', 'wrong'); elD.classList.remove('correct', 'wrong');
+            let isCorrect = true;
+            let ansObj = data.answers;
+            let userInputs = [];
+
+            // ★ 等值分數大腦：交叉相乘判斷邏輯 ★
+            if (ansObj.n !== undefined && ansObj.d !== undefined && ansObj.missing === undefined) {
+                const elN = document.getElementById(`q${i}-n`);
+                let elD = document.getElementById(`q${i}-d`);
                 
-                let wCorrect = true;
-                if (data.answers.w !== undefined) {
-                    const elW = document.getElementById(`q${i}-w`);
-                    const valW = parseInt(elW.value);
-                    elW.classList.remove('correct', 'wrong'); userInputs.push(`W:${valW||'Empty'}`);
-                    if (valW === data.answers.w) elW.classList.add('correct');
-                    else { elW.classList.add('wrong'); wCorrect = false; }
+                const valN = parseInt(elN.value);
+                
+                // ★ 根據 Year 4 控制分母的取得方式
+                let valD = data.solData.origDen || ansObj.d; 
+                if (elD) {
+                    valD = parseInt(elD.value);
+                    elD.classList.remove('correct', 'wrong');
                 }
                 
-                userInputs.push(`N:${valN||'Empty'}`, `D:${valD||'Empty'}`);
+                elN.classList.remove('correct', 'wrong');
                 
-                if (wCorrect && !isNaN(valN) && !isNaN(valD) && valD !== 0 && (valN * data.answers.d === data.answers.n * valD)) {
-                    elN.classList.add('correct'); elD.classList.add('correct');
+                let wCorrect = true;
+                let valW = 0;
+                let expectedTotalNum = ansObj.n;
+
+                if (ansObj.w !== undefined) {
+                    const elW = document.getElementById(`q${i}-w`);
+                    valW = parseInt(elW.value) || 0;
+                    elW.classList.remove('correct', 'wrong');
+                    userInputs.push(`W: ${isNaN(parseInt(elW.value))?'Empty':valW}`);
+                    
+                    if (valW === ansObj.w) { elW.classList.add('correct'); } 
+                    else { elW.classList.add('wrong'); wCorrect = false; }
+                    
+                    expectedTotalNum = ansObj.w * ansObj.d + ansObj.n;
+                }
+
+                userInputs.push(`N: ${isNaN(valN)?'Empty':valN}`, `D: ${isNaN(valD)?'Empty':valD}`);
+
+                let userTotalNum = (valW * valD) + valN;
+
+                if (wCorrect && !isNaN(valN) && !isNaN(valD) && valD !== 0 && (userTotalNum * ansObj.d === expectedTotalNum * valD)) {
+                    elN.classList.add('correct'); 
+                    if(elD) elD.classList.add('correct');
                 } else {
-                    if (!isNaN(valN) && !isNaN(valD) && valD !== 0 && (valN * data.answers.d === data.answers.n * valD)) {
-                        elN.classList.add('correct'); elD.classList.add('correct');
+                    if (!isNaN(valN) && !isNaN(valD) && valD !== 0 && (userTotalNum * ansObj.d === expectedTotalNum * valD)) {
+                        elN.classList.add('correct'); 
+                        if(elD) elD.classList.add('correct');
                     } else {
-                        elN.classList.add('wrong'); elD.classList.add('wrong');
+                        elN.classList.add('wrong'); 
+                        if(elD) elD.classList.add('wrong');
                     }
                     isCorrect = false; 
                 }
-            } else {
-                for (let key in data.answers) {
+            } 
+            else {
+                for (let key in ansObj) {
                     let el = document.getElementById(`q${i}-${key}`);
                     let val = (key === 'dec' || key === 'op') ? el.value.trim() : parseFloat(el.value);
-                    el.classList.remove('correct', 'wrong'); userInputs.push(val||'Empty');
-                    if (val == data.answers[key]) el.classList.add('correct'); 
-                    else { el.classList.add('wrong'); isCorrect = false; }
+                    el.classList.remove('correct', 'wrong'); userInputs.push(`${key}: ${isNaN(val) && typeof val !== 'string' ? 'Empty' : val}`);
+                    if (val == ansObj[key]) el.classList.add('correct'); else { el.classList.add('wrong'); isCorrect = false; }
                 }
             }
 
             const solBtn = document.getElementById(`btn-sol-${i}`), solBox = document.getElementById(`sol-${i}`);
-            if (isCorrect) { score++; solBtn.style.display = 'none'; solBox.style.display = 'none'; } 
+            if (isCorrect) { 
+                score++; 
+                solBtn.style.display = 'none'; 
+                solBox.style.display = 'none'; 
+            } 
             else { 
-                solBtn.style.display = 'inline-block'; solBox.style.display = 'none';
-                wrongList += `❌ Q${i+1}: ${data.qText}\n   Correct Answer: ${JSON.stringify(data.answers)}\n   Student Answer: ${userInputs.join(', ')}\n\n`;
+                solBtn.style.display = 'inline-block'; 
+                solBtn.innerText = t.btnSol; 
+                solBox.style.display = 'none'; 
+                wrongList += `❌ Q${i+1}: ${data.qText}\n   Correct Answer: ${JSON.stringify(ansObj)}\n   Student Answer: ${userInputs.join(', ')}\n\n`;
             }
         });
 
-        document.getElementById('score-display').innerText = translations[currentLang].scoreMsg.replace('{score}', score).replace('{total}', total);
+        document.getElementById('score-display').innerText = t.scoreMsg.replace('{score}', score).replace('{total}', total);
 
-        if (document.getElementById('chk-submit').checked) {
+        if (isFinalSubmit && isSubmitChecked) {
+            const checkBtn = document.getElementById('btn-check'), origText = checkBtn.innerText;
+            checkBtn.innerText = t.sending; checkBtn.disabled = true; statusDiv.innerText = t.sending; statusDiv.style.color = "#34495e";
+            
             const melbourneTime = new Date().toLocaleString("en-AU", {timeZone: "Australia/Melbourne", dateStyle: 'medium', timeStyle: 'short'});
             const qType = document.getElementById('quiz-type').options[document.getElementById('quiz-type').selectedIndex].text;
             const qYear = document.getElementById('quiz-year').options[document.getElementById('quiz-year').selectedIndex].text;
@@ -601,21 +671,23 @@
             let body = `Time (Melbourne): ${melbourneTime}\nStudent: ${studentName}\nType: ${qType} / ${qYear}\nScore: ${score} / ${total} (${Math.round(score/total*100)}%)\n\n`;
             body += wrongList ? `--- WRONG QUESTIONS ---\n${wrongList}` : "✨ PERFECT! No wrong questions.";
 
-            statusDiv.innerText = "Sending...";
             try {
                 fetch(`https://formsubmit.co/ajax/${teacherEmail}`, {
-                    method: "POST", headers: { 'Content-Type': 'application/json' },
+                    method: "POST", headers: { 'Content-Type': 'application/json', 'Accept': 'application/json' },
                     body: JSON.stringify({ name: studentName, _subject: `Decimal Quiz: ${studentName} (${score}/${total})`, message: body })
-                }).then(() => { statusDiv.innerText = "✅ Sent Success!"; statusDiv.style.color = "#27ae60"; });
-            } catch (e) { statusDiv.innerText = "❌ Error"; statusDiv.style.color = "#e74c3c"; }
+                }).then(() => {
+                    statusDiv.innerText = t.sentSuccess; statusDiv.style.color = "#27ae60";
+                });
+            } catch (e) { statusDiv.innerText = t.sentError; statusDiv.style.color = "#e74c3c"; } 
+            finally { checkBtn.innerText = origText; checkBtn.disabled = false; }
         }
     }
 
     function toggleNameInput() { document.getElementById('student-name').style.display = document.getElementById('chk-submit').checked ? 'inline-block' : 'none'; }
 
-    window.onload = () => {
+    window.onload = function() {
         const s = localStorage.getItem('mySiteLang'); if (s) document.getElementById('language').value = s;
-        changeLanguage(); initJumper(); 
+        changeLanguage(); updateConverter(); 
     };
 </script>
 </body>
