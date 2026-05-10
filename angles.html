@@ -39,6 +39,7 @@
             background-color: #e67e22; 
         }
         
+        /* ===== 遊戲下拉選單專屬樣式 ===== */
         .dropdown { display: inline-block; position: relative; }
         .dropdown-content {
             display: none; position: absolute; background-color: #2c3e50;
@@ -204,8 +205,7 @@
             <line x1="-250" y1="0" x2="250" y2="0" stroke="#bdc3c7" stroke-width="2" />
             <line x1="0" y1="-200" x2="0" y2="200" stroke="#bdc3c7" stroke-width="2" />
             <path id="triangle-path" fill="rgba(46, 204, 113, 0.2)" stroke="#27ae60" stroke-width="3" stroke-linejoin="round" />
-            <g id="tri-markers"></g>
-            <path id="t-right-a" fill="none" stroke="#c0392b" stroke-width="2.5"/>
+            <g id="tri-markers"></g> <path id="t-right-a" fill="none" stroke="#c0392b" stroke-width="2.5"/>
             <path id="t-right-b" fill="none" stroke="#2980b9" stroke-width="2.5"/>
             <path id="t-right-c" fill="none" stroke="#8e44ad" stroke-width="2.5"/>
             <text id="label-ta" class="angle-label" fill="#c0392b"></text>
@@ -460,9 +460,8 @@
         if(document.getElementById('prac2-box').style.display === 'block') generatePrac2();
     }
 
-    // ================= 原有探險家核心代碼 =================
+    // ================= 核心工具代碼 =================
     
-    // ★ 核心修復 1：找回被我不小心刪掉的 changeAngleCount 函數 ★
     function changeAngleCount(delta) {
         let newCount = lineAngleCount + delta;
         if (newCount < 2 || newCount > 5) return; 
@@ -564,7 +563,7 @@
             let a = angles[i];
             let startRad = currentAngle * Math.PI / 180; let endRad = (currentAngle + a) * Math.PI / 180;
             if (a === 90) {
-                // ★ 核心修復 2：練習區 1 直角符號縮小回 15 ★
+                // L=15 讓它不要過大
                 let pAx = cx + 15 * Math.cos(-startRad), pAy = cy + 15 * Math.sin(-startRad);
                 let pBx = pAx + 15 * Math.cos(-endRad), pBy = pAy + 15 * Math.sin(-endRad);
                 let pCx = cx + 15 * Math.cos(-endRad), pCy = cy + 15 * Math.sin(-endRad);
@@ -653,7 +652,6 @@
         }
     }
 
-    // ★ 核心修復 3：全域 L 參數重設為 15 ★
     function getRightAnglePath(pPrev, pCurr, pNext, L = 15) {
         const v1x = pPrev.x - pCurr.x, v1y = pPrev.y - pCurr.y, v2x = pNext.x - pCurr.x, v2y = pNext.y - pCurr.y;
         const len1 = Math.hypot(v1x, v1y), len2 = Math.hypot(v2x, v2y);
@@ -691,7 +689,6 @@
 
         function drawAngle(pt, pPrev, pNext, aVal, isHidden) {
             if (aVal === 90) {
-                // 不再硬塞 25，改用預設 15
                 svg.innerHTML += `<path d="${getRightAnglePath(pPrev, pt, pNext)}" fill="none" stroke="#e74c3c" stroke-width="2.5" />`;
             }
             let vx1 = pPrev.x - pt.x, vy1 = pPrev.y - pt.y, vx2 = pNext.x - pt.x, vy2 = pNext.y - pt.y;
