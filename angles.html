@@ -39,7 +39,6 @@
             background-color: #e67e22; 
         }
         
-        /* ===== 遊戲下拉選單專屬樣式 ===== */
         .dropdown { display: inline-block; position: relative; }
         .dropdown-content {
             display: none; position: absolute; background-color: #2c3e50;
@@ -58,13 +57,8 @@
         .coming-soon { font-size: 0.8rem; color: #bdc3c7; margin-left: 5px; font-style: italic; }
 
         .container {
-            background-color: white;
-            max-width: 850px;
-            margin: 0 auto;
-            padding: 30px;
-            border-radius: 15px;
-            box-shadow: 0 4px 8px rgba(0,0,0,0.1);
-            position: relative;
+            background-color: white; max-width: 850px; margin: 0 auto;
+            padding: 30px; border-radius: 15px; box-shadow: 0 4px 8px rgba(0,0,0,0.1); position: relative;
         }
         .lang-switch { position: absolute; top: 20px; right: 20px; z-index: 10; }
         .lang-switch select { font-size: 1rem; padding: 5px 10px; border-radius: 5px; border: 1px solid #ccc; cursor: pointer; }
@@ -210,9 +204,9 @@
             <line x1="-250" y1="0" x2="250" y2="0" stroke="#bdc3c7" stroke-width="2" />
             <line x1="0" y1="-200" x2="0" y2="200" stroke="#bdc3c7" stroke-width="2" />
             <path id="triangle-path" fill="rgba(46, 204, 113, 0.2)" stroke="#27ae60" stroke-width="3" stroke-linejoin="round" />
-            <path id="t-right-a" fill="none" stroke="#c0392b" stroke-width="2"/>
-            <path id="t-right-b" fill="none" stroke="#2980b9" stroke-width="2"/>
-            <path id="t-right-c" fill="none" stroke="#8e44ad" stroke-width="2"/>
+            <g id="tri-markers"></g> <path id="t-right-a" fill="none" stroke="#c0392b" stroke-width="2.5"/>
+            <path id="t-right-b" fill="none" stroke="#2980b9" stroke-width="2.5"/>
+            <path id="t-right-c" fill="none" stroke="#8e44ad" stroke-width="2.5"/>
             <text id="label-ta" class="angle-label" fill="#c0392b"></text>
             <text id="label-tb" class="angle-label" fill="#2980b9"></text>
             <text id="label-tc" class="angle-label" fill="#8e44ad"></text>
@@ -281,10 +275,10 @@
             <path id="quad-path" fill="rgba(52, 152, 219, 0.2)" stroke="#2980b9" stroke-width="3" stroke-linejoin="round" />
             <g id="quad-diagonals"></g>
             <g id="quad-markers"></g>
-            <path id="q-right-a" fill="none" stroke="#c0392b" stroke-width="2"/>
-            <path id="q-right-b" fill="none" stroke="#27ae60" stroke-width="2"/>
-            <path id="q-right-c" fill="none" stroke="#8e44ad" stroke-width="2"/>
-            <path id="q-right-d" fill="none" stroke="#d35400" stroke-width="2"/>
+            <path id="q-right-a" fill="none" stroke="#c0392b" stroke-width="2.5"/>
+            <path id="q-right-b" fill="none" stroke="#27ae60" stroke-width="2.5"/>
+            <path id="q-right-c" fill="none" stroke="#8e44ad" stroke-width="2.5"/>
+            <path id="q-right-d" fill="none" stroke="#d35400" stroke-width="2.5"/>
             <text id="label-qa" class="angle-label" fill="#c0392b"></text>
             <text id="label-qb" class="angle-label" fill="#27ae60"></text>
             <text id="label-qc" class="angle-label" fill="#8e44ad"></text>
@@ -318,12 +312,15 @@
             btnCheck: "Check", btnNext: "Next", correct: "✅ Correct! Great job!", wrong: "❌ Oops, try again!",
             p1Title: "Find the missing angle!",
             p2OptId: "Type 1: Identify Triangle", p2OptCalc: "Type 2: Find Missing Angle",
-            triEq: "Equilateral", triIsoRight: "Isosceles Right", triRight: "Right", triIso: "Isosceles", triAcute: "Acute", triObtuse: "Obtuse",
+            optTriEq: "Equilateral", optTriIsoRight: "Isosceles Right", optTriRight: "Right", optTriIso: "Isosceles", optTriAcute: "Acute", optTriObtuse: "Obtuse",
             
             triEquilateral: { name: "Equilateral Triangle", desc: "All three sides are equal, and all three interior angles are exactly 60°.", tip: "💡 Math Tip: It's actually impossible to draw a perfect equilateral triangle on an integer grid! Can you figure out why?" },
             triRightIso: { name: "Isosceles Right Triangle", desc: "Has one 90° right angle, and the two legs forming the right angle are equal in length.", tip: "" },
             triRight: { name: "Right Triangle", desc: "Has exactly one 90° right angle.", tip: "" },
             triIso: { name: "Isosceles Triangle", desc: "Has two sides of the same length, and the two base angles are equal.", tip: "" },
+            triAcute: { name: "Acute Triangle", desc: "All three interior angles are strictly less than 90°.", tip: "" },
+            triObtuse: { name: "Obtuse Triangle", desc: "One of the interior angles is strictly greater than 90°.", tip: "" },
+            
             quadSquare: { name: "Square", desc: "All 4 sides are equal, and all 4 angles are 90° right angles.", tip: "" },
             quadRect: { name: "Rectangle", desc: "All 4 angles are 90° right angles. Opposite sides are parallel and equal.", tip: "" },
             quadRhombus: { name: "Rhombus", desc: "All 4 sides are equal. Opposite sides are parallel, and opposite angles are equal.", tip: "" },
@@ -344,12 +341,15 @@
             btnCheck: "送出對答案", btnNext: "下一題", correct: "✅ 答對了！太棒了！", wrong: "❌ 不對喔，再算算看！",
             p1Title: "請算出「？」的度數：",
             p2OptId: "題型 1：判斷三角形種類", p2OptCalc: "題型 2：算出未知的角度",
-            triEq: "正三角形", triIsoRight: "等腰直角三角形", triRight: "直角三角形", triIso: "等腰三角形", triAcute: "銳角三角形", triObtuse: "鈍角三角形",
+            optTriEq: "正三角形", optTriIsoRight: "等腰直角三角形", optTriRight: "直角三角形", optTriIso: "等腰三角形", optTriAcute: "銳角三角形", optTriObtuse: "鈍角三角形",
 
             triEquilateral: { name: "正三角形", desc: "三條邊都等長，且三個內角都是 60°。", tip: "💡 數學小撇步：在完美的整數方格紙上，其實不可能拉出完美的正三角形喔！你能發現為什麼嗎？" },
             triRightIso: { name: "等腰直角三角形", desc: "有一個 90° 的直角，且形成直角的兩股等長。", tip: "" },
             triRight: { name: "直角三角形", desc: "其中一個內角剛好是 90°。", tip: "" },
             triIso: { name: "等腰三角形", desc: "有兩條邊等長，且兩個底角相等。", tip: "" },
+            triAcute: { name: "銳角三角形", desc: "三個內角都小於 90°。", tip: "" },
+            triObtuse: { name: "鈍角三角形", desc: "其中一個內角大於 90°。", tip: "" },
+
             quadSquare: { name: "正方形", desc: "四個角都是直角 (90°)，且四條邊都等長。", tip: "" },
             quadRect: { name: "長方形 (矩形)", desc: "四個角都是直角 (90°)。對邊互相平行且等長。", tip: "" },
             quadRhombus: { name: "菱形", desc: "四條邊都等長。對角相等，對邊互相平行。", tip: "" },
@@ -370,12 +370,15 @@
             btnCheck: "答え合わせ", btnNext: "次の問題", correct: "✅ 正解！すばらしい！", wrong: "❌ 惜しい！もう一度やってみよう",
             p1Title: "「？」の角度を求めよう：",
             p2OptId: "タイプ 1：三角形の判定", p2OptCalc: "タイプ 2：角度を計算する",
-            triEq: "正三角形", triIsoRight: "直角二等辺三角形", triRight: "直角三角形", triIso: "二等辺三角形", triAcute: "鋭角三角形", triObtuse: "鈍角三角形",
+            optTriEq: "正三角形", optTriIsoRight: "直角二等辺三角形", optTriRight: "直角三角形", optTriIso: "二等辺三角形", optTriAcute: "鋭角三角形", optTriObtuse: "鈍角三角形",
 
             triEquilateral: { name: "正三角形", desc: "3つの辺の長さがすべて等しく、3つの内角がすべて60°です。", tip: "💡 数学のヒント：実は、整数のグリッド上で完璧な正三角形を描くことは不可能なのです！なぜだか分かりますか？" },
             triRightIso: { name: "直角二等辺三角形", desc: "90°の直角が1つあり、直角を作る2つの辺の長さが等しいです。", tip: "" },
             triRight: { name: "直角三角形", desc: "90°の直角が1つあります。", tip: "" },
             triIso: { name: "二等辺三角形", desc: "2つの辺の長さが等しく、2つの底角が等しいです。", tip: "" },
+            triAcute: { name: "鋭角三角形", desc: "3つの内角がすべて90°より小さいです。", tip: "" },
+            triObtuse: { name: "鈍角三角形", desc: "内角の1つが90°より大きいです。", tip: "" },
+
             quadSquare: { name: "正方形", desc: "4つの角がすべて直角(90°)で、4つの辺の長さがすべて等しいです。", tip: "" },
             quadRect: { name: "長方形", desc: "4つの角がすべて直角(90°)です。向かい合う辺は平行で長さが等しいです。", tip: "" },
             quadRhombus: { name: "ひし形", desc: "4つの辺の長さがすべて等しいです。向かい合う辺は平行です。", tip: "" },
@@ -481,12 +484,10 @@
             angles = [a, b, 180 - a - b];
         }
         
-        // Randomly shuffle to avoid '?' always at the same spot
         for (let i = angles.length - 1; i > 0; i--) { const j = Math.floor(Math.random() * (i + 1)); [angles[i], angles[j]] = [angles[j], angles[i]]; }
         let hideIdx = Math.floor(Math.random() * angles.length);
         prac1Ans = angles[hideIdx];
 
-        // Draw static SVG
         const cx = 200, cy = 200, rayLen = 140, arcRadius = 50;
         svg.innerHTML += `<line x1="20" y1="${cy}" x2="380" y2="${cy}" stroke="#34495e" stroke-width="4" />`;
         let currentAngle = 0;
@@ -494,9 +495,9 @@
             let a = angles[i];
             let startRad = currentAngle * Math.PI / 180; let endRad = (currentAngle + a) * Math.PI / 180;
             if (a === 90) {
-                let pAx = cx + 20 * Math.cos(-startRad), pAy = cy + 20 * Math.sin(-startRad);
-                let pBx = pAx + 20 * Math.cos(-endRad), pBy = pAy + 20 * Math.sin(-endRad);
-                let pCx = cx + 20 * Math.cos(-endRad), pCy = cy + 20 * Math.sin(-endRad);
+                let pAx = cx + 25 * Math.cos(-startRad), pAy = cy + 25 * Math.sin(-startRad);
+                let pBx = pAx + 25 * Math.cos(-endRad), pBy = pAy + 25 * Math.sin(-endRad);
+                let pCx = cx + 25 * Math.cos(-endRad), pCy = cy + 25 * Math.sin(-endRad);
                 svg.innerHTML += `<path d="M ${pAx} ${pAy} L ${pBx} ${pBy} L ${pCx} ${pCy}" fill="none" stroke="#e74c3c" stroke-width="2.5" />`;
             } else {
                 let x1 = cx + arcRadius * Math.cos(-startRad), y1 = cy + arcRadius * Math.sin(-startRad);
@@ -535,11 +536,10 @@
         else { box.style.display = 'none'; }
     }
 
-    // 隨機三角形題庫設定
     const triTypes = [
-        { id: 'triEq', ang: [60,60,60] }, { id: 'triIsoRight', ang: [90,45,45] },
-        { id: 'triRight', ang: [90,60,30] }, { id: 'triIso', ang: [120,30,30] }, // Obtuse Isosceles
-        { id: 'triAcute', ang: [70,60,50] }, { id: 'triObtuse', ang: [130,30,20] } // Scalene
+        { id: 'optTriEq', ang: [60,60,60] }, { id: 'optTriIsoRight', ang: [90,45,45] },
+        { id: 'optTriRight', ang: [90,60,30] }, { id: 'optTriIso', ang: [120,30,30] }, 
+        { id: 'optTriAcute', ang: [70,60,50] }, { id: 'optTriObtuse', ang: [130,30,20] } 
     ];
 
     function generatePrac2() {
@@ -564,9 +564,8 @@
             document.getElementById('btn-p2-chk-mcq').style.display = 'inline-block'; document.getElementById('btn-p2-next-mcq').style.display = 'none';
             
             prac2TypeId = tData.id;
-            drawStaticTri(svg, angles, -1); // Show all angles
+            drawStaticTri(svg, angles, -1); 
             
-            // Generate 3 choices
             let options = [tData.id];
             while (options.length < 3) {
                 let r = triTypes[Math.floor(Math.random() * triTypes.length)].id;
@@ -576,7 +575,8 @@
             
             let btnArea = document.getElementById('mcq-buttons'); btnArea.innerHTML = '';
             options.forEach(opt => {
-                let b = document.createElement('button'); b.className = 'mcq-btn'; b.innerText = translations[currentLang][opt];
+                let b = document.createElement('button'); b.className = 'mcq-btn'; 
+                b.innerText = translations[currentLang][opt];
                 b.onclick = () => { document.querySelectorAll('.mcq-btn').forEach(btn=>btn.classList.remove('selected')); b.classList.add('selected'); b.dataset.val = opt; };
                 btnArea.appendChild(b);
             });
@@ -596,9 +596,24 @@
         
         svg.innerHTML += `<path d="M ${p1.x} ${p1.y} L ${p2.x} ${p2.y} L ${p3.x} ${p3.y} Z" fill="rgba(46,204,113,0.1)" stroke="#27ae60" stroke-width="3" stroke-linejoin="round" />`;
         
+        const lAB = getLen(p1, p2), lBC = getLen(p2, p3), lCA = getLen(p3, p1);
+        const eqAB_BC = isEqual(lAB, lBC), eqBC_CA = isEqual(lBC, lCA), eqCA_AB = isEqual(lCA, lAB);
+        let isEq = eqAB_BC && eqBC_CA && eqCA_AB;
+        let isIso = eqAB_BC || eqBC_CA || eqCA_AB;
+        
+        svg.innerHTML += `<g id="static-tri-markers"></g>`;
+        if (isEq) {
+            drawMarker(p1, p2, 'tick1', -15, 'static-tri-markers'); drawMarker(p2, p3, 'tick1', -15, 'static-tri-markers'); drawMarker(p3, p1, 'tick1', -15, 'static-tri-markers');
+        } else if (isIso) {
+            if (eqAB_BC) { drawMarker(p1, p2, 'tick1', -15, 'static-tri-markers'); drawMarker(p2, p3, 'tick1', -15, 'static-tri-markers'); }
+            else if (eqBC_CA) { drawMarker(p2, p3, 'tick1', -15, 'static-tri-markers'); drawMarker(p3, p1, 'tick1', -15, 'static-tri-markers'); }
+            else if (eqCA_AB) { drawMarker(p3, p1, 'tick1', -15, 'static-tri-markers'); drawMarker(p1, p2, 'tick1', -15, 'static-tri-markers'); }
+        }
+
         function drawAngle(pt, pPrev, pNext, aVal, isHidden) {
             if (aVal === 90) {
-                svg.innerHTML += `<path d="${getRightAnglePath(pPrev, pt, pNext, 20)}" fill="none" stroke="#e74c3c" stroke-width="2.5" />`;
+                // Practice mode: draw right angle marker
+                svg.innerHTML += `<path d="${getRightAnglePath(pPrev, pt, pNext, 25)}" fill="none" stroke="#e74c3c" stroke-width="2.5" />`;
             }
             let vx1 = pPrev.x - pt.x, vy1 = pPrev.y - pt.y, vx2 = pNext.x - pt.x, vy2 = pNext.y - pt.y;
             let a1 = Math.atan2(vy1, vx1), a2 = Math.atan2(vy2, vx2);
@@ -606,6 +621,7 @@
             
             let dist = aVal < 40 ? 45 : 30;
             let tx = pt.x + dist * Math.cos(bisect), ty = pt.y + dist * Math.sin(bisect);
+            // Hide the 90 degree text in all modes as requested
             let txt = isHidden ? "?" : (aVal === 90 ? "" : aVal + "°");
             let col = isHidden ? "#c0392b" : "#2c3e50";
             if (txt) svg.innerHTML += `<text x="${tx}" y="${ty}" font-weight="bold" font-size="${isHidden?26:18}" fill="${col}" text-anchor="middle" dominant-baseline="middle">${txt}</text>`;
@@ -613,9 +629,11 @@
         drawAngle(p1, p3, p2, A, hideIdx === 0); drawAngle(p2, p1, p3, B, hideIdx === 1); drawAngle(p3, p2, p1, C, hideIdx === 2);
     }
     
-    function getRightAnglePath(pPrev, pCurr, pNext, L = 15) {
+    // ★ 更新：L 預設改為 25，使其在圓圈外更清晰 ★
+    function getRightAnglePath(pPrev, pCurr, pNext, L = 25) {
         const v1x = pPrev.x - pCurr.x, v1y = pPrev.y - pCurr.y, v2x = pNext.x - pCurr.x, v2y = pNext.y - pCurr.y;
         const len1 = Math.hypot(v1x, v1y), len2 = Math.hypot(v2x, v2y);
+        if (len1 === 0 || len2 === 0) return '';
         const u1x = v1x/len1, u1y = v1y/len1, u2x = v2x/len2, u2y = v2y/len2;
         return `M ${pCurr.x + L*u1x} ${pCurr.y + L*u1y} L ${pCurr.x + L*u1x + L*u2x} ${pCurr.y + L*u1y + L*u2y} L ${pCurr.x + L*u2x} ${pCurr.y + L*u2y}`;
     }
@@ -644,13 +662,6 @@
         const t = translations[currentLang];
         if (deg === 0 || (isShape && (deg === 180 || deg === 360))) return isShape ? t.invalid : t.zero;
         if (deg < 90) return t.acute; if (deg === 90) return t.right; if (deg < 180) return t.obtuse; return t.concave;
-    }
-
-    function changeAngleCount(delta) {
-        let newCount = lineAngleCount + delta; if (newCount < 2 || newCount > 5) return; 
-        if (delta === 1) { let lastIdx = lineAngles.length - 1; let half = Math.floor(lineAngles[lastIdx] / 2); lineAngles[lastIdx] -= half; lineAngles.push(half); } 
-        else { let last = lineAngles.pop(); lineAngles[lineAngles.length - 1] += last; }
-        lineAngleCount = newCount; buildSliders(); updateTool1();
     }
 
     function buildSliders() {
@@ -711,7 +722,7 @@
     function getLen(p1, p2) { return Math.hypot(p2.x-p1.x, p2.y-p1.y); }
     function isEqual(l1, l2) { return Math.abs(l1 - l2) < 0.1; }
 
-    function drawMarker(pStart, pEnd, type, offset = 0) {
+    function drawMarker(pStart, pEnd, type, offset = 0, targetId = 'quad-markers') {
         const mx = (pStart.x + pEnd.x)/2, my = (pStart.y + pEnd.y)/2;
         const angle = Math.atan2(pEnd.y - pStart.y, pEnd.x - pStart.x) * 180 / Math.PI;
         const ox = mx + offset * Math.cos(angle * Math.PI / 180), oy = my + offset * Math.sin(angle * Math.PI / 180);
@@ -720,7 +731,17 @@
         if (type === 'para2') { d = 'M -10 -6 L -2 0 L -10 6 M 2 -6 L 10 0 L 2 6'; stroke = '#d35400'; } 
         if (type === 'tick1') { d = 'M 0 -8 L 0 8'; stroke = '#2980b9'; } 
         if (type === 'tick2') { d = 'M -3 -8 L -3 8 M 3 -8 L 3 8'; stroke = '#2980b9'; } 
-        document.getElementById('quad-markers').innerHTML += `<path d="${d}" fill="none" stroke="${stroke}" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round" transform="translate(${ox}, ${oy}) rotate(${angle})" />`;
+        
+        let target = document.getElementById(targetId);
+        if(target) target.innerHTML += `<path d="${d}" fill="none" stroke="${stroke}" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round" transform="translate(${ox}, ${oy}) rotate(${angle})" />`;
+    }
+
+    function getTriAngle(p1, center, p2) {
+        let a = Math.atan2(p1.y - center.y, p1.x - center.x);
+        let b = Math.atan2(p2.y - center.y, p2.x - center.x);
+        let deg = Math.abs(a - b) * (180 / Math.PI);
+        if (deg > 180) deg = 360 - deg;
+        return deg;
     }
 
     function updateTool2() {
@@ -734,20 +755,45 @@
 
         function setLabel(id, pt, deg) {
             const lbl = document.getElementById(id); lbl.setAttribute('x', pt.x + (pt.x <= 0 ? -40 : 20)); lbl.setAttribute('y', pt.y + (pt.y <= 0 ? -15 : 25));
-            lbl.textContent = (deg > 0 && deg < 180) ? `${deg}° (${getAngleType(deg, true)})` : "";
+            // ★ 若為直角 (90度) 則隱藏文字
+            lbl.textContent = (deg > 0 && deg < 180 && deg !== 90) ? `${deg}° (${getAngleType(deg, true)})` : "";
         }
         setLabel('label-ta', tA, rA); setLabel('label-tb', tB, rB); setLabel('label-tc', tC, rC);
-        document.getElementById('t-right-a').setAttribute('d', rA === 90 ? getRightAnglePath(tB, tA, tC) : '');
-        document.getElementById('t-right-b').setAttribute('d', rB === 90 ? getRightAnglePath(tA, tB, tC) : '');
-        document.getElementById('t-right-c').setAttribute('d', rC === 90 ? getRightAnglePath(tA, tC, tB) : '');
+        
+        // ★ 直角符號路徑繪製
+        document.getElementById('t-right-a').setAttribute('d', rA === 90 ? getRightAnglePath(tB, tA, tC, 25) : '');
+        document.getElementById('t-right-b').setAttribute('d', rB === 90 ? getRightAnglePath(tA, tB, tC, 25) : '');
+        document.getElementById('t-right-c').setAttribute('d', rC === 90 ? getRightAnglePath(tA, tC, tB, 25) : '');
 
         const eq = document.getElementById('equation2');
         if (rA === 0 || rB === 0 || rC === 0) { eq.innerText = `⚠️ ${translations[currentLang].invalid}`; eq.style.color = "#e74c3c"; } 
         else { eq.innerText = `∠A + ∠B + ∠C = ${rA}° + ${rB}° + ${rC}° = 180°`; eq.style.color = "#27ae60"; }
 
         const lAB = getLen(tA, tB), lBC = getLen(tB, tC), lCA = getLen(tC, tA);
-        const isIso = isEqual(lAB, lBC) || isEqual(lBC, lCA) || isEqual(lCA, lAB), isRight = rA===90||rB===90||rC===90, isEq = (isEqual(lAB,lBC)&&isEqual(lBC,lCA))||(Math.abs(rA-60)<=1&&Math.abs(rB-60)<=1&&Math.abs(rC-60)<=1);
-        let sKey = isEq ? "triEquilateral" : (isRight && isIso ? "triRightIso" : (isRight ? "triRight" : (isIso ? "triIso" : "")));
+        const eqAB_BC = isEqual(lAB, lBC), eqBC_CA = isEqual(lBC, lCA), eqCA_AB = isEqual(lCA, lAB);
+        
+        let isRight = (rA === 90 || rB === 90 || rC === 90);
+        let isIso = eqAB_BC || eqBC_CA || eqCA_AB;
+        let isEq = (eqAB_BC && eqBC_CA && eqCA_AB) || (Math.abs(rA-60)<=1 && Math.abs(rB-60)<=1 && Math.abs(rC-60)<=1);
+        let isObtuse = (rA > 90 || rB > 90 || rC > 90);
+
+        document.getElementById('tri-markers').innerHTML = '';
+        if (isEq) {
+            drawMarker(tA, tB, 'tick1', -20, 'tri-markers'); drawMarker(tB, tC, 'tick1', -20, 'tri-markers'); drawMarker(tC, tA, 'tick1', -20, 'tri-markers');
+        } else if (isIso) {
+            if (eqAB_BC) { drawMarker(tA, tB, 'tick1', -20, 'tri-markers'); drawMarker(tB, tC, 'tick1', -20, 'tri-markers'); }
+            else if (eqBC_CA) { drawMarker(tB, tC, 'tick1', -20, 'tri-markers'); drawMarker(tC, tA, 'tick1', -20, 'tri-markers'); }
+            else if (eqCA_AB) { drawMarker(tC, tA, 'tick1', -20, 'tri-markers'); drawMarker(tA, tB, 'tick1', -20, 'tri-markers'); }
+        }
+
+        // ★ 更新：判讀各種三角形類型
+        let sKey = "";
+        if (isEq) sKey = "triEquilateral";
+        else if (isRight && isIso) sKey = "triRightIso";
+        else if (isRight) sKey = "triRight";
+        else if (isIso) sKey = "triIso";
+        else if (isObtuse) sKey = "triObtuse";
+        else sKey = "triAcute";
 
         const sBox = document.getElementById('shape-info-2');
         if (sKey && rA!==0 && rB!==0 && rC!==0 && rA!==180 && rB!==180 && rC!==180) {
@@ -786,11 +832,16 @@
         const isCW = ((qA.x*qB.y - qB.x*qA.y) + (qB.x*qC.y - qC.x*qB.y) + (qC.x*qD.y - qD.x*qC.y) + (qD.x*qA.y - qA.x*qD.y)) > 0;
         let rA = Math.round(getInteriorAngle(qD, qA, qB, isCW)), rB = Math.round(getInteriorAngle(qA, qB, qC, isCW)), rC = Math.round(getInteriorAngle(qB, qC, qD, isCW)), rD = 360 - rA - rB - rC; 
 
-        function setQuadLbl(id, pt, deg) { const l = document.getElementById(id); l.setAttribute('x', pt.x + (pt.x<=0?-40:20)); l.setAttribute('y', pt.y + (pt.y<=0?-15:25)); l.textContent = (deg>0&&deg<360) ? `${deg}° (${getAngleType(deg, true)})` : ""; }
+        function setQuadLbl(id, pt, deg) { 
+            const l = document.getElementById(id); l.setAttribute('x', pt.x + (pt.x<=0?-40:20)); l.setAttribute('y', pt.y + (pt.y<=0?-15:25)); 
+            l.textContent = (deg>0 && deg<360 && deg !== 90) ? `${deg}° (${getAngleType(deg, true)})` : ""; 
+        }
         setQuadLbl('label-qa', qA, rA); setQuadLbl('label-qb', qB, rB); setQuadLbl('label-qc', qC, rC); setQuadLbl('label-qd', qD, rD);
 
-        document.getElementById('q-right-a').setAttribute('d', rA === 90 ? getRightAnglePath(qD, qA, qB) : ''); document.getElementById('q-right-b').setAttribute('d', rB === 90 ? getRightAnglePath(qA, qB, qC) : '');
-        document.getElementById('q-right-c').setAttribute('d', rC === 90 ? getRightAnglePath(qB, qC, qD) : ''); document.getElementById('q-right-d').setAttribute('d', rD === 90 ? getRightAnglePath(qC, qD, qA) : '');
+        document.getElementById('q-right-a').setAttribute('d', rA === 90 ? getRightAnglePath(qD, qA, qB, 25) : ''); 
+        document.getElementById('q-right-b').setAttribute('d', rB === 90 ? getRightAnglePath(qA, qB, qC, 25) : '');
+        document.getElementById('q-right-c').setAttribute('d', rC === 90 ? getRightAnglePath(qB, qC, qD, 25) : ''); 
+        document.getElementById('q-right-d').setAttribute('d', rD === 90 ? getRightAnglePath(qC, qD, qA, 25) : '');
 
         const pAB = isPar(qA, qB, qD, qC), pBC = isPar(qB, qC, qA, qD), lAB = getLen(qA, qB), lBC = getLen(qB, qC), lCD = getLen(qC, qD), lDA = getLen(qD, qA), allEq = isEqual(lAB, lBC) && isEqual(lBC, lCD) && isEqual(lCD, lDA);
         if (pAB) { drawMarker(qA, qB, 'para1'); drawMarker(qD, qC, 'para1'); } if (pBC) { drawMarker(qB, qC, 'para2'); drawMarker(qA, qD, 'para2'); }
