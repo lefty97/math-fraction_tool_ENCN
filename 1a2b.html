@@ -19,19 +19,44 @@
             text-align: center;
             margin-bottom: 20px;
             border-radius: 0 0 10px 10px;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            flex-wrap: wrap;
         }
-        .nav-bar a {
+        .nav-bar a, .dropbtn {
             color: white;
             text-decoration: none;
             font-size: 1.1rem;
             margin: 0 10px;
-            padding: 5px 10px;
+            padding: 8px 15px;
             border-radius: 5px;
             transition: background 0.3s;
+            display: inline-block;
+            cursor: pointer;
         }
-        .nav-bar a:hover, .nav-bar a.active {
-            background-color: #e67e22;
+        .nav-bar a:hover, .nav-bar a.active, .dropdown:hover .dropbtn { 
+            background-color: #e67e22; 
         }
+        
+        /* ===== 遊戲下拉選單專屬樣式 ===== */
+        .dropdown { display: inline-block; position: relative; }
+        .dropdown-content {
+            display: none; position: absolute; background-color: #2c3e50;
+            min-width: 260px; box-shadow: 0px 8px 16px 0px rgba(0,0,0,0.3);
+            z-index: 100; border-radius: 8px; top: 100%; left: 50%;
+            transform: translateX(-50%); padding: 8px 0; margin-top: 5px; overflow: hidden;
+        }
+        .dropdown-content a {
+            display: block !important; margin: 0 !important; padding: 12px 20px !important;
+            border-radius: 0 !important; text-align: left !important; font-size: 1.05rem !important;
+            border-bottom: 1px solid #34495e;
+        }
+        .dropdown-content a:last-child { border-bottom: none; }
+        .dropdown-content a:hover { background-color: #e67e22 !important; padding-left: 25px !important; }
+        .dropdown:hover .dropdown-content { display: block; }
+        .coming-soon { font-size: 0.8rem; color: #bdc3c7; margin-left: 5px; font-style: italic; }
+
         .container {
             background-color: white;
             max-width: 850px;
@@ -104,8 +129,16 @@
 <div class="nav-bar">
     <a href="index.html">🍕 Fractions</a>
     <a href="decimal.html">🎯 Decimals</a>
-    <a href="1a2b.html" class="active">🔢 1A2B Game</a>
     <a href="angles.html">📐 Geometry Explorer</a>
+    
+    <div class="dropdown">
+        <a href="javascript:void(0)" class="dropbtn active">🎮 Games Playroom ▾</a>
+        <div class="dropdown-content">
+            <a href="1a2b.html" style="background-color: #e67e22; padding-left: 25px !important;">🔢 1A2B Number Game</a>
+            <a href="#">✖️ 99 Multiplication <span class="coming-soon">(Coming Soon)</span></a>
+            <a href="#">🕵️ Logic Puzzle <span class="coming-soon">(Coming Soon)</span></a>
+        </div>
+    </div>
 </div>
 
 <div class="container">
