@@ -100,10 +100,26 @@
         .high-score-board { background: rgba(241, 196, 15, 0.2); padding: 5px 15px; border-radius: 20px; color: #f1c40f; border: 1px solid #f1c40f; }
         .score-highlight { animation: pulse 0.5s infinite alternate; color: #2ecc71; }
         @keyframes pulse { from { transform: scale(1); } to { transform: scale(1.1); } }
+        
 
         .input-zone {
             background: rgba(52, 73, 94, 0.95); padding: 15px; display: flex; justify-content: center; gap: 15px;
-            border-top: 2px solid #7f8c8d; z-index: 20; min-height: 70px; align-items: center; box-shadow: 0 -4px 10px rgba(0,0,0,0.2);
+            /* 1. 移除原本的 border-top，並加上 position: relative 讓尖刺有基準點 */
+            position: relative; z-index: 20; min-height: 70px; align-items: center; box-shadow: 0 -4px 10px rgba(0,0,0,0.2);
+        }
+        
+        /* 2. 這是新增的尖刺特效 (純 CSS 幾何繪製) */
+        .input-zone::before {
+            content: '';
+            position: absolute;
+            top: -15px; /* 尖刺向上凸出 15px */
+            left: 0;
+            width: 100%;
+            height: 15px;
+            /* 利用內建 SVG 畫出鐵灰色的等腰三角形並重複排列 */
+            background-image: url('data:image/svg+xml;utf8,<svg xmlns="http://www.w3.org/2000/svg" width="20" height="15" viewBox="0 0 20 15"><polygon points="0,15 10,0 20,15" fill="%237f8c8d"/></svg>');
+            background-repeat: repeat-x;
+            background-position: bottom;
         }
         
         /* Input Mode */
