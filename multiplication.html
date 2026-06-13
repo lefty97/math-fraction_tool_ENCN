@@ -1,0 +1,543 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>99 Multiplication Dash</title>
+    <style>
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            background-color: #f0f8ff;
+            color: #333;
+            text-align: center;
+            padding: 0 20px 40px 20px;
+            margin: 0;
+        }
+        .nav-bar {
+            background-color: #34495e;
+            padding: 15px;
+            text-align: center;
+            margin-bottom: 20px;
+            border-radius: 0 0 10px 10px;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            flex-wrap: wrap;
+        }
+        .nav-bar a, .dropbtn {
+            color: white;
+            text-decoration: none;
+            font-size: 1.1rem;
+            margin: 0 10px;
+            padding: 8px 15px;
+            border-radius: 5px;
+            transition: background 0.3s;
+            display: inline-block;
+            cursor: pointer;
+        }
+        .nav-bar a:hover, .nav-bar a.active, .dropdown:hover .dropbtn { 
+            background-color: #e67e22; 
+        }
+        
+        .dropdown { display: inline-block; position: relative; }
+        .dropdown-content {
+            display: none; position: absolute; background-color: #2c3e50;
+            min-width: 260px; box-shadow: 0px 8px 16px 0px rgba(0,0,0,0.3);
+            z-index: 100; border-radius: 8px; top: 100%; left: 50%;
+            transform: translateX(-50%); padding: 8px 0; margin-top: 5px; overflow: hidden;
+        }
+        .dropdown-content a {
+            display: block !important; margin: 0 !important; padding: 12px 20px !important;
+            border-radius: 0 !important; text-align: left !important; font-size: 1.05rem !important;
+            border-bottom: 1px solid #34495e;
+        }
+        .dropdown-content a:last-child { border-bottom: none; }
+        .dropdown-content a:hover { background-color: #e67e22 !important; padding-left: 25px !important; }
+        .dropdown:hover .dropdown-content { display: block; }
+        .coming-soon { font-size: 0.8rem; color: #bdc3c7; margin-left: 5px; font-style: italic; }
+
+        .container {
+            background-color: white; max-width: 950px; margin: 0 auto;
+            padding: 30px; border-radius: 15px; box-shadow: 0 4px 8px rgba(0,0,0,0.1); position: relative;
+        }
+        .lang-switch { position: absolute; top: 20px; right: 20px; z-index: 10; }
+        .lang-switch select { font-size: 1rem; padding: 5px 10px; border-radius: 5px; border: 1px solid #ccc; cursor: pointer; }
+        
+        .section-divider { margin: 50px 0; border: 0; height: 2px; background-image: linear-gradient(to right, transparent, #bdc3c7, transparent); }
+
+        /* Game Settings Area */
+        .settings-panel { background-color: #ebf5fb; padding: 20px; border-radius: 10px; margin-bottom: 20px; }
+        .checkbox-group { display: flex; flex-wrap: wrap; justify-content: center; gap: 10px; margin: 15px 0; }
+        .checkbox-label {
+            background: white; border: 2px solid #3498db; padding: 8px 15px; border-radius: 20px;
+            cursor: pointer; font-weight: bold; color: #2980b9; transition: 0.2s; user-select: none;
+        }
+        .checkbox-label input { display: none; }
+        .checkbox-label.checked { background: #3498db; color: white; }
+        
+        .btn { background-color: #3498db; color: white; border: none; padding: 10px 20px; font-size: 1.2rem; border-radius: 8px; cursor: pointer; transition: 0.2s; font-weight: bold; box-shadow: 0 4px 6px rgba(0,0,0,0.1); }
+        .btn:hover { background-color: #2980b9; transform: translateY(-2px); }
+        .btn-green { background-color: #2ecc71; } .btn-green:hover { background-color: #27ae60; }
+        .btn-red { background-color: #e74c3c; } .btn-red:hover { background-color: #c0392b; }
+
+        /* Game Canvas */
+        .game-area {
+            position: relative; width: 100%; height: 400px; background: #2c3e50; 
+            border-radius: 10px; overflow: hidden; border: 4px solid #34495e;
+            display: flex; flex-direction: column; justify-content: flex-end;
+        }
+        .falling-block {
+            position: absolute; left: 50%; transform: translateX(-50%);
+            background-color: #f1c40f; color: #2c3e50; font-size: 2.5rem; font-weight: bold;
+            padding: 10px 30px; border-radius: 10px; box-shadow: 0 4px 10px rgba(0,0,0,0.3);
+            display: flex; justify-content: center; align-items: center; min-width: 120px;
+            transition: background-color 0.3s, color 0.3s, transform 0.2s;
+        }
+        .falling-block.wrong { background-color: #e74c3c; color: white; transform: translateX(-50%) scale(1.1); z-index: 10; }
+        .falling-block.correct { transform: translateX(-50%) scale(0); opacity: 0; }
+        
+        .game-ui { position: absolute; top: 10px; left: 15px; right: 15px; display: flex; justify-content: space-between; color: white; font-size: 1.2rem; font-weight: bold; z-index: 5; pointer-events: none;}
+        
+        .input-zone {
+            background: rgba(52, 73, 94, 0.9); padding: 15px; display: flex; justify-content: center; gap: 10px;
+            border-top: 2px solid #7f8c8d; z-index: 20;
+        }
+        .game-input {
+            font-size: 1.8rem; width: 120px; text-align: center; border-radius: 8px; border: 2px solid #bdc3c7;
+            padding: 5px; outline: none; font-weight: bold; background: white;
+        }
+        .game-input:focus { border-color: #f1c40f; box-shadow: 0 0 10px rgba(241, 196, 15, 0.5); }
+        .overlay-msg {
+            position: absolute; top: 0; left: 0; width: 100%; height: 100%;
+            background: rgba(44, 62, 80, 0.8); color: white; display: flex; flex-direction: column;
+            justify-content: center; align-items: center; z-index: 30;
+        }
+        .overlay-msg h3 { font-size: 2.5rem; margin: 0 0 20px 0; color: #f1c40f;}
+
+        /* Quiz UI */
+        .quiz-panel { background-color: #fef9e7; padding: 25px; border-radius: 10px; margin-top: 20px; }
+        .setting-select { font-size: 1.1rem; padding: 5px; border: 1px solid #bdc3c7; border-radius: 4px; font-weight:bold; }
+        #quiz-container { display: grid; grid-template-columns: repeat(auto-fit, minmax(250px, 1fr)); gap: 15px; margin-top: 20px; }
+        .question-item { background-color: white; padding: 15px; border-radius: 10px; box-shadow: 0 2px 5px rgba(0,0,0,0.05); border: 2px solid #f8c471; font-size: 1.4rem; font-weight: bold; display: flex; align-items: center; justify-content: center;}
+        .quiz-input { width: 60px; text-align: center; font-size: 1.3rem; margin: 0 5px; border: 2px solid #bdc3c7; border-radius: 4px; outline: none; padding: 5px; }
+        .quiz-input.correct { background-color: #d5f5e3; border-color: #27ae60; color: #27ae60; font-weight: bold;}
+        .quiz-input.wrong { background-color: #fadedb; border-color: #e74c3c; color: #e74c3c; font-weight: bold;}
+        
+        .submit-area { background-color: #fff; border: 2px dashed #bdc3c7; border-radius: 10px; padding: 15px; margin: 25px auto; display: none; max-width: 500px; text-align:center;}
+        .score-display { font-size: 1.8rem; font-weight: bold; color: #27ae60; margin-top: 20px; text-align:center; }
+    </style>
+</head>
+<body>
+
+<div class="nav-bar">
+    <a href="index.html">🍕 Fractions</a>
+    <a href="decimal.html">🎯 Decimals</a>
+    <a href="angles.html">📐 Geometry Explorer</a>
+    <a href="algebra.html">⚖️ Algebra Balance</a>
+    
+    <div class="dropdown">
+        <a href="javascript:void(0)" class="dropbtn active">🎮 Games Playroom ▾</a>
+        <div class="dropdown-content">
+            <a href="1a2b.html">🔢 1A2B Number Game</a>
+            <a href="multiplication.html" style="background-color: #e67e22; padding-left: 25px !important;">✖️ 99 Multiplication</a>
+            <a href="#">🕵️ Logic Puzzle <span class="coming-soon">(Coming Soon)</span></a>
+        </div>
+    </div>
+</div>
+
+<div class="container">
+    <div class="lang-switch">
+        <select id="language" onchange="changeLanguage()">
+            <option value="en" selected>English</option>
+            <option value="zh">繁體中文</option>
+            <option value="ja">日本語</option>
+        </select>
+    </div>
+
+    <h2 id="text-title" style="margin-top: 20px;">✖️ Multiplication Dash</h2>
+    <p id="text-subtitle">Type the answer before the block hits the ground! Learn from your mistakes.</p>
+    
+    <!-- Game Settings -->
+    <div class="settings-panel">
+        <div style="font-size: 1.1rem; font-weight: bold; margin-bottom: 10px;" id="text-select-tables">Select tables to practice:</div>
+        <div class="checkbox-group" id="number-selectors">
+            <!-- JavaScript will generate checkboxes 1-9 here -->
+        </div>
+        <div style="margin-top: 15px;">
+            <label style="font-weight: bold; margin-right: 15px;"><span id="text-speed">Speed:</span> 
+                <select id="game-speed" class="setting-select">
+                    <option value="1">Slow</option>
+                    <option value="2" selected>Normal</option>
+                    <option value="3">Fast</option>
+                </select>
+            </label>
+            <button class="btn btn-green" id="btn-start" onclick="startGame()">▶ Start Game</button>
+        </div>
+    </div>
+
+    <!-- Game Canvas -->
+    <div class="game-area" id="game-area">
+        <div class="game-ui">
+            <div id="score-board">Score: 0</div>
+            <div id="streak-board">Streak: 0</div>
+        </div>
+        
+        <!-- Overlay -->
+        <div class="overlay-msg" id="overlay">
+            <h3 id="overlay-title">Ready?</h3>
+            <button class="btn btn-green" id="btn-overlay-start" onclick="startGame()">Start</button>
+        </div>
+
+        <div id="block-container"></div>
+
+        <div class="input-zone">
+            <input type="number" id="game-input" class="game-input" placeholder="?" disabled autocomplete="off">
+        </div>
+    </div>
+
+    <hr class="section-divider">
+
+    <!-- Quiz Generator -->
+    <h2 id="text-title2">📝 Multiplication & Division Practice</h2>
+    <div class="quiz-panel">
+        <div style="display:flex; justify-content:center; gap:15px; flex-wrap:wrap; margin-bottom: 20px;">
+            <label><span id="text-qtype">Type: </span>
+                <select id="quiz-type" class="setting-select">
+                    <option value="mix" id="opt-mix">All Mixed</option>
+                    <option value="mul" id="opt-mul">Standard Multiplication</option>
+                    <option value="div" id="opt-div">Division Facts</option>
+                    <option value="miss" id="opt-miss">Missing Factors</option>
+                </select>
+            </label>
+            <label><span id="text-qcount">Count: </span>
+                <select id="quiz-count" class="setting-select">
+                    <option value="10">10</option>
+                    <option value="20" selected>20</option>
+                    <option value="50">50</option>
+                </select>
+            </label>
+            <button class="btn" id="btn-generate" onclick="generateQuiz()">Generate</button>
+        </div>
+
+        <div id="quiz-container"></div>
+        
+        <div id="submit-area" class="submit-area">
+            <label><input type="checkbox" id="chk-submit" onchange="toggleNameInput()"> <span id="text-submit-teacher">Submit results to teacher</span></label><br>
+            <input type="text" id="student-name" placeholder="Name">
+            <div id="submit-status" style="margin-top: 10px; font-weight: bold;"></div>
+        </div>
+        <div style="text-align:center;">
+            <button class="btn btn-green" style="font-size:1.3rem; padding:12px 30px; display:none;" id="btn-check" onclick="checkAnswers()">Check Answers</button>
+        </div>
+        <div id="score-display" class="score-display"></div>
+    </div>
+</div>
+
+<script>
+    const teacherEmail = "anita20700@gmail.com";
+    
+    const translations = {
+        en: {
+            title: "✖️ Multiplication Dash", sub: "Type the answer before the block hits the ground! Learn from your mistakes.",
+            selTables: "Select tables to practice (Default: All):", speed: "Speed:", btnStart: "▶ Start Game", btnStop: "⏹ Stop",
+            score: "Score:", streak: "Streak:", ready: "Ready?",
+            
+            t2: "📝 Multiplication & Division Practice", qtype: "Type:", qcount: "Count:", btnGen: "Generate",
+            optMix: "All Mixed", optMul: "Standard Multiplication", optDiv: "Division Facts", optMiss: "Missing Factors",
+            btnCheck: "Check Answers",
+            submitTeacher: "Submit results to teacher", requireName: "⚠️ Please enter your name!", sending: "Sending...", sentSuccess: "✅ Results sent successfully!", sentError: "❌ Error sending results (Server down).",
+            scoreMsg: "You scored {score} out of {total}!"
+        },
+        zh: {
+            title: "✖️ 九九乘法衝刺戰", sub: "在方塊落地前輸入正確答案！不用怕答錯，系統會強制給予正確印象。",
+            selTables: "勾選今天想練習的乘法表 (預設全選)：", speed: "掉落速度：", btnStart: "▶ 開始遊戲", btnStop: "⏹ 停止",
+            score: "得分：", streak: "連勝：", ready: "準備好了嗎？",
+
+            t2: "📝 乘除法與填空實戰測驗", qtype: "題型：", qcount: "題數：", btnGen: "產生題目",
+            optMix: "綜合測驗", optMul: "標準乘法", optDiv: "基礎除法", optMiss: "缺失因數填空",
+            btnCheck: "送出對答案",
+            submitTeacher: "將成績提交給老師", requireName: "⚠️ 請輸入姓名！", sending: "傳送中...", sentSuccess: "✅ 成績已送出！", sentError: "❌ 傳送失敗 (伺服器無回應)",
+            scoreMsg: "你答對了 {score} / {total} 題！"
+        },
+        ja: {
+            title: "✖️ 掛け算ダッシュ", sub: "ブロックが落ちる前に答えを入力してね！間違えても大丈夫、正解を見て学ぼう。",
+            selTables: "練習する段を選んでください（デフォルトは全て）：", speed: "スピード：", btnStart: "▶ スタート", btnStop: "⏹ ストップ",
+            score: "スコア：", streak: "連続正解：", ready: "準備はいい？",
+
+            t2: "📝 掛け算・割り算の練習問題", qtype: "種類：", qcount: "問題数：", btnGen: "問題作成",
+            optMix: "すべて", optMul: "標準の掛け算", optDiv: "割り算", optMiss: "穴埋め問題",
+            btnCheck: "答え合わせ",
+            submitTeacher: "先生に送信する", requireName: "⚠️ 名前を入力！", sending: "送信中...", sentSuccess: "✅ 送信完了！", sentError: "❌ 送信エラー (サーバーダウン)",
+            scoreMsg: "{score} / {total} 問正解！"
+        }
+    };
+
+    let currentLang = 'en';
+    let currentQuizData = [];
+    
+    // Game State
+    let isPlaying = false;
+    let animationId = null;
+    let blockY = 0;
+    let currentA = 0, currentB = 0;
+    let score = 0, streak = 0;
+    let fallSpeed = 1.5;
+    let isPausedForError = false;
+
+    function changeLanguage() {
+        currentLang = document.getElementById('language').value;
+        localStorage.setItem('mySiteLang', currentLang);
+        const t = translations[currentLang];
+        
+        document.getElementById('text-title').innerText = t.title; document.getElementById('text-subtitle').innerText = t.sub;
+        document.getElementById('text-select-tables').innerText = t.selTables; document.getElementById('text-speed').innerText = t.speed;
+        document.getElementById('btn-start').innerText = isPlaying ? t.btnStop : t.btnStart;
+        document.getElementById('overlay-title').innerText = t.ready; document.getElementById('btn-overlay-start').innerText = t.btnStart.replace('▶ ', '');
+        
+        document.getElementById('text-title2').innerText = t.t2; document.getElementById('text-qtype').innerText = t.qtype; document.getElementById('text-qcount').innerText = t.qcount;
+        document.getElementById('opt-mix').innerText = t.optMix; document.getElementById('opt-mul').innerText = t.optMul; document.getElementById('opt-div').innerText = t.optDiv; document.getElementById('opt-miss').innerText = t.optMiss;
+        document.getElementById('btn-generate').innerText = t.btnGen; document.getElementById('btn-check').innerText = t.btnCheck;
+        document.getElementById('text-submit-teacher').innerText = t.submitTeacher; document.getElementById('student-name').placeholder = t.requireName.replace('⚠️ ', '');
+
+        updateScoreBoard();
+    }
+
+    function initCheckboxes() {
+        const container = document.getElementById('number-selectors');
+        for(let i=1; i<=9; i++) {
+            let lbl = document.createElement('label'); lbl.className = 'checkbox-label checked';
+            lbl.innerHTML = `<input type="checkbox" value="${i}" checked onchange="toggleCheck(this)"> ${i}`;
+            container.appendChild(lbl);
+        }
+    }
+
+    function toggleCheck(cb) {
+        if(cb.checked) cb.parentElement.classList.add('checked');
+        else cb.parentElement.classList.remove('checked');
+    }
+
+    // ================= GAME LOGIC =================
+
+    function getSelectedTables() {
+        let selected = [];
+        document.querySelectorAll('#number-selectors input[type="checkbox"]:checked').forEach(cb => selected.push(parseInt(cb.value)));
+        return selected.length > 0 ? selected : [1,2,3,4,5,6,7,8,9]; // Default to all if none selected
+    }
+
+    function startGame() {
+        const btn = document.getElementById('btn-start');
+        const t = translations[currentLang];
+        
+        if(isPlaying) { // Stop Game
+            isPlaying = false; cancelAnimationFrame(animationId);
+            document.getElementById('overlay').style.display = 'flex';
+            document.getElementById('block-container').innerHTML = '';
+            document.getElementById('game-input').disabled = true;
+            btn.innerText = t.btnStart; btn.className = 'btn btn-green';
+            return;
+        }
+        
+        // Start Game
+        isPlaying = true;
+        score = 0; streak = 0; updateScoreBoard();
+        
+        let spdVal = document.getElementById('game-speed').value;
+        fallSpeed = spdVal === '1' ? 1.0 : (spdVal === '2' ? 1.8 : 2.8);
+        
+        document.getElementById('overlay').style.display = 'none';
+        document.getElementById('game-input').disabled = false;
+        document.getElementById('game-input').value = '';
+        document.getElementById('game-input').focus();
+        
+        btn.innerText = t.btnStop; btn.className = 'btn btn-red';
+        
+        spawnBlock();
+    }
+
+    function updateScoreBoard() {
+        const t = translations[currentLang];
+        document.getElementById('score-board').innerText = `${t.score} ${score}`;
+        document.getElementById('streak-board').innerText = `${t.streak} ${streak}`;
+    }
+
+    function spawnBlock() {
+        if(!isPlaying) return;
+        isPausedForError = false;
+        
+        let tables = getSelectedTables();
+        currentA = tables[Math.floor(Math.random() * tables.length)];
+        currentB = Math.floor(Math.random() * 9) + 1;
+        
+        blockY = -60; // Start slightly above
+        
+        const container = document.getElementById('block-container');
+        container.innerHTML = `<div class="falling-block" id="active-block" style="top: ${blockY}px;">${currentA} × ${currentB}</div>`;
+        
+        document.getElementById('game-input').value = '';
+        document.getElementById('game-input').focus();
+        
+        animationId = requestAnimationFrame(gameLoop);
+    }
+
+    function gameLoop() {
+        if(!isPlaying || isPausedForError) return;
+        
+        blockY += fallSpeed;
+        const block = document.getElementById('active-block');
+        const gameAreaHeight = 330; // 400 total - 70 input zone
+        
+        if(block) block.style.top = blockY + 'px';
+        
+        if (blockY > gameAreaHeight) { // Hit bottom
+            triggerError();
+        } else {
+            animationId = requestAnimationFrame(gameLoop);
+        }
+    }
+
+    function triggerError() {
+        isPausedForError = true;
+        streak = 0; updateScoreBoard();
+        const block = document.getElementById('active-block');
+        if(block) {
+            block.classList.add('wrong');
+            block.innerText = `${currentA} × ${currentB} = ${currentA * currentB}`;
+        }
+        document.getElementById('game-input').value = '';
+        
+        // Pause for 1.5s then spawn next
+        setTimeout(() => { if(isPlaying) spawnBlock(); }, 1500);
+    }
+
+    // Listen for Enter key on input
+    document.getElementById('game-input').addEventListener('keyup', function(event) {
+        if (event.key === 'Enter' && isPlaying && !isPausedForError) {
+            let userVal = parseInt(this.value);
+            if (userVal === currentA * currentB) {
+                // Correct
+                streak++; score += (10 + streak); updateScoreBoard();
+                const block = document.getElementById('active-block');
+                block.classList.add('correct'); // Shatter CSS anim
+                isPausedForError = true; // Pause briefly to let anim play
+                this.value = '';
+                setTimeout(() => { if(isPlaying) spawnBlock(); }, 200);
+            } else {
+                // Wrong
+                triggerError();
+            }
+        }
+    });
+
+    // Keep focus on input if they click game area
+    document.getElementById('game-area').addEventListener('click', () => {
+        if(isPlaying && !isPausedForError) document.getElementById('game-input').focus();
+    });
+
+
+    // ================= QUIZ GENERATOR =================
+    
+    function randInt(min, max) { return Math.floor(Math.random() * (max - min + 1)) + min; }
+
+    function generateQuiz() {
+        const type = document.getElementById('quiz-type').value;
+        const count = parseInt(document.getElementById('quiz-count').value);
+        let tables = getSelectedTables();
+        
+        document.getElementById('quiz-container').innerHTML = '';
+        document.getElementById('score-display').innerHTML = '';
+        document.getElementById('submit-status').innerHTML = '';
+        document.getElementById('submit-area').style.display = 'block';
+        document.getElementById('btn-check').style.display = 'inline-block';
+        
+        currentQuizData = [];
+
+        for (let i = 0; i < count; i++) {
+            let qT = type === 'mix' ? ['mul', 'div', 'miss'][randInt(0, 2)] : type;
+            let a = tables[randInt(0, tables.length - 1)];
+            let b = randInt(1, 9);
+            let c = a * b;
+            
+            let qH = "", ans = {};
+
+            if (qT === 'mul') {
+                let swap = Math.random() > 0.5;
+                qH = `${swap?b:a} × ${swap?a:b} = <input type="number" class="quiz-input" id="q${i}-ans">`;
+                ans = { ans: c };
+            } 
+            else if (qT === 'div') {
+                qH = `${c} ÷ ${a} = <input type="number" class="quiz-input" id="q${i}-ans">`;
+                ans = { ans: b };
+            }
+            else if (qT === 'miss') {
+                let missingB = Math.random() > 0.5;
+                if(missingB) {
+                    qH = `${a} × <input type="number" class="quiz-input" id="q${i}-ans" placeholder="?"> = ${c}`;
+                    ans = { ans: b };
+                } else {
+                    qH = `<input type="number" class="quiz-input" id="q${i}-ans" placeholder="?"> × ${b} = ${c}`;
+                    ans = { ans: a };
+                }
+            }
+
+            currentQuizData.push({ answers: ans });
+            let item = document.createElement('div'); item.className = 'question-item';
+            item.innerHTML = qH;
+            document.getElementById('quiz-container').appendChild(item);
+        }
+    }
+
+    function toggleNameInput() { document.getElementById('student-name').style.display = document.getElementById('chk-submit').checked ? 'inline-block' : 'none'; }
+
+    async function checkAnswers() {
+        if (currentQuizData.length === 0) return;
+        const t = translations[currentLang];
+        const isSubmitChecked = document.getElementById('chk-submit').checked;
+        const studentName = document.getElementById('student-name').value.trim();
+        const statusDiv = document.getElementById('submit-status');
+
+        if (isSubmitChecked && !studentName) { statusDiv.innerText = t.requireName; statusDiv.style.color = "#e74c3c"; return; }
+
+        let score = 0; const total = currentQuizData.length; let wrongCount = 0;
+        
+        currentQuizData.forEach((data, i) => {
+            let el = document.getElementById(`q${i}-ans`);
+            let val = parseInt(el.value);
+            el.classList.remove('correct', 'wrong');
+            if (val === data.answers.ans) {
+                el.classList.add('correct'); score++;
+            } else { 
+                el.classList.add('wrong'); wrongCount++; 
+            }
+        });
+
+        document.getElementById('score-display').innerText = t.scoreMsg.replace('{score}', score).replace('{total}', total);
+
+        if (isSubmitChecked) {
+            const checkBtn = document.getElementById('btn-check'), origText = checkBtn.innerText;
+            checkBtn.innerText = t.sending; checkBtn.disabled = true; statusDiv.innerText = t.sending; statusDiv.style.color = "#34495e";
+            
+            const melbourneTime = new Date().toLocaleString("en-AU", {timeZone: "Australia/Melbourne", dateStyle: 'medium', timeStyle: 'short'});
+            const qType = document.getElementById('quiz-type').options[document.getElementById('quiz-type').selectedIndex].text;
+            
+            let body = `Time: ${melbourneTime}\nStudent: ${studentName}\nType: Multiplication (${qType})\nScore: ${score}/${total}\n`;
+
+            try {
+                const response = await fetch(`https://formsubmit.co/ajax/${teacherEmail}`, {
+                    method: "POST", headers: { 'Content-Type': 'application/json', 'Accept': 'application/json' },
+                    body: JSON.stringify({ name: studentName, _subject: `Multiplication Quiz: ${studentName} (${score}/${total})`, message: body })
+                });
+                if (response.ok) { statusDiv.innerText = t.sentSuccess; statusDiv.style.color = "#27ae60"; } 
+                else { throw new Error("Server not ok"); }
+            } catch (e) { statusDiv.innerText = t.sentError; statusDiv.style.color = "#e74c3c"; } 
+            finally { checkBtn.innerText = origText; checkBtn.disabled = false; }
+        }
+    }
+
+    window.onload = function() {
+        initCheckboxes();
+        const savedLang = localStorage.getItem('mySiteLang'); if (savedLang) document.getElementById('language').value = savedLang;
+        changeLanguage(); 
+    };
+</script>
+</body>
+</html>
