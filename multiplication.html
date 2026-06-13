@@ -201,10 +201,10 @@
             </label>
             <label style="font-weight: bold;"><span id="text-speed">Speed:</span> 
                 <select id="game-speed" class="setting-select">
-                    <option value="1">Slow</option>
-                    <option value="2" selected>Normal</option>
-                    <option value="3">Fast</option>
-                </select>
+                    <option value="1" id="opt-speed-1">Slow</option>
+                    <option value="2" id="opt-speed-2" selected>Normal</option>
+                    <option value="3" id="opt-speed-3">Fast</option>
+            </select>
             </label>
             <button class="btn btn-green" id="btn-start" onclick="toggleGame()">▶ Start Game</button>
         </div>
@@ -280,7 +280,7 @@
         en: {
             title: "✖️ Multiplication Dash", sub: "Answer before the block hits the ground! Learn from your mistakes.",
             selTables: "Select tables to practice:", speed: "Speed:", mode: "Mode:",
-            optModeIn: "Typing", optModeMc: "Multiple Choice",
+            optModeIn: "Typing", optModeMc: "Multiple Choice", optS1: "Slow", optS2: "Normal", optS3: "Fast",
             btnStart: "▶ Start Game", btnStop: "⏹ Stop & Save",
             score: "Score:", streak: "Streak:", best: "🏆 Best: {s} ({n})", ready: "Ready?",
             newRecord: "🎉 New High Score! Enter your name:", playerStr: "Player",
@@ -294,7 +294,7 @@
         zh: {
             title: "✖️ 九九乘法衝刺戰", sub: "在方塊落地前回答！不用怕答錯，系統會強制給予正確印象。",
             selTables: "勾選今天想練習的乘法表：", speed: "速度：", mode: "模式：",
-            optModeIn: "鍵盤輸入", optModeMc: "選擇題",
+            optModeIn: "鍵盤輸入", optModeMc: "選擇題", optS1: "慢速", optS2: "一般", optS3: "快速",
             btnStart: "▶ 開始遊戲", btnStop: "⏹ 結算並存檔",
             score: "得分：", streak: "連勝：", best: "🏆 最高分: {s} ({n})", ready: "準備好了嗎？",
             newRecord: "🎉 破紀錄啦！請輸入你的英雄大名：", playerStr: "挑戰者",
@@ -308,7 +308,7 @@
         ja: {
             title: "✖️ 掛け算ダッシュ", sub: "ブロックが落ちる前に答えよう！間違えても正解を見て学ぼう。",
             selTables: "練習する段を選んでください：", speed: "スピード：", mode: "モード：",
-            optModeIn: "タイピング", optModeMc: "選択問題",
+            optModeIn: "タイピング", optModeMc: "選択問題", optS1: "遅い", optS2: "普通", optS3: "速い",
             btnStart: "▶ スタート", btnStop: "⏹ ストップ＆保存",
             score: "スコア：", streak: "連続正解：", best: "🏆 最高: {s} ({n})", ready: "準備はいい？",
             newRecord: "🎉 新記録！名前を入力してね：", playerStr: "プレイヤー",
@@ -346,6 +346,9 @@
         document.getElementById('text-select-tables').innerText = t.selTables; document.getElementById('text-speed').innerText = t.speed;
         document.getElementById('text-mode').innerText = t.mode;
         document.getElementById('opt-mode-in').innerText = t.optModeIn; document.getElementById('opt-mode-mc').innerText = t.optModeMc;
+        document.getElementById('opt-speed-1').innerText = t.optS1;
+        document.getElementById('opt-speed-2').innerText = t.optS2;
+        document.getElementById('opt-speed-3').innerText = t.optS3;
         document.getElementById('btn-start').innerText = isPlaying ? t.btnStop : t.btnStart;
         document.getElementById('overlay-title').innerText = t.ready; document.getElementById('btn-overlay-start').innerText = t.btnStart.replace('▶ ', '');
         
