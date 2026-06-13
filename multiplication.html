@@ -624,13 +624,29 @@
         let body = `Time: ${melbourneTime}\nStudent: ${playerName}\nMode: ${gameMode}\nSpeed: ${gameSpeed}\nNew High Score: ${finalScore}\n`;
 
         try {
-            // 背景默默發送，不打斷學生遊戲體驗
-            await fetch(`https://formsubmit.co/ajax/${teacherEmail}`, {
+            // 延遲 100ms 確保這個 UI 變更不會被原有的重設機制蓋掉
+            setTimeout(() => { document.getElementById('high-score-board').innerText = "⏳ Saving..."; }, 100);
+
+            const response = await fetch(`https://formsubmit.co/ajax/${teacherEmail}`, {
                 method: "POST", headers: { 'Content-Type': 'application/json', 'Accept': 'application/json' },
-                body: JSON.stringify({ name: playerName, _subject: `🏆 New Game Record: ${playerName} (${finalScore} pts)`, message: body })
+                body: JSON.stringify({ 
+                    name: playerName, 
+                    // 1. 移除 Emoji 避免解析器崩潰
+                    _subject: `New Game Record: ${playerName} (${finalScore} pts)`, 
+                    message: body,
+                    // 2. 強制關閉 FormSubmit 的背景驗證碼攔截
+                    _captcha: "false" 
+                })
             });
+
+            // 3. 成功或失敗都會給予明確的視覺回饋
+            if (response.ok) {
+                document.getElementById('high-score-board').innerText = `✅ Best: ${finalScore} (${playerName})`;
+            } else {
+                document.getElementById('high-score-board').innerText = `❌ Error Saving`;
+            }
         } catch (e) {
-            console.log("Error sending record");
+            document.getElementById('high-score-board').innerText = `❌ Network Error`;
         }
     }
     
