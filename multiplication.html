@@ -400,6 +400,9 @@
                 if(name) {
                     highScoreData = { name: name.trim().substring(0,10), score: score };
                     localStorage.setItem('multiplicationHighScore', JSON.stringify(highScoreData));
+                    
+                    // --- 呼叫寄信功能 ---
+                    sendGameRecord(highScoreData.name, highScoreData.score);
                 }
             }
             
@@ -613,6 +616,24 @@
 
     function toggleNameInput() { document.getElementById('student-name').style.display = document.getElementById('chk-submit').checked ? 'inline-block' : 'none'; }
 
+    async function sendGameRecord(playerName, finalScore) {
+        const melbourneTime = new Date().toLocaleString("en-AU", {timeZone: "Australia/Melbourne", dateStyle: 'medium', timeStyle: 'short'});
+        const gameMode = document.getElementById('game-mode').options[document.getElementById('game-mode').selectedIndex].text;
+        const gameSpeed = document.getElementById('game-speed').options[document.getElementById('game-speed').selectedIndex].text;
+        
+        let body = `Time: ${melbourneTime}\nStudent: ${playerName}\nMode: ${gameMode}\nSpeed: ${gameSpeed}\nNew High Score: ${finalScore}\n`;
+
+        try {
+            // 背景默默發送，不打斷學生遊戲體驗
+            await fetch(`https://formsubmit.co/ajax/${teacherEmail}`, {
+                method: "POST", headers: { 'Content-Type': 'application/json', 'Accept': 'application/json' },
+                body: JSON.stringify({ name: playerName, _subject: `🏆 New Game Record: ${playerName} (${finalScore} pts)`, message: body })
+            });
+        } catch (e) {
+            console.log("Error sending record");
+        }
+    }
+    
     async function checkAnswers() {
         if (currentQuizData.length === 0) return;
         const t = translations[currentLang];
