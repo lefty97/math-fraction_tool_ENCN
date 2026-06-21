@@ -48,12 +48,15 @@
         .dropdown:hover .dropdown-content { display: block; }
 
         .container {
-            background-color: white; max-width: 950px; margin: 0 auto;
+            background-color: white; max-width: 1100px; margin: 0 auto;
             padding: 30px; border-radius: 15px; box-shadow: 0 4px 8px rgba(0,0,0,0.1); position: relative;
         }
         .lang-switch { position: absolute; top: 20px; right: 20px; z-index: 10; }
         .lang-switch select { font-size: 1rem; padding: 5px 10px; border-radius: 5px; border: 1px solid #ccc; cursor: pointer; }
         
+        .settings-bar { margin: 20px 0; padding: 15px; background: #ebf5fb; border-radius: 10px; display: inline-block;}
+        .setting-select { font-size: 1.1rem; padding: 5px; border: 1px solid #bdc3c7; border-radius: 4px; font-weight:bold; margin: 0 10px;}
+
         .btn { background-color: #3498db; color: white; border: none; padding: 10px 20px; font-size: 1.1rem; border-radius: 8px; cursor: pointer; transition: 0.2s; font-weight: bold; box-shadow: 0 4px 6px rgba(0,0,0,0.1); margin: 5px; }
         .btn:hover { background-color: #2980b9; transform: translateY(-2px); }
         .btn-green { background-color: #2ecc71; } .btn-green:hover { background-color: #27ae60; }
@@ -61,7 +64,7 @@
 
         /* Logic Game Layout */
         .game-wrapper {
-            display: flex; flex-wrap: wrap; gap: 30px; margin-top: 30px; justify-content: center; align-items: flex-start;
+            display: flex; flex-wrap: wrap; gap: 30px; margin-top: 10px; justify-content: center; align-items: flex-start;
         }
         
         /* Clues Panel */
@@ -75,25 +78,26 @@
 
         /* Logic Grid */
         .grid-panel {
-            flex: 1; min-width: 320px; display: flex; flex-direction: column; align-items: center;
+            flex: 2; min-width: 320px; display: flex; flex-direction: column; align-items: center; overflow-x: auto; max-width: 100%;
         }
         .logic-table {
             border-collapse: collapse; margin-bottom: 20px; background: white; box-shadow: 0 4px 15px rgba(0,0,0,0.05);
         }
         .logic-table th, .logic-table td {
-            border: 2px solid #bdc3c7; width: 60px; height: 60px; text-align: center; vertical-align: middle;
+            border: 2px solid #bdc3c7; width: 55px; height: 55px; text-align: center; vertical-align: middle;
         }
-        .logic-table th {
-            background: #34495e; color: white; font-weight: bold; font-size: 1.1rem; padding: 5px;
-        }
-        .logic-table td {
-            font-size: 2rem; cursor: pointer; user-select: none; transition: background 0.1s;
-        }
+        .logic-table th { background: #34495e; color: white; font-weight: bold; font-size: 1rem; padding: 5px; }
+        .logic-table .cat-header { background: #2c3e50; font-size: 1.1rem; letter-spacing: 1px;}
+        
+        .logic-table td { font-size: 1.8rem; cursor: pointer; user-select: none; transition: background 0.1s; }
         .logic-table td:hover { background: #f0f3f4; }
         
+        /* Category dividers for intermediate/expert */
+        .cat-divider { border-right: 4px solid #2c3e50 !important; }
+
         /* Cell States */
-        .cell-x { color: #e74c3c; } /* Red Cross */
-        .cell-o { color: #2ecc71; background: #eafaf1 !important; font-size: 2.2rem !important; } /* Green Circle */
+        .cell-x { color: #e74c3c; } 
+        .cell-o { color: #2ecc71; background: #eafaf1 !important; font-size: 2rem !important; } 
 
         .status-box {
             background: #ecf0f1; border-radius: 8px; padding: 15px; margin-bottom: 20px;
@@ -136,27 +140,34 @@
     <h2 id="text-title" style="margin-top: 20px;">🕵️‍♂️ Logic Grid Detective</h2>
     <p id="text-subtitle">Read the clues and use deductive elimination! Click cells to toggle ❌ and ⭕.</p>
     
+    <div class="settings-bar">
+        <label style="font-weight: bold;">
+            <span id="text-level">Difficulty: </span>
+            <select id="game-level" class="setting-select" onchange="initGame()">
+                <option value="1" id="opt-lvl-1">Beginner (1 Category)</option>
+                <option value="2" id="opt-lvl-2">Intermediate (2 Categories)</option>
+                <option value="3" id="opt-lvl-3">Expert (3 Categories)</option>
+            </select>
+        </label>
+        <button class="btn" id="btn-new" onclick="initGame()">✨ New Puzzle</button>
+    </div>
+
     <div class="game-wrapper">
-        <!-- Clues Side -->
         <div class="clues-panel">
             <h3 id="text-clues-title">📝 Clues</h3>
-            <ul class="clues-list" id="clues-container">
-                <!-- Dynamically generated clues -->
-            </ul>
+            <ul class="clues-list" id="clues-container"></ul>
         </div>
 
-        <!-- Grid Side -->
         <div class="grid-panel">
             <div id="status-box" class="status-box">Ready to solve!</div>
             
-            <table class="logic-table" id="logic-table">
-                <!-- Dynamically generated table -->
-            </table>
+            <div style="width: 100%; overflow-x: auto;">
+                <table class="logic-table" id="logic-table"></table>
+            </div>
 
-            <div>
+            <div style="margin-top: 15px;">
                 <button class="btn btn-red" id="btn-reset" onclick="resetGrid()">🔄 Reset Grid</button>
                 <button class="btn btn-green" id="btn-check" onclick="checkAnswer()">🔍 Check Answer</button>
-                <button class="btn" id="btn-new" onclick="initGame()">✨ New Puzzle</button>
             </div>
             
             <div class="score-streak" id="streak-counter">🧩 Puzzles Solved: 0</div>
@@ -168,49 +179,63 @@
     const translations = {
         en: {
             title: "🕵️‍♂️ Logic Grid Detective", sub: "Use deductive elimination! Click cells to toggle ❌ (No) and ⭕ (Yes).",
+            level: "Difficulty: ", lvl1: "Beginner (1 Category)", lvl2: "Intermediate (2 Categories)", lvl3: "Expert (3 Categories)",
             clues: "📝 Clues", btnReset: "🔄 Reset", btnCheck: "🔍 Check Answer", btnNew: "✨ New Puzzle",
-            statusReady: "Ready to solve! You need exactly four ⭕.",
+            statusReady: "Ready! Find exactly 4 ⭕ for each category.",
             statusErrInc: "Not quite right yet. Re-read the clues carefully!",
-            statusErrMiss: "Incomplete! Every row and column must have exactly one ⭕.",
+            statusErrMiss: "Incomplete! Every row and category must have exactly one ⭕.",
             statusSuccess: "🎉 Brilliant deduction! You solved it!",
             streak: "🧩 Puzzles Solved: {n}",
             
+            catNames: ["Pet", "Food", "Item"],
             phrases: {
-                has: ["has", "owns", "chose", "is matched with"],
-                not: ["does not have", "hates", "would never choose", "is not paired with"]
+                name_has: ["has", "chose", "is matched with"],
+                name_not: ["does not have", "did not choose", "hates"],
+                cross_wrapper: "The person with {item}",
+                cross_has: ["also has", "also chose", "is paired with"],
+                cross_not: ["does NOT have", "hates", "would never choose"]
             }
         },
         zh: {
             title: "🕵️‍♂️ 小偵探邏輯矩陣", sub: "透過線索進行排除法！點擊方格可切換 ❌ (不可能) 與 ⭕ (確定)。",
+            level: "難度：", lvl1: "初級 (單一類別)", lvl2: "中級 (雙重類別)", lvl3: "魔王級 (三重類別)",
             clues: "📝 案發現場線索", btnReset: "🔄 重設表格", btnCheck: "🔍 檢查答案", btnNew: "✨ 產生新謎題",
-            statusReady: "準備解謎！你需要找出 4 個 ⭕ 來完成配對。",
+            statusReady: "準備解謎！每個類別直行與橫列都必須有 1 個 ⭕。",
             statusErrInc: "推論似乎有破綻喔！請重新仔細閱讀線索。",
-            statusErrMiss: "還沒完成！每個人都必須對應一個專屬的 ⭕。",
+            statusErrMiss: "還沒完成！檢查是否每個類別都有對應的 ⭕。",
             statusSuccess: "🎉 完美的演繹推理！你解開謎題了！",
             streak: "🧩 成功破案次數：{n}",
 
+            catNames: ["寵物", "食物", "物品"],
             phrases: {
-                has: ["擁有", "選擇了", "對應的是", "非常喜歡"],
-                not: ["絕對不選", "討厭", "沒有選擇", "的對應不是"]
+                name_has: ["擁有", "選擇了", "對應的是"],
+                name_not: ["絕對不選", "沒有選擇", "的對應不是"],
+                cross_wrapper: "擁有「{item}」的人",
+                cross_has: ["也同時擁有", "也選擇了", "的另一個對應是"],
+                cross_not: ["絕對不選", "沒有", "非常討厭"]
             }
         },
         ja: {
             title: "🕵️‍♂️ 論理パズル探偵", sub: "手がかりから推理しよう！マスをクリックして ❌ と ⭕ を切り替えます。",
+            level: "難易度：", lvl1: "初級 (1カテゴリー)", lvl2: "中級 (2カテゴリー)", lvl3: "上級 (3カテゴリー)",
             clues: "📝 手がかり", btnReset: "🔄 リセット", btnCheck: "🔍 答え合わせ", btnNew: "✨ 新しい問題",
-            statusReady: "準備完了！4つの ⭕ を見つけてください。",
+            statusReady: "準備完了！各カテゴリーに4つの ⭕ を見つけてください。",
             statusErrInc: "どこか間違っているようです。手がかりを読み直して！",
-            statusErrMiss: "未完成です！各行・各列に1つずつ ⭕ が必要です。",
+            statusErrMiss: "未完成です！各行・各カテゴリーに1つずつ ⭕ が必要です。",
             statusSuccess: "🎉 完璧な推理です！クリア！",
             streak: "🧩 クリア回数：{n}",
 
+            catNames: ["ペット", "食べ物", "アイテム"],
             phrases: {
-                has: ["を持っている", "を選んだ", "とペアになっている", "が好き"],
-                not: ["を持っていない", "が嫌い", "を選ばない", "とはペアにならない"]
+                name_has: ["を持っている", "を選んだ", "とペアになっている"],
+                name_not: ["を持っていない", "を選ばない", "とはペアにならない"],
+                cross_wrapper: "「{item}」を持つ人",
+                cross_has: ["は、さらに", "も選んだ", "ともペアになっている"],
+                cross_not: ["を持っていない", "は選ばない", "が嫌い"]
             }
         }
     };
 
-    // Entity Data Bank
     const dataBank = {
         names: {
             en: ["Leo", "Mia", "Jack", "Zoe", "Emma", "Noah", "Lucas", "Lily"],
@@ -219,19 +244,16 @@
         },
         categories: [
             {
-                type: "Pet",
                 en: ["Dog 🐕", "Cat 🐈", "Bird 🦜", "Rabbit 🐇", "Fish 🐠", "Turtle 🐢"],
                 zh: ["小狗 🐕", "貓咪 🐈", "鸚鵡 🦜", "兔子 🐇", "金魚 🐠", "烏龜 🐢"],
                 ja: ["犬 🐕", "猫 🐈", "鳥 🦜", "ウサギ 🐇", "魚 🐠", "カメ 🐢"]
             },
             {
-                type: "Food",
                 en: ["Apple 🍎", "Pizza 🍕", "Burger 🍔", "Sushi 🍣", "Cake 🍰", "Ice Cream 🍦"],
                 zh: ["蘋果 🍎", "披薩 🍕", "漢堡 🍔", "壽司 🍣", "蛋糕 🍰", "冰淇淋 🍦"],
                 ja: ["リンゴ 🍎", "ピザ 🍕", "バーガー 🍔", "寿司 🍣", "ケーキ 🍰", "アイス 🍦"]
             },
             {
-                type: "Item",
                 en: ["Book 📖", "Guitar 🎸", "Camera 📷", "Phone 📱", "Watch ⌚", "Ball ⚽"],
                 zh: ["書本 📖", "吉他 🎸", "相機 📷", "手機 📱", "手錶 ⌚", "足球 ⚽"],
                 ja: ["本 📖", "ギター 🎸", "カメラ 📷", "スマホ 📱", "時計 ⌚", "ボール ⚽"]
@@ -242,14 +264,15 @@
     let currentLang = 'en';
     let solvedCount = 0;
     
-    // Core Game State
     const gridSize = 4;
-    let currentNames = []; // Indices of chosen names
-    let currentCategoryIdx = 0;
-    let currentItems = []; // Indices of chosen items
+    let difficulty = 1; // 1, 2, or 3 categories
+    let currentNames = []; 
+    let selectedCategories = []; // array of category objects mapped to indices
     
-    let solutionMap = []; // map[row] = col
-    let gridState = []; // 4x4 matrix: 0=empty, 1=X, 2=O
+    let visualRowMap = []; // visualRow -> logicRow
+    let visualColMaps = []; // visualColMaps[catIdx][visualCol] -> logicCol
+    
+    let gridState = []; // 4 rows x (4 * difficulty) cols
     let currentClues = [];
 
     function changeLanguage() {
@@ -259,7 +282,12 @@
         
         document.getElementById('text-title').innerText = t.title;
         document.getElementById('text-subtitle').innerText = t.sub;
+        document.getElementById('text-level').innerText = t.level;
+        document.getElementById('opt-lvl-1').innerText = t.lvl1;
+        document.getElementById('opt-lvl-2').innerText = t.lvl2;
+        document.getElementById('opt-lvl-3').innerText = t.lvl3;
         document.getElementById('text-clues-title').innerText = t.clues;
+        
         document.getElementById('btn-reset').innerHTML = t.btnReset;
         document.getElementById('btn-check').innerHTML = t.btnCheck;
         document.getElementById('btn-new').innerHTML = t.btnNew;
@@ -267,12 +295,12 @@
         document.getElementById('streak-counter').innerText = t.streak.replace('{n}', solvedCount);
         setStatus("Ready");
 
-        // Re-translate current puzzle entities without changing the logic
-        renderGrid();
-        renderClues();
+        if(currentNames.length > 0) {
+            renderGrid();
+            renderClues();
+        }
     }
 
-    // --- Core Algorithm ---
     function shuffle(array) {
         let currentIndex = array.length, randomIndex;
         while (currentIndex > 0) {
@@ -284,118 +312,138 @@
     }
 
     function initGame() {
-        // 1. Pick Random Entities
-        let allNameIdx = [0,1,2,3,4,5,6,7];
-        currentNames = shuffle(allNameIdx).slice(0, gridSize);
+        difficulty = parseInt(document.getElementById('game-level').value);
         
-        currentCategoryIdx = Math.floor(Math.random() * dataBank.categories.length);
-        let allItemIdx = [0,1,2,3,4,5];
-        currentItems = shuffle(allItemIdx).slice(0, gridSize);
+        // 1. Pick Names
+        currentNames = shuffle([0,1,2,3,4,5,6,7]).slice(0, gridSize);
+        
+        // 2. Pick Categories
+        let catPool = shuffle([0,1,2]);
+        selectedCategories = [];
+        for(let i=0; i<difficulty; i++) {
+            let catIdx = catPool[i];
+            let items = shuffle([0,1,2,3,4,5]).slice(0, gridSize);
+            selectedCategories.push({ catGlobalIdx: catIdx, items: items });
+        }
 
-        // 2. Generate True Solution Map (1-to-1 mapping)
-        // For simplicity, row i maps to col i in our shuffled logical array
-        // We will shuffle the display order later.
-        solutionMap = [0, 1, 2, 3]; // Row 0 -> Col 0, etc.
-
-        // 3. Select Logical Template and Generate Clues
+        // True logic mapping is always i -> i across all categories.
         generateClueStructure();
 
-        // 4. Shuffle visual grid to decouple from logic index
-        shuffleVisualMapping();
+        // 3. Shuffle visual mappings
+        visualRowMap = shuffle([0, 1, 2, 3]);
+        visualColMaps = [];
+        for(let i=0; i<difficulty; i++) {
+            visualColMaps.push(shuffle([0, 1, 2, 3]));
+        }
 
-        // 5. Initialize Grid State
-        gridState = Array.from({ length: gridSize }, () => Array(gridSize).fill(0));
+        // 4. Reset Grid State
+        gridState = Array.from({ length: gridSize }, () => Array(gridSize * difficulty).fill(0));
         
         renderGrid();
         renderClues();
         setStatus("Ready");
     }
 
-    // Logic Matrix Generation (Constraint Satisfaction Templates)
+    // --- Clue Generation Engine ---
     function generateClueStructure() {
         currentClues = [];
-        let tType = Math.floor(Math.random() * 3); // 3 templates
+        // Clue object format: 
+        // { type: 'has'/'not'/'notMulti', sType: 'name'/catIdx, sIdx: logicIdx, oCat: catIdx, oIdx: logicIdx/array }
         
-        // Logical indices: N0 maps to A0, N1->A1, etc.
-        if (tType === 0) {
-            // Template A
-            currentClues.push({ type: 'has', n: 0, a: 0 }); // N0 has A0
-            currentClues.push({ type: 'notMulti', n: 1, aList: [2, 3] }); // N1 not A2, A3 (leaves A1)
-            currentClues.push({ type: 'not', n: 2, a: 3 }); // N2 not A3 (leaves A2)
-            currentClues.push({ type: 'not', n: 3, a: 1 }); // Fluff
-        } else if (tType === 1) {
-            // Template B
-            currentClues.push({ type: 'notMulti', n: 1, aList: [0, 2, 3] }); // N1 not A0,A2,A3 -> A1
-            currentClues.push({ type: 'has', n: 2, a: 2 }); // N2 has A2
-            currentClues.push({ type: 'not', n: 3, a: 0 }); // N3 not A0 -> A3
-            currentClues.push({ type: 'not', n: 0, a: 3 }); // Fluff
-        } else {
-            // Template C
-            currentClues.push({ type: 'has', n: 3, a: 3 }); // N3 has A3
-            currentClues.push({ type: 'notMulti', n: 0, aList: [1, 2] }); // N0 not A1,A2 -> A0
-            currentClues.push({ type: 'not', n: 1, a: 2 }); // N1 not A2 -> A1
-            currentClues.push({ type: 'not', n: 2, a: 0 }); // Fluff
+        if (difficulty === 1) {
+            // Beginner: 1 Category (Cat 0)
+            let t = Math.floor(Math.random() * 2);
+            if(t===0) {
+                currentClues.push({ type: 'has', sType: 'name', sIdx: 0, oCat: 0, oIdx: 0 });
+                currentClues.push({ type: 'notMulti', sType: 'name', sIdx: 1, oCat: 0, oIdx: [2, 3] });
+                currentClues.push({ type: 'not', sType: 'name', sIdx: 2, oCat: 0, oIdx: 3 });
+                currentClues.push({ type: 'not', sType: 'name', sIdx: 3, oCat: 0, oIdx: 1 }); // Fluff
+            } else {
+                currentClues.push({ type: 'has', sType: 'name', sIdx: 3, oCat: 0, oIdx: 3 });
+                currentClues.push({ type: 'notMulti', sType: 'name', sIdx: 0, oCat: 0, oIdx: [1, 2] });
+                currentClues.push({ type: 'not', sType: 'name', sIdx: 1, oCat: 0, oIdx: 2 });
+                currentClues.push({ type: 'not', sType: 'name', sIdx: 2, oCat: 0, oIdx: 0 }); // Fluff
+            }
+        } 
+        else if (difficulty === 2) {
+            // Intermediate: 2 Categories (Cat 0, Cat 1)
+            // Relies on Cross-Category logic
+            currentClues.push({ type: 'has', sType: 'name', sIdx: 0, oCat: 0, oIdx: 0 });
+            currentClues.push({ type: 'has', sType: 0, sIdx: 0, oCat: 1, oIdx: 0 }); // C0 has C1
+            
+            currentClues.push({ type: 'has', sType: 'name', sIdx: 1, oCat: 1, oIdx: 1 });
+            currentClues.push({ type: 'notMulti', sType: 'name', sIdx: 1, oCat: 0, oIdx: [2, 3] });
+            
+            currentClues.push({ type: 'has', sType: 'name', sIdx: 2, oCat: 0, oIdx: 2 });
+            currentClues.push({ type: 'not', sType: 0, sIdx: 2, oCat: 1, oIdx: 3 }); // C0(2) not C1(3)
+        }
+        else if (difficulty === 3) {
+            // Expert: 3 Categories (Cat 0, Cat 1, Cat 2)
+            currentClues.push({ type: 'has', sType: 'name', sIdx: 0, oCat: 0, oIdx: 0 });
+            currentClues.push({ type: 'has', sType: 0, sIdx: 0, oCat: 1, oIdx: 0 });
+            currentClues.push({ type: 'has', sType: 1, sIdx: 0, oCat: 2, oIdx: 0 });
+            
+            currentClues.push({ type: 'has', sType: 'name', sIdx: 1, oCat: 2, oIdx: 1 });
+            currentClues.push({ type: 'has', sType: 2, sIdx: 1, oCat: 0, oIdx: 1 });
+            currentClues.push({ type: 'notMulti', sType: 'name', sIdx: 1, oCat: 1, oIdx: [2, 3] });
+            
+            currentClues.push({ type: 'has', sType: 'name', sIdx: 2, oCat: 1, oIdx: 2 });
+            currentClues.push({ type: 'has', sType: 1, sIdx: 2, oCat: 2, oIdx: 2 });
+            currentClues.push({ type: 'not', sType: 2, sIdx: 2, oCat: 0, oIdx: 3 });
         }
     }
 
-    let visualRowMap = []; // visualRow -> logicRow
-    let visualColMap = []; // visualCol -> logicCol
-
-    function shuffleVisualMapping() {
-        visualRowMap = shuffle([0, 1, 2, 3]);
-        visualColMap = shuffle([0, 1, 2, 3]);
-    }
-
-    // --- Rendering ---
-    
-    // Language Helper
-    function getEntityStr(isName, logicIdx) {
-        if(isName) {
+    // --- Rendering Helpers ---
+    function getEntityText(type, logicIdx) {
+        if(type === 'name') {
             return dataBank.names[currentLang][currentNames[logicIdx]];
         } else {
-            return dataBank.categories[currentCategoryIdx][currentLang][currentItems[logicIdx]];
+            let catGlobalIdx = selectedCategories[type].catGlobalIdx;
+            let itemGlobalIdx = selectedCategories[type].items[logicIdx];
+            return dataBank.categories[catGlobalIdx][currentLang][itemGlobalIdx];
+        }
+    }
+
+    function buildClueString(clue) {
+        const tPhrases = translations[currentLang].phrases;
+        
+        let subjStr = "";
+        let isNameSubj = (clue.sType === 'name');
+        
+        if (isNameSubj) {
+            subjStr = `<strong>${getEntityText('name', clue.sIdx)}</strong>`;
+        } else {
+            let itemStr = getEntityText(clue.sType, clue.sIdx);
+            if(currentLang === 'en') subjStr = `<strong>${tPhrases.cross_wrapper.replace('{item}', itemStr)}</strong>`;
+            else subjStr = `<strong>${tPhrases.cross_wrapper.replace('{item}', itemStr)}</strong>`;
+        }
+
+        let verbHas = isNameSubj ? tPhrases.name_has[Math.floor(Math.random() * tPhrases.name_has.length)] : tPhrases.cross_has[Math.floor(Math.random() * tPhrases.cross_has.length)];
+        let verbNot = isNameSubj ? tPhrases.name_not[Math.floor(Math.random() * tPhrases.name_not.length)] : tPhrases.cross_not[Math.floor(Math.random() * tPhrases.cross_not.length)];
+
+        if (clue.type === 'has' || clue.type === 'not') {
+            let objStr = `<strong>${getEntityText(clue.oCat, clue.oIdx)}</strong>`;
+            let verb = (clue.type === 'has') ? verbHas : verbNot;
+            
+            if(currentLang === 'en') return `${subjStr} ${verb} ${objStr}.`;
+            if(currentLang === 'ja') return `${subjStr} は ${objStr} ${verb}。`;
+            return `${subjStr} ${verb} ${objStr}。`;
+        } 
+        else if (clue.type === 'notMulti') {
+            let obj1 = `<strong>${getEntityText(clue.oCat, clue.oIdx[0])}</strong>`;
+            let obj2 = `<strong>${getEntityText(clue.oCat, clue.oIdx[1])}</strong>`;
+            
+            if(currentLang === 'en') return `${subjStr} ${verbNot} ${obj1} or ${obj2}.`;
+            if(currentLang === 'ja') return `${subjStr} は ${obj1} と ${obj2} ${verbNot}。`;
+            return `${subjStr} ${verbNot} ${obj1} 與 ${obj2}。`;
         }
     }
 
     function renderClues() {
         const ul = document.getElementById('clues-container');
         ul.innerHTML = '';
-        const tPhrases = translations[currentLang].phrases;
-
-        // Convert logic clues to localized string
-        let displayClues = currentClues.map(c => {
-            let nStr = `<strong>${getEntityStr(true, c.n)}</strong>`;
-            let pHas = tPhrases.has[Math.floor(Math.random() * tPhrases.has.length)];
-            let pNot = tPhrases.not[Math.floor(Math.random() * tPhrases.not.length)];
-            
-            if (c.type === 'has') {
-                let aStr = `<strong>${getEntityStr(false, c.a)}</strong>`;
-                if(currentLang === 'en') return `${nStr} ${pHas} ${aStr}.`;
-                if(currentLang === 'ja') return `${nStr} は ${aStr} ${pHas}。`;
-                return `${nStr} ${pHas} ${aStr}。`;
-            } else if (c.type === 'not') {
-                let aStr = `<strong>${getEntityStr(false, c.a)}</strong>`;
-                if(currentLang === 'en') return `${nStr} ${pNot} ${aStr}.`;
-                if(currentLang === 'ja') return `${nStr} は ${aStr} ${pNot}。`;
-                return `${nStr} ${pNot} ${aStr}。`;
-            } else if (c.type === 'notMulti') {
-                let a1Str = `<strong>${getEntityStr(false, c.aList[0])}</strong>`;
-                let a2Str = `<strong>${getEntityStr(false, c.aList[1])}</strong>`;
-                
-                if(c.aList.length === 3) {
-                    let a3Str = `<strong>${getEntityStr(false, c.aList[2])}</strong>`;
-                    if(currentLang === 'en') return `${nStr} ${pNot} ${a1Str}, ${a2Str}, or ${a3Str}.`;
-                    if(currentLang === 'ja') return `${nStr} は ${a1Str}、${a2Str}、${a3Str} ${pNot}。`;
-                    return `${nStr} ${pNot} ${a1Str}、${a2Str} 與 ${a3Str}。`;
-                } else {
-                    if(currentLang === 'en') return `${nStr} ${pNot} ${a1Str} or ${a2Str}.`;
-                    if(currentLang === 'ja') return `${nStr} は ${a1Str} と ${a2Str} ${pNot}。`;
-                    return `${nStr} ${pNot} ${a1Str} 與 ${a2Str}。`;
-                }
-            }
-        });
-
-        // Shuffle clues visually
+        
+        let displayClues = currentClues.map(c => buildClueString(c));
         displayClues = shuffle(displayClues);
 
         displayClues.forEach(text => {
@@ -408,32 +456,54 @@
     function renderGrid() {
         const table = document.getElementById('logic-table');
         table.innerHTML = '';
+        const tCatNames = translations[currentLang].catNames;
         
-        // Header Row
-        let trHead = document.createElement('tr');
-        trHead.appendChild(document.createElement('th')); // Empty top-left
-        for(let c=0; c<gridSize; c++) {
+        // Category Header Row (e.g. Pet | Food)
+        let trCat = document.createElement('tr');
+        trCat.appendChild(document.createElement('th')); 
+        for(let i=0; i<difficulty; i++) {
             let th = document.createElement('th');
-            th.innerText = getEntityStr(false, visualColMap[c]);
-            trHead.appendChild(th);
+            th.colSpan = 4;
+            th.className = 'cat-header';
+            if(i < difficulty - 1) th.classList.add('cat-divider');
+            let globalCatIdx = selectedCategories[i].catGlobalIdx;
+            th.innerText = tCatNames[globalCatIdx];
+            trCat.appendChild(th);
         }
-        table.appendChild(trHead);
+        table.appendChild(trCat);
+
+        // Item Header Row
+        let trItem = document.createElement('tr');
+        trItem.appendChild(document.createElement('th')); 
+        for(let cat=0; cat<difficulty; cat++) {
+            for(let c=0; c<gridSize; c++) {
+                let th = document.createElement('th');
+                th.innerText = getEntityText(cat, visualColMaps[cat][c]);
+                if(c === 3 && cat < difficulty - 1) th.classList.add('cat-divider');
+                trItem.appendChild(th);
+            }
+        }
+        table.appendChild(trItem);
 
         // Body Rows
         for(let r=0; r<gridSize; r++) {
             let tr = document.createElement('tr');
             let thRow = document.createElement('th');
-            thRow.innerText = getEntityStr(true, visualRowMap[r]);
+            thRow.innerText = getEntityText('name', visualRowMap[r]);
             tr.appendChild(thRow);
 
-            for(let c=0; c<gridSize; c++) {
+            for(let c=0; c<(gridSize * difficulty); c++) {
                 let td = document.createElement('td');
                 td.id = `cell-${r}-${c}`;
                 td.onclick = () => handleCellClick(r, c);
                 
+                let catIdx = Math.floor(c / 4);
+                let localC = c % 4;
+                if(localC === 3 && catIdx < difficulty - 1) td.classList.add('cat-divider');
+
                 let state = gridState[r][c];
-                if(state === 1) { td.innerText = '❌'; td.className = 'cell-x'; }
-                else if(state === 2) { td.innerText = '⭕'; td.className = 'cell-o'; }
+                if(state === 1) { td.innerText = '❌'; td.classList.add('cell-x'); }
+                else if(state === 2) { td.innerText = '⭕'; td.classList.add('cell-o'); }
                 
                 tr.appendChild(td);
             }
@@ -441,7 +511,7 @@
         }
     }
 
-    // --- Interaction ---
+    // --- Interaction & Validation ---
     function handleCellClick(r, c) {
         let currentState = gridState[r][c];
         
@@ -449,7 +519,7 @@
         if (currentState === 0) gridState[r][c] = 1;
         else if (currentState === 1) {
             gridState[r][c] = 2;
-            autoFillX(r, c); // Smart auto-fill
+            autoFillX(r, c); 
         }
         else gridState[r][c] = 0;
 
@@ -457,40 +527,49 @@
         setStatus("Ready");
     }
 
-    // UX feature: Auto fill row and column with X when O is placed
+    // Smart auto-fill: only fills X within the SAME category block
     function autoFillX(rTarget, cTarget) {
+        let catIdx = Math.floor(cTarget / 4);
+        let startCol = catIdx * 4;
+        
         for(let i=0; i<gridSize; i++) {
-            if(i !== cTarget && gridState[rTarget][i] === 0) gridState[rTarget][i] = 1;
+            let checkCol = startCol + i;
+            if(checkCol !== cTarget && gridState[rTarget][checkCol] === 0) gridState[rTarget][checkCol] = 1;
             if(i !== rTarget && gridState[i][cTarget] === 0) gridState[i][cTarget] = 1;
         }
     }
 
     function resetGrid() {
-        gridState = Array.from({ length: gridSize }, () => Array(gridSize).fill(0));
+        gridState = Array.from({ length: gridSize }, () => Array(gridSize * difficulty).fill(0));
         renderGrid();
         setStatus("Ready");
     }
 
-    // --- Validation ---
     function checkAnswer() {
         let oCount = 0;
         let isCorrect = true;
 
         for(let r=0; r<gridSize; r++) {
-            for(let c=0; c<gridSize; c++) {
+            for(let c=0; c<(gridSize * difficulty); c++) {
                 if(gridState[r][c] === 2) {
                     oCount++;
+                    let catIdx = Math.floor(c / 4);
+                    let localC = c % 4;
+                    
                     let logicRow = visualRowMap[r];
-                    let logicCol = visualColMap[c];
-                    // solutionMap maps logicRow -> logicCol
-                    if (solutionMap[logicRow] !== logicCol) {
+                    let logicCol = visualColMaps[catIdx][localC];
+                    
+                    // True mapping is always logicRow === logicCol across all categories
+                    if (logicRow !== logicCol) {
                         isCorrect = false;
                     }
                 }
             }
         }
 
-        if (oCount < gridSize) {
+        let targetOCount = gridSize * difficulty;
+
+        if (oCount < targetOCount) {
             setStatus("ErrMiss");
         } else if (!isCorrect) {
             setStatus("ErrInc");
@@ -500,7 +579,7 @@
             document.getElementById('streak-counter').innerText = translations[currentLang].streak.replace('{n}', solvedCount);
             // Lock grid
             for(let r=0; r<gridSize; r++) {
-                for(let c=0; c<gridSize; c++) {
+                for(let c=0; c<(gridSize * difficulty); c++) {
                     document.getElementById(`cell-${r}-${c}`).onclick = null;
                 }
             }
@@ -522,7 +601,7 @@
         const savedLang = localStorage.getItem('mySiteLang');
         if (savedLang) document.getElementById('language').value = savedLang;
         changeLanguage();
-        initGame();
+        initGame(); // Also renders
     };
 </script>
 </body>
