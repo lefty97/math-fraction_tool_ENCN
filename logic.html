@@ -187,13 +187,12 @@
             statusSuccess: "🎉 Brilliant deduction! You solved it!",
             streak: "🧩 Puzzles Solved: {n}",
             
-            catNames: ["Pet", "Food", "Item"],
             phrases: {
                 name_has: ["has", "chose", "is matched with"],
-                name_not: ["does not have", "did not choose", "hates"],
+                name_not: ["does not have", "did not choose", "is definitely not paired with"],
                 cross_wrapper: "The person with {item}",
                 cross_has: ["also has", "also chose", "is paired with"],
-                cross_not: ["does NOT have", "hates", "would never choose"]
+                cross_not: ["does NOT have", "did not choose", "would never pick"]
             }
         },
         zh: {
@@ -206,13 +205,12 @@
             statusSuccess: "🎉 完美的演繹推理！你解開謎題了！",
             streak: "🧩 成功破案次數：{n}",
 
-            catNames: ["寵物", "食物", "物品"],
             phrases: {
                 name_has: ["擁有", "選擇了", "對應的是"],
                 name_not: ["絕對不選", "沒有選擇", "的對應不是"],
                 cross_wrapper: "擁有「{item}」的人",
-                cross_has: ["也同時擁有", "也選擇了", "的另一個對應是"],
-                cross_not: ["絕對不選", "沒有", "非常討厭"]
+                cross_has: ["也同時對應了", "也選擇了", "的另一個組合是"],
+                cross_not: ["絕對不是", "沒有選擇", "完全排除"]
             }
         },
         ja: {
@@ -225,38 +223,88 @@
             statusSuccess: "🎉 完璧な推理です！クリア！",
             streak: "🧩 クリア回数：{n}",
 
-            catNames: ["ペット", "食べ物", "アイテム"],
             phrases: {
                 name_has: ["を持っている", "を選んだ", "とペアになっている"],
                 name_not: ["を持っていない", "を選ばない", "とはペアにならない"],
-                cross_wrapper: "「{item}」を持つ人",
+                cross_wrapper: "「{item}」の持ち主",
                 cross_has: ["は、さらに", "も選んだ", "ともペアになっている"],
-                cross_not: ["を持っていない", "は選ばない", "が嫌い"]
+                cross_not: ["を持っていない", "は選ばない", "とはペアではない"]
             }
         }
     };
 
     const dataBank = {
         names: {
-            en: ["Leo", "Mia", "Jack", "Zoe", "Emma", "Noah", "Lucas", "Lily"],
-            zh: ["小雷", "米亞", "傑克", "柔伊", "艾瑪", "諾亞", "路卡", "莉莉"],
-            ja: ["レオ", "ミア", "ジャック", "ゾーイ", "エマ", "ノア", "ルーカス", "リリー"]
+            en: ["Leo", "Mia", "Jack", "Zoe", "Emma", "Noah", "Lucas", "Lily", "Anita", "Orange", "Lefty", "Ash", "Maya", "Finn", "Ruby", "Oscar"],
+            zh: ["小雷", "米亞", "傑克", "柔伊", "艾瑪", "諾亞", "路卡", "莉莉", "Anita", "橘子", "Lefty", "阿信", "瑪雅", "芬恩", "露比", "奧斯卡"],
+            ja: ["レオ", "ミア", "ジャック", "ゾーイ", "エマ", "ノア", "ルーカス", "リリー", "アニタ", "ミカン", "レフティ", "アッシュ", "マヤ", "フィン", "ルビー", "オスカー"]
         },
         categories: [
             {
-                en: ["Dog 🐕", "Cat 🐈", "Bird 🦜", "Rabbit 🐇", "Fish 🐠", "Turtle 🐢"],
-                zh: ["小狗 🐕", "貓咪 🐈", "鸚鵡 🦜", "兔子 🐇", "金魚 🐠", "烏龜 🐢"],
-                ja: ["犬 🐕", "猫 🐈", "鳥 🦜", "ウサギ 🐇", "魚 🐠", "カメ 🐢"]
+                name: { en: "Pet", zh: "寵物", ja: "ペット" },
+                en: ["Dog 🐕", "Cat 🐈", "Bird 🦜", "Rabbit 🐇", "Fish 🐠", "Turtle 🐢", "Hamster 🐹", "Snake 🐍"],
+                zh: ["小狗 🐕", "貓咪 🐈", "鸚鵡 🦜", "兔子 🐇", "金魚 🐠", "烏龜 🐢", "倉鼠 🐹", "蛇 🐍"],
+                ja: ["犬 🐕", "猫 🐈", "鳥 🦜", "ウサギ 🐇", "魚 🐠", "カメ 🐢", "ハムスター 🐹", "ヘビ 🐍"],
+                verbs: {
+                    en: { name_has: ["adopted", "has"], name_not: ["does not have", "is scared of"], cross_has: ["also adopted", "has"], cross_not: ["does NOT have"], cross_wrapper: "The person with the {item}" },
+                    zh: { name_has: ["養了", "喜歡"], name_not: ["沒養", "害怕"], cross_has: ["也養了", "同時養了"], cross_not: ["絕對沒養", "不喜歡"], cross_wrapper: "養了「{item}」的人" },
+                    ja: { name_has: ["を飼っている"], name_not: ["は飼っていない"], cross_has: ["も飼っている"], cross_not: ["は飼っていない"], cross_wrapper: "「{item}」を飼っている人" }
+                }
             },
             {
-                en: ["Apple 🍎", "Pizza 🍕", "Burger 🍔", "Sushi 🍣", "Cake 🍰", "Ice Cream 🍦"],
-                zh: ["蘋果 🍎", "披薩 🍕", "漢堡 🍔", "壽司 🍣", "蛋糕 🍰", "冰淇淋 🍦"],
-                ja: ["リンゴ 🍎", "ピザ 🍕", "バーガー 🍔", "寿司 🍣", "ケーキ 🍰", "アイス 🍦"]
+                name: { en: "Food", zh: "食物", ja: "食べ物" },
+                en: ["Apple 🍎", "Pizza 🍕", "Burger 🍔", "Sushi 🍣", "Cake 🍰", "Ice Cream 🍦", "Taco 🌮", "Steak 🥩"],
+                zh: ["蘋果 🍎", "披薩 🍕", "漢堡 🍔", "壽司 🍣", "蛋糕 🍰", "冰淇淋 🍦", "塔可 🌮", "牛排 🥩"],
+                ja: ["リンゴ 🍎", "ピザ 🍕", "バーガー 🍔", "寿司 🍣", "ケーキ 🍰", "アイス 🍦", "タコス 🌮", "ステーキ 🥩"],
+                verbs: {
+                    en: { name_has: ["ate", "likes"], name_not: ["did not eat", "hates"], cross_has: ["also ate", "likes"], cross_not: ["did not eat", "refuses to eat"], cross_wrapper: "The person who ate {item}" },
+                    zh: { name_has: ["吃了", "點了"], name_not: ["沒吃", "討厭吃"], cross_has: ["也吃了", "另外點了"], cross_not: ["沒吃", "拒絕吃"], cross_wrapper: "吃了「{item}」的人" },
+                    ja: { name_has: ["を食べた", "が好き"], name_not: ["は食べていない", "が嫌い"], cross_has: ["も食べた"], cross_not: ["は食べない"], cross_wrapper: "「{item}」を食べた人" }
+                }
             },
             {
-                en: ["Book 📖", "Guitar 🎸", "Camera 📷", "Phone 📱", "Watch ⌚", "Ball ⚽"],
-                zh: ["書本 📖", "吉他 🎸", "相機 📷", "手機 📱", "手錶 ⌚", "足球 ⚽"],
-                ja: ["本 📖", "ギター 🎸", "カメラ 📷", "スマホ 📱", "時計 ⌚", "ボール ⚽"]
+                name: { en: "Item", zh: "物品", ja: "アイテム" },
+                en: ["Book 📖", "Guitar 🎸", "Camera 📷", "Phone 📱", "Watch ⌚", "Ball ⚽", "Laptop 💻", "Keys 🔑"],
+                zh: ["書本 📖", "吉他 🎸", "相機 📷", "手機 📱", "手錶 ⌚", "足球 ⚽", "筆電 💻", "鑰匙 🔑"],
+                ja: ["本 📖", "ギター 🎸", "カメラ 📷", "スマホ 📱", "時計 ⌚", "ボール ⚽", "ノートPC 💻", "鍵 🔑"],
+                verbs: {
+                    en: { name_has: ["brought", "has"], name_not: ["forgot", "does not have"], cross_has: ["also brought", "has"], cross_not: ["forgot", "does NOT have"], cross_wrapper: "The person with the {item}" },
+                    zh: { name_has: ["帶著", "拿著"], name_not: ["沒帶", "忘記帶"], cross_has: ["也帶著", "同時拿著"], cross_not: ["沒帶", "完全沒有"], cross_wrapper: "帶著「{item}」的人" },
+                    ja: { name_has: ["を持っている"], name_not: ["は持っていない"], cross_has: ["も持っている"], cross_not: ["は持っていない"], cross_wrapper: "「{item}」を持っている人" }
+                }
+            },
+            {
+                name: { en: "Hobby", zh: "嗜好", ja: "趣味" },
+                en: ["Painting 🎨", "Gaming 🎮", "Singing 🎤", "Cycling 🚴", "Reading 📚", "Cooking 🍳", "Gardening 🌱", "Dancing 💃"],
+                zh: ["畫畫 🎨", "打遊戲 🎮", "唱歌 🎤", "騎車 🚴", "閱讀 📚", "烹飪 🍳", "園藝 🌱", "跳舞 💃"],
+                ja: ["絵描き 🎨", "ゲーム 🎮", "歌う 🎤", "自転車 🚴", "読書 📚", "料理 🍳", "園芸 🌱", "ダンス 💃"],
+                verbs: {
+                    en: { name_has: ["enjoys", "likes"], name_not: ["dislikes", "never tries"], cross_has: ["also enjoys", "likes"], cross_not: ["dislikes", "never tries"], cross_wrapper: "The person who enjoys {item}" },
+                    zh: { name_has: ["喜歡", "擅長"], name_not: ["不喜歡", "從不嘗試"], cross_has: ["也喜歡", "同時擅長"], cross_not: ["不喜歡", "絕對不碰"], cross_wrapper: "喜歡「{item}」的人" },
+                    ja: { name_has: ["が好き", "が得意"], name_not: ["は嫌い", "はしない"], cross_has: ["も好き"], cross_not: ["はしない"], cross_wrapper: "「{item}」が好きな人" }
+                }
+            },
+            {
+                name: { en: "Color", zh: "衣服顏色", ja: "服の色" },
+                en: ["Red 🔴", "Blue 🔵", "Green 🟢", "Yellow 🟡", "Purple 🟣", "Orange 🟠", "Black ⚫", "White ⚪"],
+                zh: ["紅色 🔴", "藍色 🔵", "綠色 🟢", "黃色 🟡", "紫色 🟣", "橘色 🟠", "黑色 ⚫", "白色 ⚪"],
+                ja: ["赤 🔴", "青 🔵", "緑 🟢", "黄 🟡", "紫 🟣", "オレンジ 🟠", "黒 ⚫", "白 ⚪"],
+                verbs: {
+                    en: { name_has: ["is wearing", "dresses in"], name_not: ["is not wearing", "avoids wearing"], cross_has: ["is also wearing"], cross_not: ["is not wearing"], cross_wrapper: "The person wearing {item}" },
+                    zh: { name_has: ["穿著", "喜歡穿"], name_not: ["沒穿", "絕對不穿"], cross_has: ["也穿著", "身上穿的是"], cross_not: ["沒穿", "絕對不穿"], cross_wrapper: "穿著「{item}」衣服的人" },
+                    ja: { name_has: ["を着ている"], name_not: ["は着ていない"], cross_has: ["も着ている"], cross_not: ["は着ていない"], cross_wrapper: "「{item}」の服を着ている人" }
+                }
+            },
+            {
+                name: { en: "Job", zh: "夢想職業", ja: "職業" },
+                en: ["Doctor 🧑‍⚕️", "Teacher 🧑‍🏫", "Astronaut 🧑‍🚀", "Chef 🧑‍🍳", "Artist 🧑‍🎨", "Pilot 🧑‍✈️", "Scientist 🧑‍🔬", "Police 👮"],
+                zh: ["醫生 🧑‍⚕️", "老師 🧑‍🏫", "太空人 🧑‍🚀", "廚師 🧑‍🍳", "藝術家 🧑‍🎨", "飛行員 🧑‍✈️", "科學家 🧑‍🔬", "警察 👮"],
+                ja: ["医者 🧑‍⚕️", "先生 🧑‍🏫", "宇宙飛行士 🧑‍🚀", "シェフ 🧑‍🍳", "芸術家 🧑‍🎨", "パイロット 🧑‍✈️", "科学者 🧑‍🔬", "警察官 👮"],
+                verbs: {
+                    en: { name_has: ["wants to be a", "dreams of being a"], name_not: ["does not want to be a", "will never be a"], cross_has: ["also dreams of being a"], cross_not: ["does not want to be a"], cross_wrapper: "The future {item}" },
+                    zh: { name_has: ["夢想成為", "長大想當"], name_not: ["不想當", "絕對不去當"], cross_has: ["也想成為", "的夢想是當"], cross_not: ["不想當", "絕對不會去當"], cross_wrapper: "夢想成為「{item}」的人" },
+                    ja: { name_has: ["になりたい"], name_not: ["にはなりたくない"], cross_has: ["にもなりたい"], cross_not: ["にはならない"], cross_wrapper: "将来「{item}」になる人" }
+                }
             }
         ]
     };
@@ -314,15 +362,22 @@
     function initGame() {
         difficulty = parseInt(document.getElementById('game-level').value);
         
-        // 1. Pick Names
-        currentNames = shuffle([0,1,2,3,4,5,6,7]).slice(0, gridSize);
+        // 1. Pick Names dynamically
+        let nameCount = dataBank.names.en.length;
+        let allNameIdx = Array.from({length: nameCount}, (_, i) => i);
+        currentNames = shuffle(allNameIdx).slice(0, gridSize);
         
-        // 2. Pick Categories
-        let catPool = shuffle([0,1,2]);
+        // 2. Pick Categories dynamically
+        let catCount = dataBank.categories.length;
+        let allCatIdx = Array.from({length: catCount}, (_, i) => i);
+        let catPool = shuffle(allCatIdx);
+        
         selectedCategories = [];
         for(let i=0; i<difficulty; i++) {
             let catIdx = catPool[i];
-            let items = shuffle([0,1,2,3,4,5]).slice(0, gridSize);
+            let itemCount = dataBank.categories[catIdx].en.length;
+            let allItemIdx = Array.from({length: itemCount}, (_, i) => i);
+            let items = shuffle(allItemIdx).slice(0, gridSize);
             selectedCategories.push({ catGlobalIdx: catIdx, items: items });
         }
 
@@ -407,20 +462,33 @@
     function buildClueString(clue) {
         const tPhrases = translations[currentLang].phrases;
         
+        // 1. Determine Subject String & Wrapper (根據主詞的類別決定外包裝)
         let subjStr = "";
         let isNameSubj = (clue.sType === 'name');
         
         if (isNameSubj) {
             subjStr = `<strong>${getEntityText('name', clue.sIdx)}</strong>`;
         } else {
+            let sGlobalCatIdx = selectedCategories[clue.sType].catGlobalIdx;
+            let sVerbs = dataBank.categories[sGlobalCatIdx].verbs?.[currentLang];
+            let wrapper = sVerbs ? sVerbs.cross_wrapper : tPhrases.cross_wrapper;
+            
             let itemStr = getEntityText(clue.sType, clue.sIdx);
-            if(currentLang === 'en') subjStr = `<strong>${tPhrases.cross_wrapper.replace('{item}', itemStr)}</strong>`;
-            else subjStr = `<strong>${tPhrases.cross_wrapper.replace('{item}', itemStr)}</strong>`;
+            subjStr = `<strong>${wrapper.replace('{item}', itemStr)}</strong>`;
         }
 
-        let verbHas = isNameSubj ? tPhrases.name_has[Math.floor(Math.random() * tPhrases.name_has.length)] : tPhrases.cross_has[Math.floor(Math.random() * tPhrases.cross_has.length)];
-        let verbNot = isNameSubj ? tPhrases.name_not[Math.floor(Math.random() * tPhrases.name_not.length)] : tPhrases.cross_not[Math.floor(Math.random() * tPhrases.cross_not.length)];
+        // 2. Determine Object Verbs (根據受詞的類別決定動詞)
+        let oGlobalCatIdx = selectedCategories[clue.oCat].catGlobalIdx;
+        let oVerbs = dataBank.categories[oGlobalCatIdx].verbs?.[currentLang];
+        
+        // 如果該類別有專屬動詞就套用，否則退回預設的全域動詞
+        let verbHasPool = oVerbs ? oVerbs[isNameSubj ? 'name_has' : 'cross_has'] : (isNameSubj ? tPhrases.name_has : tPhrases.cross_has);
+        let verbNotPool = oVerbs ? oVerbs[isNameSubj ? 'name_not' : 'cross_not'] : (isNameSubj ? tPhrases.name_not : tPhrases.cross_not);
 
+        let verbHas = verbHasPool[Math.floor(Math.random() * verbHasPool.length)];
+        let verbNot = verbNotPool[Math.floor(Math.random() * verbNotPool.length)];
+
+        // 3. Assemble the sentence
         if (clue.type === 'has' || clue.type === 'not') {
             let objStr = `<strong>${getEntityText(clue.oCat, clue.oIdx)}</strong>`;
             let verb = (clue.type === 'has') ? verbHas : verbNot;
@@ -456,7 +524,6 @@
     function renderGrid() {
         const table = document.getElementById('logic-table');
         table.innerHTML = '';
-        const tCatNames = translations[currentLang].catNames;
         
         // Category Header Row (e.g. Pet | Food)
         let trCat = document.createElement('tr');
@@ -467,7 +534,7 @@
             th.className = 'cat-header';
             if(i < difficulty - 1) th.classList.add('cat-divider');
             let globalCatIdx = selectedCategories[i].catGlobalIdx;
-            th.innerText = tCatNames[globalCatIdx];
+            th.innerText = dataBank.categories[globalCatIdx].name[currentLang];
             trCat.appendChild(th);
         }
         table.appendChild(trCat);
