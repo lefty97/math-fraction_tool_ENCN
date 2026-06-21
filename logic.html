@@ -1,0 +1,529 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Logic Grid Detective</title>
+    <style>
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            background-color: #f0f8ff;
+            color: #333;
+            text-align: center;
+            padding: 0 20px 40px 20px;
+            margin: 0;
+        }
+        .nav-bar {
+            background-color: #34495e;
+            padding: 15px;
+            text-align: center;
+            margin-bottom: 20px;
+            border-radius: 0 0 10px 10px;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            flex-wrap: wrap;
+        }
+        .nav-bar a, .dropbtn {
+            color: white; text-decoration: none; font-size: 1.1rem;
+            margin: 0 10px; padding: 8px 15px; border-radius: 5px;
+            transition: background 0.3s; display: inline-block; cursor: pointer;
+        }
+        .nav-bar a:hover, .nav-bar a.active, .dropdown:hover .dropbtn { background-color: #e67e22; }
+        
+        .dropdown { display: inline-block; position: relative; }
+        .dropdown-content {
+            display: none; position: absolute; background-color: #2c3e50;
+            min-width: 260px; box-shadow: 0px 8px 16px 0px rgba(0,0,0,0.3);
+            z-index: 100; border-radius: 8px; top: 100%; left: 50%;
+            transform: translateX(-50%); padding: 8px 0; margin-top: 5px; overflow: hidden;
+        }
+        .dropdown-content a {
+            display: block !important; margin: 0 !important; padding: 12px 20px !important;
+            border-radius: 0 !important; text-align: left !important; font-size: 1.05rem !important;
+            border-bottom: 1px solid #34495e;
+        }
+        .dropdown-content a:last-child { border-bottom: none; }
+        .dropdown-content a:hover { background-color: #e67e22 !important; padding-left: 25px !important; }
+        .dropdown:hover .dropdown-content { display: block; }
+
+        .container {
+            background-color: white; max-width: 950px; margin: 0 auto;
+            padding: 30px; border-radius: 15px; box-shadow: 0 4px 8px rgba(0,0,0,0.1); position: relative;
+        }
+        .lang-switch { position: absolute; top: 20px; right: 20px; z-index: 10; }
+        .lang-switch select { font-size: 1rem; padding: 5px 10px; border-radius: 5px; border: 1px solid #ccc; cursor: pointer; }
+        
+        .btn { background-color: #3498db; color: white; border: none; padding: 10px 20px; font-size: 1.1rem; border-radius: 8px; cursor: pointer; transition: 0.2s; font-weight: bold; box-shadow: 0 4px 6px rgba(0,0,0,0.1); margin: 5px; }
+        .btn:hover { background-color: #2980b9; transform: translateY(-2px); }
+        .btn-green { background-color: #2ecc71; } .btn-green:hover { background-color: #27ae60; }
+        .btn-red { background-color: #e74c3c; } .btn-red:hover { background-color: #c0392b; }
+
+        /* Logic Game Layout */
+        .game-wrapper {
+            display: flex; flex-wrap: wrap; gap: 30px; margin-top: 30px; justify-content: center; align-items: flex-start;
+        }
+        
+        /* Clues Panel */
+        .clues-panel {
+            background: #fffbea; border: 2px solid #f1c40f; padding: 20px; border-radius: 10px;
+            flex: 1; min-width: 280px; max-width: 400px; text-align: left; box-shadow: 0 4px 6px rgba(0,0,0,0.05);
+        }
+        .clues-panel h3 { margin-top: 0; color: #d35400; border-bottom: 2px dashed #f39c12; padding-bottom: 10px; }
+        .clues-list { padding-left: 20px; font-size: 1.15rem; line-height: 1.6; color: #2c3e50; font-weight: 500;}
+        .clues-list li { margin-bottom: 12px; }
+
+        /* Logic Grid */
+        .grid-panel {
+            flex: 1; min-width: 320px; display: flex; flex-direction: column; align-items: center;
+        }
+        .logic-table {
+            border-collapse: collapse; margin-bottom: 20px; background: white; box-shadow: 0 4px 15px rgba(0,0,0,0.05);
+        }
+        .logic-table th, .logic-table td {
+            border: 2px solid #bdc3c7; width: 60px; height: 60px; text-align: center; vertical-align: middle;
+        }
+        .logic-table th {
+            background: #34495e; color: white; font-weight: bold; font-size: 1.1rem; padding: 5px;
+        }
+        .logic-table td {
+            font-size: 2rem; cursor: pointer; user-select: none; transition: background 0.1s;
+        }
+        .logic-table td:hover { background: #f0f3f4; }
+        
+        /* Cell States */
+        .cell-x { color: #e74c3c; } /* Red Cross */
+        .cell-o { color: #2ecc71; background: #eafaf1 !important; font-size: 2.2rem !important; } /* Green Circle */
+
+        .status-box {
+            background: #ecf0f1; border-radius: 8px; padding: 15px; margin-bottom: 20px;
+            font-size: 1.2rem; font-weight: bold; width: 100%; box-sizing: border-box; min-height: 60px;
+            display: flex; align-items: center; justify-content: center; border: 2px solid #bdc3c7;
+        }
+        .status-success { background: #d5f5e3; border-color: #27ae60; color: #27ae60; }
+        .status-error { background: #fadedb; border-color: #e74c3c; color: #e74c3c; }
+
+        .score-streak { margin-top: 15px; font-size: 1.2rem; font-weight: bold; color: #8e44ad; }
+    </style>
+</head>
+<body>
+
+<div class="nav-bar">
+    <a href="index.html">🍕 Fractions</a>
+    <a href="decimal.html">🎯 Decimals</a>
+    <a href="angles.html">📐 Geometry Explorer</a>
+    <a href="algebra.html">⚖️ Algebra Balance</a>
+    
+    <div class="dropdown">
+        <a href="javascript:void(0)" class="dropbtn active">🎮 Games Playroom ▾</a>
+        <div class="dropdown-content">
+            <a href="1a2b.html">🔢 1A2B Number Game</a>
+            <a href="multiplication.html">✖️ 99 Multiplication</a>
+            <a href="logic.html" style="background-color: #e67e22; padding-left: 25px !important;">🕵️ Logic Puzzle</a>
+        </div>
+    </div>
+</div>
+
+<div class="container">
+    <div class="lang-switch">
+        <select id="language" onchange="changeLanguage()">
+            <option value="en" selected>English</option>
+            <option value="zh">繁體中文</option>
+            <option value="ja">日本語</option>
+        </select>
+    </div>
+
+    <h2 id="text-title" style="margin-top: 20px;">🕵️‍♂️ Logic Grid Detective</h2>
+    <p id="text-subtitle">Read the clues and use deductive elimination! Click cells to toggle ❌ and ⭕.</p>
+    
+    <div class="game-wrapper">
+        <!-- Clues Side -->
+        <div class="clues-panel">
+            <h3 id="text-clues-title">📝 Clues</h3>
+            <ul class="clues-list" id="clues-container">
+                <!-- Dynamically generated clues -->
+            </ul>
+        </div>
+
+        <!-- Grid Side -->
+        <div class="grid-panel">
+            <div id="status-box" class="status-box">Ready to solve!</div>
+            
+            <table class="logic-table" id="logic-table">
+                <!-- Dynamically generated table -->
+            </table>
+
+            <div>
+                <button class="btn btn-red" id="btn-reset" onclick="resetGrid()">🔄 Reset Grid</button>
+                <button class="btn btn-green" id="btn-check" onclick="checkAnswer()">🔍 Check Answer</button>
+                <button class="btn" id="btn-new" onclick="initGame()">✨ New Puzzle</button>
+            </div>
+            
+            <div class="score-streak" id="streak-counter">🧩 Puzzles Solved: 0</div>
+        </div>
+    </div>
+</div>
+
+<script>
+    const translations = {
+        en: {
+            title: "🕵️‍♂️ Logic Grid Detective", sub: "Use deductive elimination! Click cells to toggle ❌ (No) and ⭕ (Yes).",
+            clues: "📝 Clues", btnReset: "🔄 Reset", btnCheck: "🔍 Check Answer", btnNew: "✨ New Puzzle",
+            statusReady: "Ready to solve! You need exactly four ⭕.",
+            statusErrInc: "Not quite right yet. Re-read the clues carefully!",
+            statusErrMiss: "Incomplete! Every row and column must have exactly one ⭕.",
+            statusSuccess: "🎉 Brilliant deduction! You solved it!",
+            streak: "🧩 Puzzles Solved: {n}",
+            
+            phrases: {
+                has: ["has", "owns", "chose", "is matched with"],
+                not: ["does not have", "hates", "would never choose", "is not paired with"]
+            }
+        },
+        zh: {
+            title: "🕵️‍♂️ 小偵探邏輯矩陣", sub: "透過線索進行排除法！點擊方格可切換 ❌ (不可能) 與 ⭕ (確定)。",
+            clues: "📝 案發現場線索", btnReset: "🔄 重設表格", btnCheck: "🔍 檢查答案", btnNew: "✨ 產生新謎題",
+            statusReady: "準備解謎！你需要找出 4 個 ⭕ 來完成配對。",
+            statusErrInc: "推論似乎有破綻喔！請重新仔細閱讀線索。",
+            statusErrMiss: "還沒完成！每個人都必須對應一個專屬的 ⭕。",
+            statusSuccess: "🎉 完美的演繹推理！你解開謎題了！",
+            streak: "🧩 成功破案次數：{n}",
+
+            phrases: {
+                has: ["擁有", "選擇了", "對應的是", "非常喜歡"],
+                not: ["絕對不選", "討厭", "沒有選擇", "的對應不是"]
+            }
+        },
+        ja: {
+            title: "🕵️‍♂️ 論理パズル探偵", sub: "手がかりから推理しよう！マスをクリックして ❌ と ⭕ を切り替えます。",
+            clues: "📝 手がかり", btnReset: "🔄 リセット", btnCheck: "🔍 答え合わせ", btnNew: "✨ 新しい問題",
+            statusReady: "準備完了！4つの ⭕ を見つけてください。",
+            statusErrInc: "どこか間違っているようです。手がかりを読み直して！",
+            statusErrMiss: "未完成です！各行・各列に1つずつ ⭕ が必要です。",
+            statusSuccess: "🎉 完璧な推理です！クリア！",
+            streak: "🧩 クリア回数：{n}",
+
+            phrases: {
+                has: ["を持っている", "を選んだ", "とペアになっている", "が好き"],
+                not: ["を持っていない", "が嫌い", "を選ばない", "とはペアにならない"]
+            }
+        }
+    };
+
+    // Entity Data Bank
+    const dataBank = {
+        names: {
+            en: ["Leo", "Mia", "Jack", "Zoe", "Emma", "Noah", "Lucas", "Lily"],
+            zh: ["小雷", "米亞", "傑克", "柔伊", "艾瑪", "諾亞", "路卡", "莉莉"],
+            ja: ["レオ", "ミア", "ジャック", "ゾーイ", "エマ", "ノア", "ルーカス", "リリー"]
+        },
+        categories: [
+            {
+                type: "Pet",
+                en: ["Dog 🐕", "Cat 🐈", "Bird 🦜", "Rabbit 🐇", "Fish 🐠", "Turtle 🐢"],
+                zh: ["小狗 🐕", "貓咪 🐈", "鸚鵡 🦜", "兔子 🐇", "金魚 🐠", "烏龜 🐢"],
+                ja: ["犬 🐕", "猫 🐈", "鳥 🦜", "ウサギ 🐇", "魚 🐠", "カメ 🐢"]
+            },
+            {
+                type: "Food",
+                en: ["Apple 🍎", "Pizza 🍕", "Burger 🍔", "Sushi 🍣", "Cake 🍰", "Ice Cream 🍦"],
+                zh: ["蘋果 🍎", "披薩 🍕", "漢堡 🍔", "壽司 🍣", "蛋糕 🍰", "冰淇淋 🍦"],
+                ja: ["リンゴ 🍎", "ピザ 🍕", "バーガー 🍔", "寿司 🍣", "ケーキ 🍰", "アイス 🍦"]
+            },
+            {
+                type: "Item",
+                en: ["Book 📖", "Guitar 🎸", "Camera 📷", "Phone 📱", "Watch ⌚", "Ball ⚽"],
+                zh: ["書本 📖", "吉他 🎸", "相機 📷", "手機 📱", "手錶 ⌚", "足球 ⚽"],
+                ja: ["本 📖", "ギター 🎸", "カメラ 📷", "スマホ 📱", "時計 ⌚", "ボール ⚽"]
+            }
+        ]
+    };
+
+    let currentLang = 'en';
+    let solvedCount = 0;
+    
+    // Core Game State
+    const gridSize = 4;
+    let currentNames = []; // Indices of chosen names
+    let currentCategoryIdx = 0;
+    let currentItems = []; // Indices of chosen items
+    
+    let solutionMap = []; // map[row] = col
+    let gridState = []; // 4x4 matrix: 0=empty, 1=X, 2=O
+    let currentClues = [];
+
+    function changeLanguage() {
+        currentLang = document.getElementById('language').value;
+        localStorage.setItem('mySiteLang', currentLang);
+        const t = translations[currentLang];
+        
+        document.getElementById('text-title').innerText = t.title;
+        document.getElementById('text-subtitle').innerText = t.sub;
+        document.getElementById('text-clues-title').innerText = t.clues;
+        document.getElementById('btn-reset').innerHTML = t.btnReset;
+        document.getElementById('btn-check').innerHTML = t.btnCheck;
+        document.getElementById('btn-new').innerHTML = t.btnNew;
+        
+        document.getElementById('streak-counter').innerText = t.streak.replace('{n}', solvedCount);
+        setStatus("Ready");
+
+        // Re-translate current puzzle entities without changing the logic
+        renderGrid();
+        renderClues();
+    }
+
+    // --- Core Algorithm ---
+    function shuffle(array) {
+        let currentIndex = array.length, randomIndex;
+        while (currentIndex > 0) {
+            randomIndex = Math.floor(Math.random() * currentIndex);
+            currentIndex--;
+            [array[currentIndex], array[randomIndex]] = [array[randomIndex], array[currentIndex]];
+        }
+        return array;
+    }
+
+    function initGame() {
+        // 1. Pick Random Entities
+        let allNameIdx = [0,1,2,3,4,5,6,7];
+        currentNames = shuffle(allNameIdx).slice(0, gridSize);
+        
+        currentCategoryIdx = Math.floor(Math.random() * dataBank.categories.length);
+        let allItemIdx = [0,1,2,3,4,5];
+        currentItems = shuffle(allItemIdx).slice(0, gridSize);
+
+        // 2. Generate True Solution Map (1-to-1 mapping)
+        // For simplicity, row i maps to col i in our shuffled logical array
+        // We will shuffle the display order later.
+        solutionMap = [0, 1, 2, 3]; // Row 0 -> Col 0, etc.
+
+        // 3. Select Logical Template and Generate Clues
+        generateClueStructure();
+
+        // 4. Shuffle visual grid to decouple from logic index
+        shuffleVisualMapping();
+
+        // 5. Initialize Grid State
+        gridState = Array.from({ length: gridSize }, () => Array(gridSize).fill(0));
+        
+        renderGrid();
+        renderClues();
+        setStatus("Ready");
+    }
+
+    // Logic Matrix Generation (Constraint Satisfaction Templates)
+    function generateClueStructure() {
+        currentClues = [];
+        let tType = Math.floor(Math.random() * 3); // 3 templates
+        
+        // Logical indices: N0 maps to A0, N1->A1, etc.
+        if (tType === 0) {
+            // Template A
+            currentClues.push({ type: 'has', n: 0, a: 0 }); // N0 has A0
+            currentClues.push({ type: 'notMulti', n: 1, aList: [2, 3] }); // N1 not A2, A3 (leaves A1)
+            currentClues.push({ type: 'not', n: 2, a: 3 }); // N2 not A3 (leaves A2)
+            currentClues.push({ type: 'not', n: 3, a: 1 }); // Fluff
+        } else if (tType === 1) {
+            // Template B
+            currentClues.push({ type: 'notMulti', n: 1, aList: [0, 2, 3] }); // N1 not A0,A2,A3 -> A1
+            currentClues.push({ type: 'has', n: 2, a: 2 }); // N2 has A2
+            currentClues.push({ type: 'not', n: 3, a: 0 }); // N3 not A0 -> A3
+            currentClues.push({ type: 'not', n: 0, a: 3 }); // Fluff
+        } else {
+            // Template C
+            currentClues.push({ type: 'has', n: 3, a: 3 }); // N3 has A3
+            currentClues.push({ type: 'notMulti', n: 0, aList: [1, 2] }); // N0 not A1,A2 -> A0
+            currentClues.push({ type: 'not', n: 1, a: 2 }); // N1 not A2 -> A1
+            currentClues.push({ type: 'not', n: 2, a: 0 }); // Fluff
+        }
+    }
+
+    let visualRowMap = []; // visualRow -> logicRow
+    let visualColMap = []; // visualCol -> logicCol
+
+    function shuffleVisualMapping() {
+        visualRowMap = shuffle([0, 1, 2, 3]);
+        visualColMap = shuffle([0, 1, 2, 3]);
+    }
+
+    // --- Rendering ---
+    
+    // Language Helper
+    function getEntityStr(isName, logicIdx) {
+        if(isName) {
+            return dataBank.names[currentLang][currentNames[logicIdx]];
+        } else {
+            return dataBank.categories[currentCategoryIdx][currentLang][currentItems[logicIdx]];
+        }
+    }
+
+    function renderClues() {
+        const ul = document.getElementById('clues-container');
+        ul.innerHTML = '';
+        const tPhrases = translations[currentLang].phrases;
+
+        // Convert logic clues to localized string
+        let displayClues = currentClues.map(c => {
+            let nStr = `<strong>${getEntityStr(true, c.n)}</strong>`;
+            let pHas = tPhrases.has[Math.floor(Math.random() * tPhrases.has.length)];
+            let pNot = tPhrases.not[Math.floor(Math.random() * tPhrases.not.length)];
+            
+            if (c.type === 'has') {
+                let aStr = `<strong>${getEntityStr(false, c.a)}</strong>`;
+                if(currentLang === 'en') return `${nStr} ${pHas} ${aStr}.`;
+                if(currentLang === 'ja') return `${nStr} は ${aStr} ${pHas}。`;
+                return `${nStr} ${pHas} ${aStr}。`;
+            } else if (c.type === 'not') {
+                let aStr = `<strong>${getEntityStr(false, c.a)}</strong>`;
+                if(currentLang === 'en') return `${nStr} ${pNot} ${aStr}.`;
+                if(currentLang === 'ja') return `${nStr} は ${aStr} ${pNot}。`;
+                return `${nStr} ${pNot} ${aStr}。`;
+            } else if (c.type === 'notMulti') {
+                let a1Str = `<strong>${getEntityStr(false, c.aList[0])}</strong>`;
+                let a2Str = `<strong>${getEntityStr(false, c.aList[1])}</strong>`;
+                
+                if(c.aList.length === 3) {
+                    let a3Str = `<strong>${getEntityStr(false, c.aList[2])}</strong>`;
+                    if(currentLang === 'en') return `${nStr} ${pNot} ${a1Str}, ${a2Str}, or ${a3Str}.`;
+                    if(currentLang === 'ja') return `${nStr} は ${a1Str}、${a2Str}、${a3Str} ${pNot}。`;
+                    return `${nStr} ${pNot} ${a1Str}、${a2Str} 與 ${a3Str}。`;
+                } else {
+                    if(currentLang === 'en') return `${nStr} ${pNot} ${a1Str} or ${a2Str}.`;
+                    if(currentLang === 'ja') return `${nStr} は ${a1Str} と ${a2Str} ${pNot}。`;
+                    return `${nStr} ${pNot} ${a1Str} 與 ${a2Str}。`;
+                }
+            }
+        });
+
+        // Shuffle clues visually
+        displayClues = shuffle(displayClues);
+
+        displayClues.forEach(text => {
+            let li = document.createElement('li');
+            li.innerHTML = text;
+            ul.appendChild(li);
+        });
+    }
+
+    function renderGrid() {
+        const table = document.getElementById('logic-table');
+        table.innerHTML = '';
+        
+        // Header Row
+        let trHead = document.createElement('tr');
+        trHead.appendChild(document.createElement('th')); // Empty top-left
+        for(let c=0; c<gridSize; c++) {
+            let th = document.createElement('th');
+            th.innerText = getEntityStr(false, visualColMap[c]);
+            trHead.appendChild(th);
+        }
+        table.appendChild(trHead);
+
+        // Body Rows
+        for(let r=0; r<gridSize; r++) {
+            let tr = document.createElement('tr');
+            let thRow = document.createElement('th');
+            thRow.innerText = getEntityStr(true, visualRowMap[r]);
+            tr.appendChild(thRow);
+
+            for(let c=0; c<gridSize; c++) {
+                let td = document.createElement('td');
+                td.id = `cell-${r}-${c}`;
+                td.onclick = () => handleCellClick(r, c);
+                
+                let state = gridState[r][c];
+                if(state === 1) { td.innerText = '❌'; td.className = 'cell-x'; }
+                else if(state === 2) { td.innerText = '⭕'; td.className = 'cell-o'; }
+                
+                tr.appendChild(td);
+            }
+            table.appendChild(tr);
+        }
+    }
+
+    // --- Interaction ---
+    function handleCellClick(r, c) {
+        let currentState = gridState[r][c];
+        
+        // Cycle: 0 -> 1(X) -> 2(O) -> 0
+        if (currentState === 0) gridState[r][c] = 1;
+        else if (currentState === 1) {
+            gridState[r][c] = 2;
+            autoFillX(r, c); // Smart auto-fill
+        }
+        else gridState[r][c] = 0;
+
+        renderGrid();
+        setStatus("Ready");
+    }
+
+    // UX feature: Auto fill row and column with X when O is placed
+    function autoFillX(rTarget, cTarget) {
+        for(let i=0; i<gridSize; i++) {
+            if(i !== cTarget && gridState[rTarget][i] === 0) gridState[rTarget][i] = 1;
+            if(i !== rTarget && gridState[i][cTarget] === 0) gridState[i][cTarget] = 1;
+        }
+    }
+
+    function resetGrid() {
+        gridState = Array.from({ length: gridSize }, () => Array(gridSize).fill(0));
+        renderGrid();
+        setStatus("Ready");
+    }
+
+    // --- Validation ---
+    function checkAnswer() {
+        let oCount = 0;
+        let isCorrect = true;
+
+        for(let r=0; r<gridSize; r++) {
+            for(let c=0; c<gridSize; c++) {
+                if(gridState[r][c] === 2) {
+                    oCount++;
+                    let logicRow = visualRowMap[r];
+                    let logicCol = visualColMap[c];
+                    // solutionMap maps logicRow -> logicCol
+                    if (solutionMap[logicRow] !== logicCol) {
+                        isCorrect = false;
+                    }
+                }
+            }
+        }
+
+        if (oCount < gridSize) {
+            setStatus("ErrMiss");
+        } else if (!isCorrect) {
+            setStatus("ErrInc");
+        } else {
+            setStatus("Success");
+            solvedCount++;
+            document.getElementById('streak-counter').innerText = translations[currentLang].streak.replace('{n}', solvedCount);
+            // Lock grid
+            for(let r=0; r<gridSize; r++) {
+                for(let c=0; c<gridSize; c++) {
+                    document.getElementById(`cell-${r}-${c}`).onclick = null;
+                }
+            }
+        }
+    }
+
+    function setStatus(type) {
+        const box = document.getElementById('status-box');
+        const t = translations[currentLang];
+        box.className = 'status-box';
+        
+        if (type === "Ready") { box.innerText = t.statusReady; }
+        else if (type === "ErrInc") { box.innerText = t.statusErrInc; box.classList.add('status-error'); }
+        else if (type === "ErrMiss") { box.innerText = t.statusErrMiss; box.classList.add('status-error'); }
+        else if (type === "Success") { box.innerText = t.statusSuccess; box.classList.add('status-success'); }
+    }
+
+    window.onload = function() {
+        const savedLang = localStorage.getItem('mySiteLang');
+        if (savedLang) document.getElementById('language').value = savedLang;
+        changeLanguage();
+        initGame();
+    };
+</script>
+</body>
+</html>
