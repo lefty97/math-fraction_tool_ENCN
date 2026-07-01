@@ -1,0 +1,423 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Area & Perimeter Explorer</title>
+    <style>
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            background-color: #f0f8ff;
+            color: #333;
+            text-align: center;
+            padding: 0 20px 40px 20px;
+            margin: 0;
+        }
+        /* Navigation Bar - Refactored with 2 Dropdowns */
+        .nav-bar {
+            background-color: #34495e; padding: 15px; text-align: center;
+            margin-bottom: 20px; border-radius: 0 0 10px 10px;
+            display: flex; justify-content: center; align-items: center; flex-wrap: wrap; gap: 15px;
+        }
+        .nav-bar a, .dropbtn {
+            color: white; text-decoration: none; font-size: 1.1rem;
+            padding: 8px 15px; border-radius: 5px;
+            transition: background 0.3s; display: inline-block; cursor: pointer;
+        }
+        .nav-bar a:hover, .nav-bar a.active, .dropdown:hover .dropbtn { background-color: #e67e22; }
+        
+        .dropdown { display: inline-block; position: relative; }
+        .dropdown-content {
+            display: none; position: absolute; background-color: #2c3e50;
+            min-width: 260px; box-shadow: 0px 8px 16px 0px rgba(0,0,0,0.3);
+            z-index: 100; border-radius: 8px; top: 100%; left: 50%;
+            transform: translateX(-50%); padding: 8px 0; margin-top: 5px; overflow: hidden;
+        }
+        .dropdown-content a {
+            display: block !important; margin: 0 !important; padding: 12px 20px !important;
+            border-radius: 0 !important; text-align: left !important; font-size: 1.05rem !important;
+            border-bottom: 1px solid #34495e;
+        }
+        .dropdown-content a:last-child { border-bottom: none; }
+        .dropdown-content a:hover { background-color: #e67e22 !important; padding-left: 25px !important; }
+        .dropdown:hover .dropdown-content { display: block; }
+
+        .container {
+            background-color: white; max-width: 1000px; margin: 0 auto;
+            padding: 30px; border-radius: 15px; box-shadow: 0 4px 8px rgba(0,0,0,0.1); position: relative;
+        }
+        .lang-switch { position: absolute; top: 20px; right: 20px; z-index: 10; }
+        .lang-switch select { font-size: 1rem; padding: 5px 10px; border-radius: 5px; border: 1px solid #ccc; cursor: pointer; }
+        
+        h2 { color: #2c3e50; }
+        .section-title { color: #d35400; border-bottom: 2px dashed #f39c12; padding-bottom: 10px; margin-top: 40px;}
+
+        /* Controls */
+        .controls-panel {
+            background: #ebf5fb; padding: 20px; border-radius: 10px; margin-bottom: 20px;
+            display: flex; justify-content: center; gap: 20px; align-items: center; flex-wrap: wrap;
+        }
+        .input-group { display: flex; align-items: center; gap: 10px; font-weight: bold; font-size: 1.1rem; }
+        .num-input {
+            width: 70px; font-size: 1.2rem; padding: 5px; border: 2px solid #bdc3c7;
+            border-radius: 5px; text-align: center; outline: none; transition: 0.2s;
+        }
+        .num-input:focus { border-color: #3498db; }
+        .setting-select { font-size: 1.1rem; padding: 8px; border: 2px solid #bdc3c7; border-radius: 5px; font-weight:bold; outline: none;}
+
+        /* Grid Display (Rectangles) */
+        .grid-display-wrapper {
+            width: 100%; height: 350px; background: #f8f9fa; border: 2px solid #bdc3c7;
+            border-radius: 10px; display: flex; justify-content: center; align-items: center; overflow: hidden;
+            position: relative;
+        }
+        .dynamic-grid {
+            background-color: rgba(52, 152, 219, 0.2); border: 3px solid #2980b9;
+            transition: all 0.3s ease-out; box-sizing: border-box;
+            background-image: linear-gradient(to right, rgba(41, 128, 185, 0.4) 1px, transparent 1px),
+                              linear-gradient(to bottom, rgba(41, 128, 185, 0.4) 1px, transparent 1px);
+        }
+        
+        /* SVG Display (Complex Shapes) */
+        .svg-display-wrapper {
+            width: 100%; height: 350px; background: #fef9e7; border: 2px solid #f8c471;
+            border-radius: 10px; display: flex; justify-content: center; align-items: center;
+        }
+        svg { width: 100%; height: 100%; overflow: visible; transition: all 0.3s ease-out;}
+        .shape-polygon { fill: rgba(230, 126, 34, 0.3); stroke: #d35400; stroke-width: 4; stroke-linejoin: round; transition: all 0.3s ease-out; }
+        .svg-text { font-size: 20px; font-weight: bold; fill: #2c3e50; font-family: sans-serif; text-anchor: middle;}
+        .dashed-line { stroke: #7f8c8d; stroke-width: 3; stroke-dasharray: 6,6; }
+
+        /* Formula & Result Cards */
+        .result-cards { display: flex; justify-content: center; gap: 20px; margin-top: 15px; flex-wrap: wrap;}
+        .card {
+            background: white; border: 2px solid #ecf0f1; padding: 15px 25px; border-radius: 10px;
+            box-shadow: 0 4px 6px rgba(0,0,0,0.05); min-width: 200px;
+        }
+        .card-title { font-size: 1rem; color: #7f8c8d; font-weight: bold; text-transform: uppercase; margin-bottom: 5px;}
+        .card-value { font-size: 1.8rem; font-weight: bold; color: #2c3e50; }
+        .card-formula { font-size: 1.2rem; color: #e67e22; font-weight: bold; margin-top: 5px; font-family: monospace;}
+        
+    </style>
+</head>
+<body>
+
+<div class="nav-bar">
+    <!-- Learning Dropdown -->
+    <div class="dropdown">
+        <a href="javascript:void(0)" class="dropbtn active">📚 Year 4 Math Learning ▾</a>
+        <div class="dropdown-content">
+            <a href="index.html">🍕 Fractions</a>
+            <a href="decimal.html">🎯 Decimals</a>
+            <a href="angles.html">📐 Geometry Explorer</a>
+            <a href="algebra.html">⚖️ Algebra Balance</a>
+            <a href="area.html" style="background-color: #e67e22; padding-left: 25px !important;">📏 Area & Perimeter</a>
+        </div>
+    </div>
+    
+    <!-- Games Dropdown -->
+    <div class="dropdown">
+        <a href="javascript:void(0)" class="dropbtn">🎮 Games Playroom ▾</a>
+        <div class="dropdown-content">
+            <a href="1a2b.html">🔢 1A2B Number Game</a>
+            <a href="multiplication.html">✖️ 99 Multiplication</a>
+            <a href="logic.html">🕵️ Logic Puzzle</a>
+        </div>
+    </div>
+</div>
+
+<div class="container">
+    <div class="lang-switch">
+        <select id="language" onchange="changeLanguage()">
+            <option value="en" selected>English</option>
+            <option value="zh">繁體中文</option>
+            <option value="ja">日本語</option>
+        </select>
+    </div>
+
+    <!-- Section 1: Rectangles & Squares -->
+    <h2 id="title-rect">📏 Rectangles & Squares</h2>
+    <p id="desc-rect">Input width and height to see the grid. Count the squares for Area, and trace the edges for Perimeter!</p>
+    
+    <div class="controls-panel">
+        <div class="input-group">
+            <span id="lbl-width">Width:</span>
+            <input type="number" id="rect-w" class="num-input" value="5" min="1" max="50" oninput="drawRectangle()">
+        </div>
+        <div class="input-group">
+            <span id="lbl-height">Height:</span>
+            <input type="number" id="rect-h" class="num-input" value="4" min="1" max="50" oninput="drawRectangle()">
+        </div>
+    </div>
+
+    <div class="grid-display-wrapper" id="rect-wrapper">
+        <div class="dynamic-grid" id="rect-grid"></div>
+    </div>
+
+    <div class="result-cards">
+        <div class="card">
+            <div class="card-title" id="lbl-rect-area">AREA (面積)</div>
+            <div class="card-value" id="val-rect-area">20</div>
+            <div class="card-formula" id="form-rect-area">W × H</div>
+        </div>
+        <div class="card">
+            <div class="card-title" id="lbl-rect-peri">PERIMETER (周長)</div>
+            <div class="card-value" id="val-rect-peri">18</div>
+            <div class="card-formula" id="form-rect-peri">2 × (W + H)</div>
+        </div>
+    </div>
+
+    <hr style="margin: 50px 0; border: 0; height: 2px; background: #ecf0f1;">
+
+    <!-- Section 2: Complex Shapes -->
+    <h2 id="title-complex" class="section-title">📐 Complex Shapes</h2>
+    <p id="desc-complex">Select a shape and change its dimensions to see how the area formula works.</p>
+
+    <div class="controls-panel">
+        <select id="shape-select" class="setting-select" onchange="switchShape()">
+            <option value="triangle" id="opt-tri">Triangle (三角形)</option>
+            <option value="parallelogram" id="opt-para">Parallelogram (平行四邊形)</option>
+            <option value="trapezoid" id="opt-trap">Trapezoid (梯形)</option>
+        </select>
+
+        <div class="input-group" id="grp-base1">
+            <span id="lbl-base1">Base:</span>
+            <input type="number" id="shape-b1" class="num-input" value="8" min="1" max="50" oninput="drawComplexShape()">
+        </div>
+        
+        <div class="input-group" id="grp-base2" style="display: none;">
+            <span id="lbl-base2">Top Base:</span>
+            <input type="number" id="shape-b2" class="num-input" value="4" min="1" max="50" oninput="drawComplexShape()">
+        </div>
+
+        <div class="input-group" id="grp-height">
+            <span id="lbl-shape-h">Height:</span>
+            <input type="number" id="shape-h" class="num-input" value="5" min="1" max="50" oninput="drawComplexShape()">
+        </div>
+    </div>
+
+    <div class="svg-display-wrapper">
+        <svg id="shape-svg" preserveAspectRatio="xMidYMid meet">
+            <!-- Dynamic SVG content will be injected here -->
+        </svg>
+    </div>
+
+    <div class="result-cards">
+        <div class="card" style="width: 100%; max-width: 400px;">
+            <div class="card-title" id="lbl-complex-area">AREA CALCULATION (面積計算)</div>
+            <div class="card-formula" id="val-complex-formula" style="font-size: 1.5rem; color: #2c3e50;">A = ½ × b × h</div>
+            <div class="card-value" id="val-complex-area" style="color: #d35400; margin-top: 10px;">= 20</div>
+        </div>
+    </div>
+
+</div>
+
+<script>
+    const translations = {
+        en: {
+            titleRect: "📏 Rectangles & Squares", descRect: "Input width and height to see the grid. Count the squares for Area, and trace the edges for Perimeter!",
+            lblW: "Width:", lblH: "Height:", lblArea: "AREA", lblPeri: "PERIMETER",
+            
+            titleComp: "📐 Complex Shapes", descComp: "Select a shape and change its dimensions to see how the area formula works.",
+            optTri: "Triangle", optPara: "Parallelogram", optTrap: "Trapezoid",
+            lblB1: "Base:", lblB2: "Top Base:", lblB1Trap: "Bottom Base:", lblCompH: "Height:",
+            lblCalc: "AREA CALCULATION"
+        },
+        zh: {
+            titleRect: "📏 矩形與正方形", descRect: "輸入長度與寬度來生成網格。點數格子就是面積，沿著邊緣繞一圈就是周長！",
+            lblW: "寬度 (W):", lblH: "高度 (H):", lblArea: "面積 (Area)", lblPeri: "周長 (Perimeter)",
+            
+            titleComp: "📐 進階多邊形", descComp: "選擇圖形並調整數值，觀察面積公式是如何運作的。",
+            optTri: "三角形 (Triangle)", optPara: "平行四邊形 (Parallelogram)", optTrap: "梯形 (Trapezoid)",
+            lblB1: "底邊 (b):", lblB2: "上底 (a):", lblB1Trap: "下底 (b):", lblCompH: "高度 (h):",
+            lblCalc: "面積計算過程"
+        },
+        ja: {
+            titleRect: "📏 長方形と正方形", descRect: "幅と高さを入力してグリッドを作成します。マスの数が面積、外枠の長さが周囲の長さです！",
+            lblW: "幅 (W):", lblH: "高さ (H):", lblArea: "面積 (Area)", lblPeri: "周囲 (Perimeter)",
+            
+            titleComp: "📐 応用図形", descComp: "図形を選んで数値を変え、面積の公式がどう機能するか観察しましょう。",
+            optTri: "三角形", optPara: "平行四辺形", optTrap: "台形",
+            lblB1: "底辺 (b):", lblB2: "上底 (a):", lblB1Trap: "下底 (b):", lblCompH: "高さ (h):",
+            lblCalc: "面積の計算"
+        }
+    };
+
+    let currentLang = 'en';
+
+    function changeLanguage() {
+        currentLang = document.getElementById('language').value;
+        localStorage.setItem('mySiteLang', currentLang);
+        const t = translations[currentLang];
+        
+        document.getElementById('title-rect').innerText = t.titleRect;
+        document.getElementById('desc-rect').innerText = t.descRect;
+        document.getElementById('lbl-width').innerText = t.lblW;
+        document.getElementById('lbl-height').innerText = t.lblH;
+        document.getElementById('lbl-rect-area').innerText = t.lblArea;
+        document.getElementById('lbl-rect-peri').innerText = t.lblPeri;
+
+        document.getElementById('title-complex').innerText = t.titleComp;
+        document.getElementById('desc-complex').innerText = t.descComp;
+        document.getElementById('opt-tri').innerText = t.optTri;
+        document.getElementById('opt-para').innerText = t.optPara;
+        document.getElementById('opt-trap').innerText = t.optTrap;
+        
+        document.getElementById('lbl-base2').innerText = t.lblB2;
+        document.getElementById('lbl-shape-h').innerText = t.lblCompH;
+        document.getElementById('lbl-complex-area').innerText = t.lblCalc;
+
+        switchShape(); 
+    }
+
+    // --- Section 1: Rectangle Logic ---
+    function drawRectangle() {
+        let w = parseFloat(document.getElementById('rect-w').value) || 0;
+        let h = parseFloat(document.getElementById('rect-h').value) || 0;
+        
+        if (w < 1) w = 1; if (h < 1) h = 1;
+
+        let area = w * h;
+        let peri = 2 * (w + h);
+        
+        document.getElementById('val-rect-area').innerText = area;
+        document.getElementById('val-rect-peri').innerText = peri;
+        document.getElementById('form-rect-area').innerText = `${w} × ${h}`;
+        document.getElementById('form-rect-peri').innerText = `2 × (${w} + ${h})`;
+
+        const gridBox = document.getElementById('rect-grid');
+        const wrapper = document.getElementById('rect-wrapper');
+        
+        let unitSize = 30; 
+        let rawWidth = w * unitSize;
+        let rawHeight = h * unitSize;
+        
+        let maxW = wrapper.clientWidth - 40;
+        let maxH = wrapper.clientHeight - 40;
+
+        let scale = 1;
+        if (rawWidth > maxW || rawHeight > maxH) {
+            let scaleW = maxW / rawWidth;
+            let scaleH = maxH / rawHeight;
+            scale = Math.min(scaleW, scaleH);
+        }
+
+        gridBox.style.width = `${rawWidth}px`;
+        gridBox.style.height = `${rawHeight}px`;
+        gridBox.style.backgroundSize = `${unitSize}px ${unitSize}px`;
+        gridBox.style.transform = `scale(${scale})`;
+    }
+
+    // --- Section 2: Complex Shapes Logic ---
+    function switchShape() {
+        let shape = document.getElementById('shape-select').value;
+        const t = translations[currentLang];
+        
+        if (shape === 'trapezoid') {
+            document.getElementById('grp-base2').style.display = 'flex';
+            document.getElementById('lbl-base1').innerText = t.lblB1Trap;
+        } else {
+            document.getElementById('grp-base2').style.display = 'none';
+            document.getElementById('lbl-base1').innerText = t.lblB1;
+        }
+        drawComplexShape();
+    }
+
+    function drawComplexShape() {
+        let shape = document.getElementById('shape-select').value;
+        let b1 = parseFloat(document.getElementById('shape-b1').value) || 0;
+        let b2 = parseFloat(document.getElementById('shape-b2').value) || 0;
+        let h = parseFloat(document.getElementById('shape-h').value) || 0;
+        
+        if (b1 < 1) b1 = 1; if (b2 < 1) b2 = 1; if (h < 1) h = 1;
+
+        let area = 0;
+        let formulaStr = "";
+
+        const svg = document.getElementById('shape-svg');
+        let svgContent = "";
+
+        svg.setAttribute('viewBox', `0 0 800 400`);
+
+        let padding = 100;
+        let availW = 800 - padding * 2;
+        let availH = 400 - padding * 2;
+        let groundY = 400 - (padding / 2);
+
+        let physicalW = b1;
+        let physicalH = h;
+        let slant = 0;
+
+        if (shape === 'parallelogram') {
+            slant = h * 0.3; 
+            physicalW = b1 + slant;
+        } else if (shape === 'trapezoid') {
+            physicalW = Math.max(b1, b2);
+        }
+
+        let scale = Math.min(availW / physicalW, availH / physicalH);
+        scale = Math.min(scale, 40); 
+
+        let sB1 = b1 * scale;
+        let sB2 = b2 * scale;
+        let sH = h * scale;
+        let sSlant = slant * scale;
+
+        if (shape === 'triangle') {
+            area = 0.5 * b1 * h;
+            formulaStr = `A = ½ × ${b1} × ${h}`;
+            
+            let startX = (800 - sB1) / 2;
+            let topX = 800 / 2;
+            
+            svgContent += `<polygon class="shape-polygon" points="${startX},${groundY} ${startX + sB1},${groundY} ${topX},${groundY - sH}" />`;
+            svgContent += `<line class="dashed-line" x1="${topX}" y1="${groundY}" x2="${topX}" y2="${groundY - sH}" />`;
+            
+            svgContent += `<text class="svg-text" x="${topX}" y="${groundY + 30}">b = ${b1}</text>`;
+            svgContent += `<text class="svg-text" x="${topX + 25}" y="${groundY - sH/2 + 5}">h = ${h}</text>`;
+        } 
+        else if (shape === 'parallelogram') {
+            area = b1 * h;
+            formulaStr = `A = ${b1} × ${h}`;
+            
+            let startX = (800 - (sB1 + sSlant)) / 2;
+            
+            svgContent += `<polygon class="shape-polygon" points="${startX},${groundY} ${startX + sB1},${groundY} ${startX + sB1 + sSlant},${groundY - sH} ${startX + sSlant},${groundY - sH}" />`;
+            svgContent += `<line class="dashed-line" x1="${startX + sSlant}" y1="${groundY}" x2="${startX + sSlant}" y2="${groundY - sH}" />`;
+            
+            svgContent += `<text class="svg-text" x="${startX + sB1/2 + sSlant/2}" y="${groundY + 30}">b = ${b1}</text>`;
+            svgContent += `<text class="svg-text" x="${startX + sSlant + 25}" y="${groundY - sH/2 + 5}">h = ${h}</text>`;
+        }
+        else if (shape === 'trapezoid') {
+            area = 0.5 * (b1 + b2) * h;
+            formulaStr = `A = ½ × (${b2} + ${b1}) × ${h}`;
+            
+            let bStartX = (800 - sB1) / 2;
+            let tStartX = (800 - sB2) / 2;
+            
+            svgContent += `<polygon class="shape-polygon" points="${bStartX},${groundY} ${bStartX + sB1},${groundY} ${tStartX + sB2},${groundY - sH} ${tStartX},${groundY - sH}" />`;
+            svgContent += `<line class="dashed-line" x1="400" y1="${groundY}" x2="400" y2="${groundY - sH}" />`;
+            
+            svgContent += `<text class="svg-text" x="400" y="${groundY + 30}">b = ${b1}</text>`;
+            svgContent += `<text class="svg-text" x="400" y="${groundY - sH - 15}">a = ${b2}</text>`;
+            svgContent += `<text class="svg-text" x="430" y="${groundY - sH/2 + 5}">h = ${h}</text>`;
+        }
+
+        svg.innerHTML = svgContent;
+        document.getElementById('val-complex-formula').innerText = formulaStr;
+        document.getElementById('val-complex-area').innerText = `= ${area}`;
+    }
+
+    window.onload = function() {
+        const savedLang = localStorage.getItem('mySiteLang');
+        if (savedLang) document.getElementById('language').value = savedLang;
+        
+        changeLanguage();
+        drawRectangle(); 
+        drawComplexShape(); 
+        
+        window.addEventListener('resize', drawRectangle);
+    };
+</script>
+</body>
+</html>
