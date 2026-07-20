@@ -59,6 +59,7 @@
 
         .btn { background-color: #3498db; color: white; border: none; padding: 10px 20px; font-size: 1.1rem; border-radius: 8px; cursor: pointer; transition: 0.2s; font-weight: bold; box-shadow: 0 4px 6px rgba(0,0,0,0.1); margin: 5px; }
         .btn:hover { background-color: #2980b9; transform: translateY(-2px); }
+        .btn:disabled { opacity: 0.5; cursor: not-allowed; transform: none; box-shadow: none; }
         .btn-green { background-color: #2ecc71; } .btn-green:hover { background-color: #27ae60; }
         .btn-red { background-color: #e74c3c; } .btn-red:hover { background-color: #c0392b; }
 
@@ -330,6 +331,7 @@
     
     let gridState = []; // 4 rows x (4 * difficulty) cols
     let currentClues = [];
+    let isSolved = false;
 
     function changeLanguage() {
         currentLang = document.getElementById('language').value;
@@ -369,6 +371,9 @@
 
     function initGame() {
         difficulty = parseInt(document.getElementById('game-level').value);
+        isSolved = false;
+        document.getElementById('btn-check').disabled = false;
+        document.getElementById('btn-reset').disabled = false;
         
         // 1. Pick Names dynamically
         let nameCount = dataBank.names.en.length;
@@ -621,6 +626,7 @@
     }
 
     function checkAnswer() {
+        if (isSolved) return;
         let oCount = 0;
         let isCorrect = true;
 
@@ -642,20 +648,27 @@
             }
         }
 
-        let targetOCount = gridSize * difficulty;
+         let targetOCount = gridSize * difficulty;
 
-        if (oCount < targetOCount) {
+         if (oCount < targetOCount) {
             setStatus("ErrMiss");
         } else if (!isCorrect) {
             setStatus("ErrInc");
         } else {
+            isSolved = true;
             setStatus("Success");
             solvedCount++;
             document.getElementById('streak-counter').innerText = translations[currentLang].streak.replace('{n}', solvedCount);
+            
+            document.getElementById('btn-check').disabled = true;
+            document.getElementById('btn-reset').disabled = true;
+
             // Lock grid
             for(let r=0; r<gridSize; r++) {
                 for(let c=0; c<(gridSize * difficulty); c++) {
-                    document.getElementById(`cell-${r}-${c}`).onclick = null;
+                    let cell = document.getElementById(`cell-${r}-${c}`);
+                    cell.onclick = null;
+                    cell.style.cursor = 'default';
                 }
             }
         }
