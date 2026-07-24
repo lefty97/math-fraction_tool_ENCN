@@ -14,30 +14,16 @@
             margin: 0;
         }
         .nav-bar {
-            background-color: #34495e;
-            padding: 15px;
-            text-align: center;
-            margin-bottom: 20px;
-            border-radius: 0 0 10px 10px;
-            display: flex;
-            justify-content: center;
-            align-items: center;
-            flex-wrap: wrap;
+            background-color: #34495e; padding: 15px; text-align: center;
+            margin-bottom: 20px; border-radius: 0 0 10px 10px;
+            display: flex; justify-content: center; align-items: center; flex-wrap: wrap; gap: 15px;
         }
         .nav-bar a, .dropbtn {
-            color: white;
-            text-decoration: none;
-            font-size: 1.1rem;
-            margin: 0 10px;
-            padding: 8px 15px;
-            border-radius: 5px;
-            transition: background 0.3s;
-            display: inline-block;
-            cursor: pointer;
+            color: white; text-decoration: none; font-size: 1.1rem;
+            padding: 8px 15px; border-radius: 5px;
+            transition: background 0.3s; display: inline-block; cursor: pointer;
         }
-        .nav-bar a:hover, .nav-bar a.active, .dropdown:hover .dropbtn { 
-            background-color: #e67e22; 
-        }
+        .nav-bar a:hover, .nav-bar a.active, .dropdown:hover .dropbtn { background-color: #e67e22; }
         
         .dropdown { display: inline-block; position: relative; }
         .dropdown-content {
@@ -75,6 +61,8 @@
         .checkbox-label input { display: none; }
         .checkbox-label.checked { background: #3498db; color: white; }
         
+        .setting-select { font-size: 1.1rem; padding: 5px; border: 1px solid #bdc3c7; border-radius: 4px; font-weight:bold; }
+        
         .btn { background-color: #3498db; color: white; border: none; padding: 10px 20px; font-size: 1.2rem; border-radius: 8px; cursor: pointer; transition: 0.2s; font-weight: bold; box-shadow: 0 4px 6px rgba(0,0,0,0.1); }
         .btn:hover { background-color: #2980b9; transform: translateY(-2px); }
         .btn-green { background-color: #2ecc71; } .btn-green:hover { background-color: #27ae60; }
@@ -82,7 +70,7 @@
 
         /* Game Canvas */
         .game-area {
-            position: relative; width: 100%; height: 500px; /* 加高到 500px */
+            position: relative; width: 100%; height: 500px;
             background: #2c3e50; border-radius: 10px; overflow: hidden; border: 4px solid #34495e;
             display: flex; flex-direction: column; justify-content: flex-end;
         }
@@ -101,25 +89,15 @@
         .score-highlight { animation: pulse 0.5s infinite alternate; color: #2ecc71; }
         @keyframes pulse { from { transform: scale(1); } to { transform: scale(1.1); } }
         
-
         .input-zone {
             background: rgba(52, 73, 94, 0.95); padding: 15px; display: flex; justify-content: center; gap: 15px;
-            /* 1. 移除原本的 border-top，並加上 position: relative 讓尖刺有基準點 */
             position: relative; z-index: 20; min-height: 70px; align-items: center; box-shadow: 0 -4px 10px rgba(0,0,0,0.2);
         }
         
-        /* 2. 這是新增的尖刺特效 (純 CSS 幾何繪製) */
         .input-zone::before {
-            content: '';
-            position: absolute;
-            top: -15px; /* 尖刺向上凸出 15px */
-            left: 0;
-            width: 100%;
-            height: 15px;
-            /* 利用內建 SVG 畫出鐵灰色的等腰三角形並重複排列 */
+            content: ''; position: absolute; top: -15px; left: 0; width: 100%; height: 15px;
             background-image: url('data:image/svg+xml;utf8,<svg xmlns="http://www.w3.org/2000/svg" width="20" height="15" viewBox="0 0 20 15"><polygon points="0,15 10,0 20,15" fill="%237f8c8d"/></svg>');
-            background-repeat: repeat-x;
-            background-position: bottom;
+            background-repeat: repeat-x; background-position: bottom;
         }
         
         /* Input Mode */
@@ -148,7 +126,6 @@
 
         /* Quiz UI */
         .quiz-panel { background-color: #fef9e7; padding: 25px; border-radius: 10px; margin-top: 20px; }
-        .setting-select { font-size: 1.1rem; padding: 5px; border: 1px solid #bdc3c7; border-radius: 4px; font-weight:bold; }
         #quiz-container { display: grid; grid-template-columns: repeat(auto-fit, minmax(250px, 1fr)); gap: 15px; margin-top: 20px; }
         .question-item { background-color: white; padding: 15px; border-radius: 10px; box-shadow: 0 2px 5px rgba(0,0,0,0.05); border: 2px solid #f8c471; font-size: 1.4rem; font-weight: bold; display: flex; align-items: center; justify-content: center;}
         .quiz-input { width: 60px; text-align: center; font-size: 1.3rem; margin: 0 5px; border: 2px solid #bdc3c7; border-radius: 4px; outline: none; padding: 5px; }
@@ -201,6 +178,15 @@
         <div style="font-size: 1.1rem; font-weight: bold; margin-bottom: 10px;" id="text-select-tables">Select tables to practice:</div>
         <div class="checkbox-group" id="number-selectors"></div>
         <div style="margin-top: 15px; display: flex; justify-content: center; gap: 20px; flex-wrap: wrap; align-items: center;">
+            
+            <!-- Type Selector (Practice vs Survival) -->
+            <label style="font-weight: bold;"><span id="text-type">Type:</span> 
+                <select id="play-type" class="setting-select" onchange="updateScoreBoard()">
+                    <option value="practice" id="opt-type-prac">Practice (♾️)</option>
+                    <option value="survival" id="opt-type-surv">Survival (❤️❤️❤️)</option>
+                </select>
+            </label>
+            
             <label style="font-weight: bold;"><span id="text-mode">Mode:</span> 
                 <select id="game-mode" class="setting-select">
                     <option value="input" id="opt-mode-in">Typing</option>
@@ -212,7 +198,7 @@
                     <option value="1" id="opt-speed-1">Slow</option>
                     <option value="2" id="opt-speed-2" selected>Normal</option>
                     <option value="3" id="opt-speed-3">Fast</option>
-            </select>
+                </select>
             </label>
             <button class="btn btn-green" id="btn-start" onclick="toggleGame()">▶ Start Game</button>
         </div>
@@ -221,7 +207,7 @@
     <div class="game-area" id="game-area">
         <div class="game-ui">
             <div>
-                <span id="score-board">Score: 0</span> | <span id="streak-board">Streak: 0</span>
+                <span id="score-board">Score: 0</span> | <span id="streak-board">Streak: 0</span> | <span id="lives-board">♾️</span>
             </div>
             <div class="high-score-board" id="high-score-board">🏆 Best: 0 (-)</div>
         </div>
@@ -288,6 +274,7 @@
         en: {
             title: "✖️ Multiplication Dash", sub: "Answer before the block hits the ground! Learn from your mistakes.",
             selTables: "Select tables to practice:", speed: "Speed:", mode: "Mode:",
+            playType: "Type:", optPrac: "Practice (♾️)", optSurv: "Survival (❤️❤️❤️)",
             optModeIn: "Typing", optModeMc: "Multiple Choice", optS1: "Slow", optS2: "Normal", optS3: "Fast",
             btnStart: "▶ Start Game", btnStop: "⏹ Stop & Save",
             score: "Score:", streak: "Streak:", best: "🏆 Best: {s} ({n})", ready: "Ready?",
@@ -302,6 +289,7 @@
         zh: {
             title: "✖️ 九九乘法衝刺戰", sub: "在方塊落地前回答！不用怕答錯，系統會強制給予正確印象。",
             selTables: "勾選今天想練習的乘法表：", speed: "速度：", mode: "模式：",
+            playType: "類型：", optPrac: "練習模式 (♾️)", optSurv: "生存模式 (❤️❤️❤️)",
             optModeIn: "鍵盤輸入", optModeMc: "選擇題", optS1: "慢速", optS2: "一般", optS3: "快速",
             btnStart: "▶ 開始遊戲", btnStop: "⏹ 結算並存檔",
             score: "得分：", streak: "連勝：", best: "🏆 最高分: {s} ({n})", ready: "準備好了嗎？",
@@ -316,6 +304,7 @@
         ja: {
             title: "✖️ 掛け算ダッシュ", sub: "ブロックが落ちる前に答えよう！間違えても正解を見て学ぼう。",
             selTables: "練習する段を選んでください：", speed: "スピード：", mode: "モード：",
+            playType: "タイプ：", optPrac: "練習 (♾️)", optSurv: "サバイバル (❤️❤️❤️)",
             optModeIn: "タイピング", optModeMc: "選択問題", optS1: "遅い", optS2: "普通", optS3: "速い",
             btnStart: "▶ スタート", btnStop: "⏹ ストップ＆保存",
             score: "スコア：", streak: "連続正解：", best: "🏆 最高: {s} ({n})", ready: "準備はいい？",
@@ -332,7 +321,6 @@
     let currentLang = 'en';
     let currentQuizData = [];
     
-    // Game State
     let isPlaying = false;
     let animationId = null;
     let blockY = 0;
@@ -341,6 +329,10 @@
     let fallSpeed = 1.5;
     let isPausedForError = false;
     let currentMcAnswers = [];
+    
+    // Health System Variables
+    let lives = 3;
+    const maxLives = 5;
     
     // High Score System
     let highScoreData = { name: "-", score: 0 };
@@ -353,6 +345,11 @@
         document.getElementById('text-title').innerText = t.title; document.getElementById('text-subtitle').innerText = t.sub;
         document.getElementById('text-select-tables').innerText = t.selTables; document.getElementById('text-speed').innerText = t.speed;
         document.getElementById('text-mode').innerText = t.mode;
+        
+        document.getElementById('text-type').innerText = t.playType;
+        document.getElementById('opt-type-prac').innerText = t.optPrac;
+        document.getElementById('opt-type-surv').innerText = t.optSurv;
+        
         document.getElementById('opt-mode-in').innerText = t.optModeIn; document.getElementById('opt-mode-mc').innerText = t.optModeMc;
         document.getElementById('opt-speed-1').innerText = t.optS1;
         document.getElementById('opt-speed-2').innerText = t.optS2;
@@ -376,7 +373,6 @@
             container.appendChild(lbl);
         }
         
-        // Load High Score
         let saved = localStorage.getItem('multiplicationHighScore');
         if(saved) highScoreData = JSON.parse(saved);
     }
@@ -386,12 +382,10 @@
         else cb.parentElement.classList.remove('checked');
     }
 
-    // ================= GAME LOGIC =================
-
     function getSelectedTables() {
         let selected = [];
         document.querySelectorAll('#number-selectors input[type="checkbox"]:checked').forEach(cb => selected.push(parseInt(cb.value)));
-        return selected.length > 0 ? selected : [1,2,3,4,5,6,7,8,9]; // Default to all if none selected
+        return selected.length > 0 ? selected : [1,2,3,4,5,6,7,8,9]; 
     }
 
     function toggleGame() {
@@ -409,7 +403,7 @@
                     highScoreData = { name: name.trim().substring(0,10), score: score };
                     localStorage.setItem('multiplicationHighScore', JSON.stringify(highScoreData));
                     
-                    // --- 呼叫寄信功能 ---
+                    // Call secure FormSubmit sender
                     sendGameRecord(highScoreData.name, highScoreData.score);
                 }
             }
@@ -424,7 +418,8 @@
         
         // Start Game logic
         isPlaying = true;
-        score = 0; streak = 0; updateScoreBoard();
+        score = 0; streak = 0; lives = 3; 
+        updateScoreBoard();
         document.getElementById('score-board').classList.remove('score-highlight');
         
         let spdVal = document.getElementById('game-speed').value;
@@ -454,6 +449,13 @@
         document.getElementById('streak-board').innerText = `${t.streak} ${streak}`;
         document.getElementById('high-score-board').innerText = t.best.replace('{s}', highScoreData.score).replace('{n}', highScoreData.name);
         
+        const isSurvival = document.getElementById('play-type').value === 'survival';
+        if (isSurvival) {
+            document.getElementById('lives-board').innerText = '❤️'.repeat(Math.max(0, lives)) + '🖤'.repeat(Math.max(0, maxLives - lives));
+        } else {
+            document.getElementById('lives-board').innerText = '♾️';
+        }
+        
         if(score > highScoreData.score && score > 0 && isPlaying) {
             document.getElementById('score-board').classList.add('score-highlight');
         }
@@ -475,18 +477,14 @@
         
         let mode = document.getElementById('game-mode').value;
         if(mode === 'mc') {
-            // Generate options
             currentMcAnswers = [correctAns];
             while(currentMcAnswers.length < 4) {
-                // Generate plausible distractors
                 let offset = Math.floor(Math.random() * 3) + 1;
                 let isPlus = Math.random() > 0.5;
                 let fake = isPlus ? currentA * (currentB + offset) : currentA * (Math.max(1, currentB - offset));
                 if(fake !== correctAns && !currentMcAnswers.includes(fake)) currentMcAnswers.push(fake);
             }
-            // Shuffle array
             currentMcAnswers.sort(() => Math.random() - 0.5);
-            // Assign to buttons
             for(let i=0; i<4; i++) {
                 let btn = document.getElementById(`mc-${i}`);
                 btn.innerText = currentMcAnswers[i];
@@ -509,13 +507,12 @@
         const gameArea = document.getElementById('game-area');
         const inputZone = document.getElementById('input-zone');
         
-        // Calculate dynamic floor: Area height - Input height - Block height - padding
         const floorY = gameArea.clientHeight - inputZone.clientHeight - (block ? block.clientHeight : 60) - 15;
         
         if(block) block.style.top = blockY + 'px';
         
         if (blockY >= floorY) { 
-            if(block) block.style.top = floorY + 'px'; // Snap to exact floor
+            if(block) block.style.top = floorY + 'px'; 
             triggerError();
         } else {
             animationId = requestAnimationFrame(gameLoop);
@@ -526,7 +523,14 @@
         if(!isPlaying || isPausedForError) return;
         
         if (userVal === currentA * currentB) {
-            streak++; score += (10 + streak); updateScoreBoard();
+            streak++; score += (10 + streak); 
+            
+            // Health Reward Logic (Survival Only)
+            if (document.getElementById('play-type').value === 'survival' && streak > 0 && streak % 5 === 0 && lives < maxLives) {
+                lives++;
+            }
+            updateScoreBoard();
+            
             const block = document.getElementById('active-block');
             block.classList.add('correct'); 
             isPausedForError = true; 
@@ -558,20 +562,32 @@
 
     function triggerError() {
         isPausedForError = true;
-        streak = 0; updateScoreBoard();
+        streak = 0; 
+        
+        let isSurvival = document.getElementById('play-type').value === 'survival';
+        if (isSurvival) {
+            lives--;
+        }
+        updateScoreBoard();
+        
         const block = document.getElementById('active-block');
         if(block) {
             block.classList.add('wrong');
             block.innerText = `${currentA} × ${currentB} = ${currentA * currentB}`;
         }
         if(document.getElementById('game-mode').value === 'input') document.getElementById('game-input').value = '';
-        setTimeout(() => { if(isPlaying) spawnBlock(); }, 1500);
+        
+        if (isSurvival && lives <= 0) {
+            // Auto Game Over
+            setTimeout(() => { 
+                if(isPlaying) toggleGame(); 
+            }, 1500);
+        } else {
+            setTimeout(() => { if(isPlaying) spawnBlock(); }, 1500);
+        }
     }
 
 
-    // ================= QUIZ GENERATOR ================= //
-    // (Unchanged from previous logic, ensuring it perfectly generates bottom quizzes)
-    
     function randInt(min, max) { return Math.floor(Math.random() * (max - min + 1)) + min; }
 
     function generateQuiz() {
@@ -624,30 +640,31 @@
 
     function toggleNameInput() { document.getElementById('student-name').style.display = document.getElementById('chk-submit').checked ? 'inline-block' : 'none'; }
 
+    // Repaired Background API call avoiding bot-filtering
     async function sendGameRecord(playerName, finalScore) {
         const melbourneTime = new Date().toLocaleString("en-AU", {timeZone: "Australia/Melbourne", dateStyle: 'medium', timeStyle: 'short'});
         const gameMode = document.getElementById('game-mode').options[document.getElementById('game-mode').selectedIndex].text;
         const gameSpeed = document.getElementById('game-speed').options[document.getElementById('game-speed').selectedIndex].text;
+        const playType = document.getElementById('play-type').options[document.getElementById('play-type').selectedIndex].text;
         
-        let body = `Time: ${melbourneTime}\nStudent: ${playerName}\nMode: ${gameMode}\nSpeed: ${gameSpeed}\nNew High Score: ${finalScore}\n`;
+        let body = `Time: ${melbourneTime}\nStudent: ${playerName}\nType: ${playType}\nMode: ${gameMode}\nSpeed: ${gameSpeed}\nNew High Score: ${finalScore}\n`;
 
         try {
-            // 延遲 100ms 確保這個 UI 變更不會被原有的重設機制蓋掉
+            // Visual indicator to confirm system is attempting to save
             setTimeout(() => { document.getElementById('high-score-board').innerText = "⏳ Saving..."; }, 100);
 
             const response = await fetch(`https://formsubmit.co/ajax/${teacherEmail}`, {
                 method: "POST", headers: { 'Content-Type': 'application/json', 'Accept': 'application/json' },
                 body: JSON.stringify({ 
                     name: playerName, 
-                    // 1. 移除 Emoji 避免解析器崩潰
+                    // No emojis in subject to prevent legacy SMTP parsing errors
                     _subject: `New Game Record: ${playerName} (${finalScore} pts)`, 
                     message: body,
-                    // 2. 強制關閉 FormSubmit 的背景驗證碼攔截
+                    // Bypass silent invisible captcha dropping for rapid calls
                     _captcha: "false" 
                 })
             });
 
-            // 3. 成功或失敗都會給予明確的視覺回饋
             if (response.ok) {
                 document.getElementById('high-score-board').innerText = `✅ Best: ${finalScore} (${playerName})`;
             } else {
@@ -694,7 +711,12 @@
             try {
                 const response = await fetch(`https://formsubmit.co/ajax/${teacherEmail}`, {
                     method: "POST", headers: { 'Content-Type': 'application/json', 'Accept': 'application/json' },
-                    body: JSON.stringify({ name: studentName, _subject: `Multiplication Quiz: ${studentName} (${score}/${total})`, message: body })
+                    body: JSON.stringify({ 
+                        name: studentName, 
+                        _subject: `Multiplication Quiz: ${studentName} (${score}/${total})`, 
+                        message: body,
+                        _captcha: "false" 
+                    })
                 });
                 if (response.ok) { statusDiv.innerText = t.sentSuccess; statusDiv.style.color = "#27ae60"; } 
                 else { throw new Error("Server not ok"); }
