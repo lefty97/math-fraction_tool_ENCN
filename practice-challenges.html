@@ -19,6 +19,15 @@ h1{font-size:clamp(28px,5vw,42px);margin:0 0 8px}.sub{color:var(--muted);margin-
 .hidden{display:none!important}.topbar{display:flex;gap:12px;flex-wrap:wrap;justify-content:space-between;align-items:center;margin-bottom:16px}
 .badge{padding:9px 12px;border-radius:8px;background:#ebf5fb;font-weight:700;color:#2c3e50}.qbox{background:#fef9e7;border:2px solid #f8c471;border-radius:10px;padding:22px}
 .question{font-size:clamp(25px,5vw,38px);font-weight:700;text-align:center;padding:22px 8px;min-height:96px;display:flex;justify-content:center;align-items:center;flex-wrap:wrap;color:#d35400;background:#fff;border-radius:10px;border:1px solid #f8c471}
+.cc-expression{display:flex;align-items:center;justify-content:center;gap:14px;flex-wrap:wrap}
+.cc-frac{display:inline-flex;flex-direction:column;align-items:center;min-width:58px;vertical-align:middle}
+.cc-num,.cc-den{border:2px solid transparent;background:transparent;color:#d35400;font:inherit;font-weight:700;cursor:pointer;border-radius:8px;padding:3px 8px;min-width:44px;line-height:1.1}
+.cc-num:hover,.cc-den:hover{background:#ebf5fb;border-color:#85c1e9}
+.cc-num.selected,.cc-den.selected{background:#fcf3cf;border-color:#f39c12;box-shadow:0 0 0 3px rgba(243,156,18,.18)}
+.cc-line{width:100%;min-width:48px;border-top:3px solid #333;margin:3px 0}
+.cc-times{font-size:1.15em;color:#34495e}
+.cc-help{text-align:center;margin:10px 0 4px;color:#7f8c8d;font-size:14px;min-height:22px}
+.cc-help.success{color:#27ae60;font-weight:700}.cc-help.error{color:#e74c3c;font-weight:700}
 .controls{display:flex;gap:10px;flex-wrap:wrap;justify-content:center;align-items:end}.field label{display:block;font-size:13px;color:var(--muted);margin-bottom:5px}
 input,select{padding:12px;border:1px solid var(--line);border-radius:10px;font-size:16px;background:white;color:var(--text)}
 input{width:130px;text-align:center}.setting{display:flex;gap:10px;align-items:end;flex-wrap:wrap}.setting .field select{min-width:140px}
@@ -134,6 +143,7 @@ input{width:130px;text-align:center}.setting{display:flex;gap:10px;align-items:e
     </div>
   </div>
   <div id="question" class="question"></div>
+  <div id="crossCancelHelp" class="cc-help hidden"></div>
 
   <div id="algebraInputs" class="controls hidden">
     <div class="field"><label for="xanswer">x =</label><input id="xanswer" type="number" step="1"></div>
@@ -207,6 +217,7 @@ const teacherEmail="anita20700@gmail.com";
 const $=s=>document.querySelector(s),home=$('#home'),game=$('#game'),timerEl=$('#timer'),scoreEl=$('#score'),qnum=$('#qnum'),qtotal=$('#qtotal'),totalMarksEl=$('#totalMarks'),questionEl=$('#question'),feedback=$('#feedback'),progress=$('#progress'),result=$('#result'),smartHint=$('#smartHint');
 let mode='algebra',questions=[],answers=[],current=0,seconds=600,timerId=null,finished=false,timerEnabled=true,timerPaused=false,timerMinutes=10;
 let balanceState=null,balanceInitial=null,balanceTrueX=null;
+let ccSelected=null;
 const ri=(a,b)=>Math.floor(Math.random()*(b-a+1))+a;
 const pick=a=>a[ri(0,a.length-1)];
 const gcd=(a,b)=>{a=Math.abs(a);b=Math.abs(b);while(b){let t=b;b=a%b;a=t}return a||1};
@@ -234,7 +245,7 @@ function fractionQuestion(i,count){
   if(!triple){let a,b,c,d,m,n;do{a=ri(1,5+lv);b=ri(2,7+lv);c=ri(1,6+lv);d=ri(2,8+lv);m=ri(2,4+lv);n=ri(2,4+lv)}while(!coprime(a,b)||!coprime(c,d));fs=[[a*m,b*n],[c*n,d*m]]}
   else{let a=ri(1,7),b=ri(2,9),c=ri(1,8),d=ri(2,10),e=ri(1,7),f=ri(2,9),m=ri(2,7),n=ri(2,7);fs=[[a*m,b*n],[c*n,d*m],[e,f]]}
   let N=1,D=1;fs.forEach(v=>{N*=v[0];D*=v[1]});const ans=reduce(N,D),tex=fs.map(v=>'\\frac{'+v[0]+'}{'+v[1]+'}').join('\\times '),text=fs.map(v=>v[0]+'/'+v[1]).join(' × ');
-  return{html:'\\('+tex+'\\)',text,answer:ans,answerText:ans[0]+'/'+ans[1],hint:'Cross-cancel common factors before multiplying.'}
+  return{html:'\\('+tex+'\\)',text,answer:ans,answerText:ans[0]+'/'+ans[1],hint:'Cross-cancel common factors before multiplying.',fracs:fs.map(v=>[v[0],v[1]]),workingFracs:fs.map(v=>[v[0],v[1]])}
 }
 function groupingQuestion(i,count){
   const lv=levelFor(i,count),types=lv===0?['add','sub']:['add','sub','mul'],type=pick(types);
@@ -283,7 +294,11 @@ function typeset(){if(window.MathJax&&MathJax.typesetPromise)MathJax.typesetProm
 function stats(){let correct=0,answered=0;answers.forEach(a=>{if(a!==null){answered++;if(a.ok)correct++}});return{correct,answered,score:correct*4,total:questions.length*4}}
 function title(){return mode==='algebra'?'Algebra with Variables on Both Sides':mode==='fractions'?'Cross-Cancellation in Fraction Multiplication':mode==='fractionDivision'?'Basic Division of Fractions':mode==='grouping'?'Rearranging & Grouping':'Brackets & Removing Brackets'}
 function render(){
-  qnum.textContent=current+1;qtotal.textContent=questions.length;questionEl.innerHTML=questions[current].html;$('#balancePanel').classList.add('hidden');typeset();$('#topicTitle').textContent=title();
+  qnum.textContent=current+1;qtotal.textContent=questions.length;$('#balancePanel').classList.add('hidden');$('#topicTitle').textContent=title();
+  ccSelected=null;
+  if(mode==='fractions'){renderCrossCancelQuestion();}else{questionEl.innerHTML=questions[current].html;typeset();}
+  $('#crossCancelHelp').classList.toggle('hidden',mode!=='fractions');
+  if(mode==='fractions'){setCcMessage('Tap one numerator and one denominator to cross-cancel.','');}
   $('#algebraInputs').classList.toggle('hidden',mode!=='algebra');$('#balanceTools').classList.toggle('hidden',mode!=='algebra');$('#fractionInputs').classList.toggle('hidden',!(mode==='fractions'||mode==='fractionDivision'));$('#numberInputs').classList.toggle('hidden',!(mode==='grouping'||mode==='brackets'));
   if(mode!=='algebra') $('#balancePanel').classList.add('hidden');
   $('#xanswer').value='';$('#num').value='';$('#den').value='';$('#numberAnswer').value='';feedback.textContent='';feedback.className='feedback';smartHint.classList.add('hidden');smartHint.textContent='';
@@ -315,6 +330,61 @@ function renderProgressOnly(){
   questions.forEach((_,i)=>{const b=document.createElement('button');b.type='button';b.className='dot'+(i===current?' current':'')+(answers[i]?.ok?' ok':answers[i]?' no':'');b.textContent=answers[i]?.ok?'✓':answers[i]?'×':i+1;b.setAttribute('aria-label','Go to question '+(i+1));b.addEventListener('click',()=>{if(!finished){current=i;render()}});progress.appendChild(b)});
 }
 
+function setCcMessage(msg,type){
+  const el=$('#crossCancelHelp');
+  el.textContent=msg;
+  el.className='cc-help'+(type?' '+type:'');
+}
+function renderCrossCancelQuestion(){
+  const q=questions[current];
+  if(!q.workingFracs) q.workingFracs=q.fracs.map(v=>[v[0],v[1]]);
+  const wrap=document.createElement('div');
+  wrap.className='cc-expression';
+  q.workingFracs.forEach((fr,fi)=>{
+    const frac=document.createElement('span');frac.className='cc-frac';
+    const n=document.createElement('button');n.type='button';n.className='cc-num';n.textContent=fr[0];n.dataset.fi=fi;n.dataset.pos='0';n.setAttribute('aria-label','Numerator '+fr[0]);
+    const line=document.createElement('span');line.className='cc-line';
+    const d=document.createElement('button');d.type='button';d.className='cc-den';d.textContent=fr[1];d.dataset.fi=fi;d.dataset.pos='1';d.setAttribute('aria-label','Denominator '+fr[1]);
+    n.addEventListener('click',()=>selectCancelNumber(fi,0,n));
+    d.addEventListener('click',()=>selectCancelNumber(fi,1,d));
+    frac.append(n,line,d);wrap.appendChild(frac);
+    if(fi<q.workingFracs.length-1){const x=document.createElement('span');x.className='cc-times';x.textContent='×';wrap.appendChild(x);}
+  });
+  questionEl.innerHTML='';questionEl.appendChild(wrap);
+}
+function clearCcSelection(){
+  ccSelected=null;
+  questionEl.querySelectorAll('.selected').forEach(el=>el.classList.remove('selected'));
+}
+function selectCancelNumber(fi,pos,el){
+  const q=questions[current];
+  const value=q.workingFracs[fi][pos];
+  if(value===1){setCcMessage('1 cannot be reduced any further. Choose another number.','error');return;}
+  if(!ccSelected){
+    ccSelected={fi,pos,value};
+    el.classList.add('selected');
+    setCcMessage('Selected '+value+'. Now choose a number on the other side of a fraction line.','');
+    return;
+  }
+  if(ccSelected.fi===fi && ccSelected.pos===pos){clearCcSelection();setCcMessage('Selection cleared.','');return;}
+  if(ccSelected.pos===pos){
+    clearCcSelection();
+    setCcMessage('Choose one numerator and one denominator — not two numerators or two denominators.','error');
+    return;
+  }
+  const a=ccSelected.value,b=value,g=gcd(a,b);
+  if(g<=1){
+    clearCcSelection();
+    setCcMessage(a+' and '+b+' have no common factor greater than 1. Try another pair.','error');
+    return;
+  }
+  const firstFi=ccSelected.fi,firstPos=ccSelected.pos;
+  q.workingFracs[firstFi][firstPos]=a/g;
+  q.workingFracs[fi][pos]=b/g;
+  clearCcSelection();
+  renderCrossCancelQuestion();
+  setCcMessage('✓ Cancel by '+g+': '+a+' → '+(a/g)+' and '+b+' → '+(b/g)+'.','success');
+}
 function fmtSide(xc,n){
   const parts=[];
   if(xc!==0) parts.push((xc===1?'':xc===-1?'-':xc)+'x');
