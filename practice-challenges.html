@@ -9,16 +9,16 @@ window.MathJax={tex:{inlineMath:[['\\(','\\)']],displayMath:[['\\[','\\]']]},svg
 </script>
 <script async src="https://cdn.jsdelivr.net/npm/mathjax@3/es5/tex-svg.js"></script>
 <style>
-:root{--bg:#f6f7fb;--card:#fff;--text:#1f2937;--muted:#6b7280;--line:#dbe1ea;--accent:#4f46e5;--good:#0f766e;--bad:#b91c1c;--soft:#eef2ff}
-*{box-sizing:border-box}body{margin:0;font-family:Arial,Helvetica,sans-serif;background:var(--bg);color:var(--text)}
-main{max-width:980px;margin:0 auto;padding:24px 16px 48px}
+:root{--bg:#f0f8ff;--card:#fff;--text:#333;--muted:#7f8c8d;--line:#d6eaf8;--accent:#2980b9;--good:#27ae60;--bad:#e74c3c;--soft:#ebf5fb}
+*{box-sizing:border-box}body{margin:0;font-family:'Segoe UI',Tahoma,Geneva,Verdana,sans-serif;background:var(--bg);color:var(--text);padding:0 20px 40px;text-align:center}
+main{max-width:1010px;margin:0 auto;padding:0 0 48px}.practice-shell{background:white;max-width:950px;margin:0 auto;padding:30px;border-radius:15px;box-shadow:0 4px 8px rgba(0,0,0,.1);text-align:left}
 h1{font-size:clamp(28px,5vw,42px);margin:0 0 8px}.sub{color:var(--muted);margin-bottom:24px;line-height:1.45}
-.grid{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:16px}.card{background:var(--card);border:1px solid var(--line);border-radius:16px;padding:20px}
-.card h2{margin:0 0 8px;font-size:21px}.card p{color:var(--muted);line-height:1.45}.btn{border:0;border-radius:10px;padding:12px 16px;font-size:16px;font-weight:700;cursor:pointer;background:var(--accent);color:white}
-.btn.secondary{background:white;color:var(--text);border:1px solid var(--line)}.btn.send{background:#0f766e}.btn:disabled{opacity:.5;cursor:not-allowed}
+.grid{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:18px}.card{background:var(--card);border:2px solid #d6eaf8;border-radius:10px;padding:20px;box-shadow:0 2px 5px rgba(0,0,0,.05)}
+.card h2{margin:0 0 8px;font-size:21px;color:#2c3e50}.card p{color:var(--muted);line-height:1.45}.btn{border:0;border-radius:6px;padding:10px 16px;font-size:16px;font-weight:700;cursor:pointer;background:#2980b9;color:white;transition:.2s}.btn:hover{background:#1f618d}
+.btn.secondary{background:white;color:#34495e;border:1px solid #bdc3c7}.btn.secondary:hover{background:#f4f6f6}.btn.send{background:#1abc9c}.btn.send:hover{background:#16a085}.btn:disabled{opacity:.5;cursor:not-allowed}
 .hidden{display:none!important}.topbar{display:flex;gap:12px;flex-wrap:wrap;justify-content:space-between;align-items:center;margin-bottom:16px}
-.badge{padding:9px 12px;border-radius:10px;background:var(--soft);font-weight:700}.qbox{background:white;border:1px solid var(--line);border-radius:16px;padding:22px}
-.question{font-size:clamp(25px,5vw,38px);font-weight:700;text-align:center;padding:22px 8px;min-height:96px;display:flex;justify-content:center;align-items:center;flex-wrap:wrap}
+.badge{padding:9px 12px;border-radius:8px;background:#ebf5fb;font-weight:700;color:#2c3e50}.qbox{background:#fef9e7;border:2px solid #f8c471;border-radius:10px;padding:22px}
+.question{font-size:clamp(25px,5vw,38px);font-weight:700;text-align:center;padding:22px 8px;min-height:96px;display:flex;justify-content:center;align-items:center;flex-wrap:wrap;color:#d35400;background:#fff;border-radius:10px;border:1px solid #f8c471}
 .controls{display:flex;gap:10px;flex-wrap:wrap;justify-content:center;align-items:end}.field label{display:block;font-size:13px;color:var(--muted);margin-bottom:5px}
 input,select{padding:12px;border:1px solid var(--line);border-radius:10px;font-size:16px;background:white;color:var(--text)}
 input{width:130px;text-align:center}.setting{display:flex;gap:10px;align-items:end;flex-wrap:wrap}.setting .field select{min-width:140px}
@@ -26,7 +26,7 @@ input{width:130px;text-align:center}.setting{display:flex;gap:10px;align-items:e
 .progress{display:grid;grid-template-columns:repeat(10,1fr);gap:6px;margin-top:16px}.dot{border:1px solid var(--line);border-radius:8px;padding:9px 0;text-align:center;font-size:13px;background:white;color:var(--text);cursor:pointer;min-height:40px}.dot.current{outline:2px solid var(--accent);background:var(--soft)}.dot.ok{background:#ecfdf5}.dot.no{background:#fef2f2}.dot:hover{border-color:var(--accent)}
 .result{text-align:center}.scorebig{font-size:44px;font-weight:800;margin:8px 0}.note{font-size:13px;color:var(--muted);text-align:center;margin-top:10px}
 .frac-answer{display:flex;flex-direction:column;align-items:center;justify-content:center;gap:5px;margin-right:6px}.frac-answer .line{height:2px;background:var(--text);width:130px}.frac-answer input{width:130px}
-.smart{margin:14px auto 0;max-width:680px;border:1px solid var(--line);border-radius:12px;background:#fafafa;padding:12px 14px;text-align:center;color:var(--muted);line-height:1.5}.smart strong{color:var(--text)}
+.smart{margin:14px auto 0;max-width:680px;border:1px dashed #f39c12;border-radius:8px;background:#fffde7;padding:12px 14px;text-align:center;color:#7f8c8d;line-height:1.5}.smart strong{color:#d35400}
 .send-box{max-width:520px;margin:18px auto 0;padding:16px;border:1px dashed var(--line);border-radius:12px;background:#fafafa}.send-box input{width:min(300px,100%);margin:8px auto 12px;display:block}.status{min-height:22px;margin-top:10px;font-weight:700}
 @media(max-width:650px){.grid{grid-template-columns:1fr}.progress{grid-template-columns:repeat(5,1fr)}.controls{align-items:stretch}.field{width:100%}input,select{width:100%}.btn{width:100%}.setting{width:100%}.frac-answer{width:100%;margin:0}.frac-answer input,.frac-answer .line{width:min(220px,80vw)}}
 
@@ -50,7 +50,7 @@ input{width:130px;text-align:center}.setting{display:flex;gap:10px;align-items:e
       <a href="angles.html">📐 Geometry Explorer</a>
       <a href="algebra.html">⚖️ Algebra Balance</a>
       <a href="area.html">📏 Area & Perimeter</a>
-      <a href="practice-challenges.html" style="background-color:#e67e22;padding-left:25px!important;">📝 Practice Challenges</a>
+      <a href="practice-challenges.html" style="background-color:#e67e22;padding-left:25px!important;">📝 Sep–Oct 2026</a>
     </div>
   </div>
   <div class="dropdown">
@@ -63,8 +63,9 @@ input{width:130px;text-align:center}.setting{display:flex;gap:10px;align-items:e
   </div>
 </div>
 <main>
+<div class="practice-shell">
 <section id="home">
-<h1>Math Practice Challenges</h1>
+<h1 style="color:#2c3e50;">📝 Sep–Oct 2026 Practice</h1>
 <div class="sub">Choose a topic. Default: 25 questions, 10 minutes, progressive difficulty. Each question is worth 4 marks.</div>
 <div class="grid">
   <div class="card"><h2>Algebra with Variables on Both Sides</h2><p>Solve equations with x on both sides. Every generated equation has a whole-number solution.</p><button class="btn" data-mode="algebra">Start Algebra</button></div>
@@ -165,6 +166,7 @@ input{width:130px;text-align:center}.setting{display:flex;gap:10px;align-items:e
   <div style="margin-top:16px"><button id="playAgain" class="btn">New Questions</button></div>
 </div>
 </section>
+</div>
 </main>
 
 <script>
