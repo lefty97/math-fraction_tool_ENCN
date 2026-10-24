@@ -260,8 +260,18 @@ function groupingQuestion(i,count){
     return{html:'\\('+text+'\\)',text,answer:a+b+c+d,answerText:String(a+b+c+d),hint:'Smart grouping: ('+b+' + '+c+') = 10, so group those two first.',groupingType:'add',groupingTokens:tokens}
   }
   if(type==='sub'){
-    const a=ri(30,70+lv*12),b=ri(3,12+lv*2),c=b,d=ri(2,10+lv*2),tokens=[a,-b,c,-d],text=a+' - '+b+' + '+c+' - '+d;
-    return{html:'\\('+text+'\\)',text,answer:a-b+c-d,answerText:String(a-b+c-d),hint:'Keep each + or − sign with its number. The −'+b+' and +'+c+' cancel.',groupingType:'signed',groupingTokens:tokens}
+    let a,b,c,d,t=0;
+    do{
+      a=ri(32,70+lv*12);
+      if(a%10===0)a++;
+      c=10-(a%10);
+      b=ri(12,28+lv*5);
+      if(b%10===0)b++;
+      d=10-(b%10);
+      t++;
+    }while((c===b||c===d||a===b||a===d||a+c<=b+d)&&t<60);
+    const tokens=[a,-b,c,-d],text=a+' - '+b+' + '+c+' - '+d;
+    return{html:'\\('+text+'\\)',text,answer:a-b+c-d,answerText:String(a-b+c-d),hint:'Rearrange strategically: pair '+a+' and +'+c+' to make '+(a+c)+', and pair −'+b+' and −'+d+' to make −'+(b+d)+'.',groupingType:'signed',groupingTokens:tokens}
   }
   const a=pick([2,4,5,8,10]),b=pick([3,6,7,9]),c=pick(lv>=3?[10,25,50]:[5,10,25]),d=pick([2,4]),tokens=[a,b,c,d],text=tokens.join(' × ');
   return{html:'\\('+a+'\\times '+b+'\\times '+c+'\\times '+d+'\\)',text,answer:a*b*c*d,answerText:String(a*b*c*d),hint:'Use the commutative/associative rules to group easy pairs.',groupingType:'mul',groupingTokens:tokens}
