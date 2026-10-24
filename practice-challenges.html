@@ -28,6 +28,10 @@ h1{font-size:clamp(28px,5vw,42px);margin:0 0 8px}.sub{color:var(--muted);margin-
 .cc-times{font-size:1.15em;color:#34495e}
 .cc-help{text-align:center;margin:10px 0 4px;color:#7f8c8d;font-size:14px;min-height:22px}
 .cc-help.success{color:#27ae60;font-weight:700}.cc-help.error{color:#e74c3c;font-weight:700}
+.grouping-drag{display:flex;align-items:center;justify-content:center;gap:10px;flex-wrap:wrap;width:100%}
+.grouping-chip{border:2px solid #85c1e9;background:#fff;color:#d35400;border-radius:10px;padding:10px 14px;font:inherit;font-weight:700;cursor:grab;user-select:none;touch-action:none}
+.grouping-chip:active{cursor:grabbing}.grouping-chip.dragging{opacity:.4}.grouping-chip.drag-over,.grouping-chip.selected{border-color:#e67e22;background:#fef5e7}
+.grouping-op{color:#34495e;font-size:.9em}.grouping-help{text-align:center;margin:10px 0 4px;color:#7f8c8d;font-size:14px;min-height:22px}
 .controls{display:flex;gap:10px;flex-wrap:wrap;justify-content:center;align-items:end}.field label{display:block;font-size:13px;color:var(--muted);margin-bottom:5px}
 input,select{padding:12px;border:1px solid var(--line);border-radius:10px;font-size:16px;background:white;color:var(--text)}
 input{width:130px;text-align:center}.setting{display:flex;gap:10px;align-items:end;flex-wrap:wrap}.setting .field select{min-width:140px}
@@ -80,7 +84,7 @@ input{width:130px;text-align:center}.setting{display:flex;gap:10px;align-items:e
 <div class="practice-shell">
 <section id="home">
 <h1 style="color:#2c3e50;">📝 Sep–Oct 2026 Practice</h1>
-<div class="sub">Choose a topic. Default: 25 questions, 10 minutes, progressive difficulty. Each question is worth 4 marks.</div>
+<div class="sub">Choose a topic. Default: 25 questions, 10 minutes, progressive difficulty. Every round is marked out of 100.</div>
 <div class="grid">
   <div class="card"><h2>Algebra with Variables on Both Sides</h2><p>Solve equations with x on both sides. Every generated equation has a whole-number solution.</p><button class="btn" data-mode="algebra">Start Algebra</button></div>
   <div class="card"><h2>Cross-Cancellation in Fraction Multiplication</h2><p>Cross-cancel before multiplying. Fractions are displayed vertically using LaTeX.</p><button class="btn" data-mode="fractions">Start Fractions</button></div>
@@ -100,7 +104,7 @@ input{width:130px;text-align:center}.setting{display:flex;gap:10px;align-items:e
   <div class="topbar">
     <div>
       <strong id="topicTitle"></strong>
-      <div class="sub" style="margin:3px 0 0">Question <span id="qnum">1</span> of <span id="qtotal">25</span> · 4 marks each</div>
+      <div class="sub" style="margin:3px 0 0">Question <span id="qnum">1</span> of <span id="qtotal">25</span> · <span id="marksEach">4</span> marks each</div>
     </div>
     <div class="setting">
       <div class="field">
@@ -144,6 +148,7 @@ input{width:130px;text-align:center}.setting{display:flex;gap:10px;align-items:e
   </div>
   <div id="question" class="question"></div>
   <div id="crossCancelHelp" class="cc-help hidden"></div>
+  <div id="groupingHelp" class="grouping-help hidden">Drag the number tiles to rearrange the calculation. Keep each + or − sign attached to its number.</div>
 
   <div id="algebraInputs" class="controls hidden">
     <div class="field"><label for="xanswer">x =</label><input id="xanswer" type="number" step="1"></div>
@@ -214,10 +219,11 @@ input{width:130px;text-align:center}.setting{display:flex;gap:10px;align-items:e
 <script>
 (()=> {
 const teacherEmail="anita20700@gmail.com";
-const $=s=>document.querySelector(s),home=$('#home'),game=$('#game'),timerEl=$('#timer'),scoreEl=$('#score'),qnum=$('#qnum'),qtotal=$('#qtotal'),totalMarksEl=$('#totalMarks'),questionEl=$('#question'),feedback=$('#feedback'),progress=$('#progress'),result=$('#result'),smartHint=$('#smartHint');
+const $=s=>document.querySelector(s),home=$('#home'),game=$('#game'),timerEl=$('#timer'),scoreEl=$('#score'),qnum=$('#qnum'),qtotal=$('#qtotal'),totalMarksEl=$('#totalMarks'),marksEachEl=$('#marksEach'),questionEl=$('#question'),feedback=$('#feedback'),progress=$('#progress'),result=$('#result'),smartHint=$('#smartHint');
 let mode='algebra',questions=[],answers=[],current=0,seconds=600,timerId=null,finished=false,timerEnabled=true,timerPaused=false,timerMinutes=10;
 let balanceState=null,balanceInitial=null,balanceTrueX=null;
 let ccSelected=null;
+let groupingDragIndex=null;
 const ri=(a,b)=>Math.floor(Math.random()*(b-a+1))+a;
 const pick=a=>a[ri(0,a.length-1)];
 const gcd=(a,b)=>{a=Math.abs(a);b=Math.abs(b);while(b){let t=b;b=a%b;a=t}return a||1};
@@ -249,10 +255,16 @@ function fractionQuestion(i,count){
 }
 function groupingQuestion(i,count){
   const lv=levelFor(i,count),types=lv===0?['add','sub']:['add','sub','mul'],type=pick(types);
-  if(type==='add'){const a=ri(12,40+lv*12),b=ri(2,9),c=10-b,d=ri(1,9+lv*2),text=a+' + '+b+' + '+c+' + '+d;return{html:'\\('+text+'\\)',text,answer:a+b+c+d,answerText:String(a+b+c+d),hint:'Smart grouping: ('+b+' + '+c+') = 10, so group those two first.'}}
-  if(type==='sub'){const a=ri(30,70+lv*12),b=ri(3,12+lv*2),c=b,d=ri(2,10+lv*2),text=a+' - '+b+' + '+c+' - '+d;return{html:'\\('+text+'\\)',text,answer:a-b+c-d,answerText:String(a-b+c-d),hint:'Keep each + or − sign with its number. The −'+b+' and +'+c+' cancel.'}}
-  const a=pick([2,4,5,8,10]),b=pick([3,6,7,9]),c=pick(lv>=3?[10,25,50]:[5,10,25]),d=pick([2,4]),text=a+' × '+b+' × '+c+' × '+d;
-  return{html:'\\('+a+'\\times '+b+'\\times '+c+'\\times '+d+'\\)',text,answer:a*b*c*d,answerText:String(a*b*c*d),hint:'Use the commutative/associative rules to group easy pairs.'}
+  if(type==='add'){
+    const a=ri(12,40+lv*12),b=ri(2,9),c=10-b,d=ri(1,9+lv*2),tokens=[a,b,c,d],text=tokens.join(' + ');
+    return{html:'\\('+text+'\\)',text,answer:a+b+c+d,answerText:String(a+b+c+d),hint:'Smart grouping: ('+b+' + '+c+') = 10, so group those two first.',groupingType:'add',groupingTokens:tokens}
+  }
+  if(type==='sub'){
+    const a=ri(30,70+lv*12),b=ri(3,12+lv*2),c=b,d=ri(2,10+lv*2),tokens=[a,-b,c,-d],text=a+' - '+b+' + '+c+' - '+d;
+    return{html:'\\('+text+'\\)',text,answer:a-b+c-d,answerText:String(a-b+c-d),hint:'Keep each + or − sign with its number. The −'+b+' and +'+c+' cancel.',groupingType:'signed',groupingTokens:tokens}
+  }
+  const a=pick([2,4,5,8,10]),b=pick([3,6,7,9]),c=pick(lv>=3?[10,25,50]:[5,10,25]),d=pick([2,4]),tokens=[a,b,c,d],text=tokens.join(' × ');
+  return{html:'\\('+a+'\\times '+b+'\\times '+c+'\\times '+d+'\\)',text,answer:a*b*c*d,answerText:String(a*b*c*d),hint:'Use the commutative/associative rules to group easy pairs.',groupingType:'mul',groupingTokens:tokens}
 }
 function fractionDivisionQuestion(i,count){
   const lv=levelFor(i,count);
@@ -288,21 +300,26 @@ function makeQuestions(){
   timerEl.textContent=timerEnabled?(timerMinutes+':00'):'No timer';
   $('#pauseTimer').textContent='Pause';
   $('#pauseTimer').disabled=!timerEnabled;
-  qtotal.textContent=count;totalMarksEl.textContent=count*4;render();startTimer();
+  qtotal.textContent=count;totalMarksEl.textContent=100;marksEachEl.textContent=formatMarks(markValue());render();startTimer();
 }
 function typeset(){if(window.MathJax&&MathJax.typesetPromise)MathJax.typesetPromise([questionEl]).catch(()=>{})}
-function stats(){let correct=0,answered=0;answers.forEach(a=>{if(a!==null){answered++;if(a.ok)correct++}});return{correct,answered,score:correct*4,total:questions.length*4}}
+function markValue(){return questions.length?100/questions.length:0}
+function formatMarks(v){return Number.isInteger(v)?String(v):String(Math.round(v*100)/100)}
+function stats(){let correct=0,answered=0;answers.forEach(a=>{if(a!==null){answered++;if(a.ok)correct++}});return{correct,answered,score:correct*markValue(),total:100}}
 function title(){return mode==='algebra'?'Algebra with Variables on Both Sides':mode==='fractions'?'Cross-Cancellation in Fraction Multiplication':mode==='fractionDivision'?'Basic Division of Fractions':mode==='grouping'?'Rearranging & Grouping':'Brackets & Removing Brackets'}
 function render(){
   qnum.textContent=current+1;qtotal.textContent=questions.length;$('#balancePanel').classList.add('hidden');$('#topicTitle').textContent=title();
   ccSelected=null;
-  if(mode==='fractions'){renderCrossCancelQuestion();}else{questionEl.innerHTML=questions[current].html;typeset();}
+  if(mode==='fractions'){renderCrossCancelQuestion();}
+  else if(mode==='grouping'){renderGroupingQuestion();}
+  else{questionEl.innerHTML=questions[current].html;typeset();}
   $('#crossCancelHelp').classList.toggle('hidden',mode!=='fractions');
+  $('#groupingHelp').classList.toggle('hidden',mode!=='grouping');
   if(mode==='fractions'){setCcMessage('Tap one numerator and one denominator to cross-cancel.','');}
   $('#algebraInputs').classList.toggle('hidden',mode!=='algebra');$('#balanceTools').classList.toggle('hidden',mode!=='algebra');$('#fractionInputs').classList.toggle('hidden',!(mode==='fractions'||mode==='fractionDivision'));$('#numberInputs').classList.toggle('hidden',!(mode==='grouping'||mode==='brackets'));
   if(mode!=='algebra') $('#balancePanel').classList.add('hidden');
   $('#xanswer').value='';$('#num').value='';$('#den').value='';$('#numberAnswer').value='';feedback.textContent='';feedback.className='feedback';smartHint.classList.add('hidden');smartHint.textContent='';
-  const s=stats();scoreEl.textContent=s.score;totalMarksEl.textContent=s.total;renderProgressOnly();
+  const s=stats();scoreEl.textContent=formatMarks(s.score);totalMarksEl.textContent=100;marksEachEl.textContent=formatMarks(markValue());renderProgressOnly();
 }
 function startTimer(){
   clearInterval(timerId);
@@ -324,12 +341,58 @@ function next(){
   for(let k=1;k<=questions.length;k++){const idx=(current+k)%questions.length;if(answers[idx]===null){n=idx;break}}
   if(n>=0){current=n;render()}else finish();
 }
-function mark(ok,userText){answers[current]={ok,user:userText};feedback.textContent=ok?'✓ Correct! +4 marks':'× Submitted';feedback.className='feedback '+(ok?'good':'bad');smartHint.innerHTML='<strong>Visual strategy:</strong> '+questions[current].hint;smartHint.classList.remove('hidden');scoreEl.textContent=stats().score;renderProgressOnly();setTimeout(next,900)}
+function mark(ok,userText){answers[current]={ok,user:userText};const pts=formatMarks(markValue());feedback.textContent=ok?'✓ Correct! +'+pts+' marks':'× Submitted';feedback.className='feedback '+(ok?'good':'bad');smartHint.innerHTML='<strong>Visual strategy:</strong> '+questions[current].hint;smartHint.classList.remove('hidden');scoreEl.textContent=formatMarks(stats().score);renderProgressOnly();setTimeout(next,900)}
 function renderProgressOnly(){
   progress.innerHTML='';
   questions.forEach((_,i)=>{const b=document.createElement('button');b.type='button';b.className='dot'+(i===current?' current':'')+(answers[i]?.ok?' ok':answers[i]?' no':'');b.textContent=answers[i]?.ok?'✓':answers[i]?'×':i+1;b.setAttribute('aria-label','Go to question '+(i+1));b.addEventListener('click',()=>{if(!finished){current=i;render()}});progress.appendChild(b)});
 }
 
+function groupingTokenLabel(q,value,index){
+  if(q.groupingType==='signed'){
+    if(value<0)return '− '+Math.abs(value);
+    return (index===0?'':'+ ')+value;
+  }
+  return String(value);
+}
+function renderGroupingQuestion(){
+  const q=questions[current];
+  if(!q.groupingTokens)return;
+  if(!q.workingGroupingTokens)q.workingGroupingTokens=[...q.groupingTokens];
+  const wrap=document.createElement('div');wrap.className='grouping-drag';
+  q.workingGroupingTokens.forEach((value,i)=>{
+    if(i>0 && q.groupingType!=='signed'){
+      const op=document.createElement('span');op.className='grouping-op';op.textContent=q.groupingType==='mul'?'×':'+';
+      wrap.appendChild(op);
+    }
+    const chip=document.createElement('div');
+    chip.className='grouping-chip';chip.draggable=true;chip.dataset.index=i;
+    chip.textContent=groupingTokenLabel(q,value,i);
+    chip.addEventListener('dragstart',e=>{groupingDragIndex=i;chip.classList.add('dragging');e.dataTransfer.effectAllowed='move'});
+    chip.addEventListener('dragend',()=>{groupingDragIndex=null;questionEl.querySelectorAll('.grouping-chip').forEach(x=>x.classList.remove('dragging','drag-over'))});
+    chip.addEventListener('dragover',e=>{e.preventDefault();chip.classList.add('drag-over');e.dataTransfer.dropEffect='move'});
+    chip.addEventListener('dragleave',()=>chip.classList.remove('drag-over'));
+    chip.addEventListener('drop',e=>{
+      e.preventDefault();chip.classList.remove('drag-over');
+      const to=i,from=groupingDragIndex;
+      if(from===null||from===to)return;
+      const moved=q.workingGroupingTokens.splice(from,1)[0];
+      q.workingGroupingTokens.splice(to,0,moved);
+      groupingDragIndex=null;renderGroupingQuestion();
+    });
+    // touch / pointer-friendly click fallback: select one tile, then another to swap
+    chip.addEventListener('click',()=>{
+      const selected=questionEl.querySelector('.grouping-chip.selected');
+      if(!selected){chip.classList.add('selected');return}
+      const from=Number(selected.dataset.index),to=i;
+      if(from===to){selected.classList.remove('selected');return}
+      const moved=q.workingGroupingTokens.splice(from,1)[0];
+      q.workingGroupingTokens.splice(to,0,moved);
+      renderGroupingQuestion();
+    });
+    wrap.appendChild(chip);
+  });
+  questionEl.innerHTML='';questionEl.appendChild(wrap);
+}
 function setCcMessage(msg,type){
   const el=$('#crossCancelHelp');
   el.textContent=msg;
@@ -495,14 +558,14 @@ function submitAlg(){const raw=$('#xanswer').value.trim();if(raw===''){feedback.
 function submitFrac(){const nr=$('#num').value.trim(),dr=$('#den').value.trim();if(nr===''){feedback.textContent='Enter a numerator.';return}let n=Number(nr),d=dr===''?1:Number(dr);if(!Number.isInteger(n)||!Number.isInteger(d)||d===0){feedback.textContent='Enter a valid fraction.';return}[n,d]=reduce(n,d);const a=questions[current].answer;mark(n===a[0]&&d===a[1],n+'/'+d)}
 function submitNum(){const raw=$('#numberAnswer').value.trim();if(raw===''){feedback.textContent='Enter an answer.';return}const v=Number(raw);mark(Number.isFinite(v)&&Math.abs(v-questions[current].answer)<1e-9,raw)}
 function skip(){answers[current]={ok:false,user:'Skipped'};next()}
-function finish(){if(finished)return;finished=true;clearInterval(timerId);const s=stats();scoreEl.textContent=s.score;totalMarksEl.textContent=s.total;$('#finalScore').textContent=s.score+'/'+s.total;$('#finalText').textContent=s.correct+' correct out of '+questions.length+' · '+s.answered+' answered';result.classList.remove('hidden');renderProgressOnly()}
+function finish(){if(finished)return;finished=true;clearInterval(timerId);const s=stats();scoreEl.textContent=formatMarks(s.score);totalMarksEl.textContent=100;$('#finalScore').textContent=formatMarks(s.score)+'/100';$('#finalText').textContent=s.correct+' correct out of '+questions.length+' · '+s.answered+' answered';result.classList.remove('hidden');renderProgressOnly()}
 async function sendResult(){
   const name=$('#studentName').value.trim(),status=$('#sendStatus'),btn=$('#sendResult');
   if(!name){status.textContent='⚠️ Please enter your name.';status.className='status bad';return}
   const s=stats(),melbourneTime=new Date().toLocaleString('en-AU',{timeZone:'Australia/Melbourne',dateStyle:'medium',timeStyle:'short'});
   let details=questions.map((q,i)=>{const a=answers[i];return 'Q'+(i+1)+': '+q.text+'\n   Student: '+(a?a.user:'Not answered')+'\n   Correct: '+q.answerText+'\n   Result: '+(a?.ok?'Correct':'Incorrect/Not answered')}).join('\n\n');
   const timerSummary=timerEnabled?(timerMinutes+' min'+(timerPaused?' (paused at finish)':'')):'No timer';
-  const body='Time: '+melbourneTime+'\nStudent: '+name+'\nTopic: '+title()+'\nDifficulty: '+$('#difficulty').options[$('#difficulty').selectedIndex].text+'\nQuestions: '+questions.length+'\nTimer: '+timerSummary+'\nScore: '+s.score+'/'+s.total+' ('+s.correct+'/'+questions.length+' correct)\nAnswered: '+s.answered+'/'+questions.length+'\n\n--- ANSWER DETAILS ---\n'+details;
+  const body='Time: '+melbourneTime+'\nStudent: '+name+'\nTopic: '+title()+'\nDifficulty: '+$('#difficulty').options[$('#difficulty').selectedIndex].text+'\nQuestions: '+questions.length+'\nTimer: '+timerSummary+'\nScore: '+formatMarks(s.score)+'/100 ('+s.correct+'/'+questions.length+' correct)\nAnswered: '+s.answered+'/'+questions.length+'\n\n--- ANSWER DETAILS ---\n'+details;
   const old=btn.textContent;btn.disabled=true;btn.textContent='Sending...';status.textContent='Sending...';status.className='status';
   try{
     const response=await fetch('https://formsubmit.co/ajax/'+teacherEmail,{method:'POST',headers:{'Content-Type':'application/json','Accept':'application/json'},body:JSON.stringify({name:name,_subject:'Math Practice: '+name+' — '+title()+' ('+s.score+'/'+s.total+')',message:body})});
