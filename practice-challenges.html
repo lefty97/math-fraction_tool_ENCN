@@ -41,6 +41,7 @@ input{width:130px;text-align:center}.setting{display:flex;gap:10px;align-items:e
   <div class="card"><h2>Cross-Cancellation in Fraction Multiplication</h2><p>Cross-cancel before multiplying. Fractions are displayed vertically using LaTeX.</p><button class="btn" data-mode="fractions">Start Fractions</button></div>
   <div class="card"><h2>Rearranging & Grouping</h2><p>Rearrange and group addition, subtraction and multiplication to make calculations easier.</p><button class="btn" data-mode="grouping">Start Grouping</button></div>
   <div class="card"><h2>Brackets & Removing Brackets</h2><p>Work with brackets, use the correct order, and practise removing brackets safely.</p><button class="btn" data-mode="brackets">Start Brackets</button></div>
+  <div class="card"><h2>Basic Division of Fractions</h2><p>Use the basic rule: divide by a fraction by multiplying by its reciprocal.</p><button class="btn" data-mode="fractionDivision">Start Fraction Division</button></div>
 </div>
 </section>
 
@@ -177,6 +178,21 @@ function groupingQuestion(i,count){
   const a=pick([2,4,5,8,10]),b=pick([3,6,7,9]),c=pick(lv>=3?[10,25,50]:[5,10,25]),d=pick([2,4]),text=a+' × '+b+' × '+c+' × '+d;
   return{html:'\\('+a+'\\times '+b+'\\times '+c+'\\times '+d+'\\)',text,answer:a*b*c*d,answerText:String(a*b*c*d),hint:'Use the commutative/associative rules to group easy pairs.'}
 }
+function fractionDivisionQuestion(i,count){
+  const lv=levelFor(i,count);
+  let a=ri(1,5+lv),b=ri(2,8+lv),c=ri(1,5+lv),d=ri(2,8+lv);
+  let N=a*d,D=b*c;
+  const ans=reduce(N,D);
+  const tex='\\frac{'+a+'}{'+b+'}\\div\\frac{'+c+'}{'+d+'}';
+  const text=a+'/'+b+' ÷ '+c+'/'+d;
+  return{
+    html:'\\('+tex+'\\)',
+    text,
+    answer:ans,
+    answerText:ans[0]+'/'+ans[1],
+    hint:'Keep the first fraction, change ÷ to ×, and flip the second fraction.'
+  };
+}
 function bracketsQuestion(i,count){
   const lv=levelFor(i,count),type=pick(lv<2?['inside','distribute']:['inside','distribute','minus']);
   if(type==='inside'){const a=ri(12,45+lv*8),b=ri(2,9+lv),c=ri(2,9+lv),mult=ri(2,5+Math.floor(lv/2)),plus=Math.random()<.5,hi=Math.max(b,c),lo=Math.min(b,c),inner=plus?b+c:hi-lo,expr=plus?'('+b+' + '+c+')':'('+hi+' - '+lo+')',text=a+' + '+expr+' × '+mult;return{html:'\\('+a+' + '+expr+'\\times '+mult+'\\)',text,answer:a+inner*mult,answerText:String(a+inner*mult),hint:'Brackets first, then multiplication, then addition.'}}
@@ -186,7 +202,7 @@ function bracketsQuestion(i,count){
 }
 function makeQuestions(){
   const count=parseInt($('#questionCount').value,10);
-  const gen=mode==='algebra'?algebraQuestion:mode==='fractions'?fractionQuestion:mode==='grouping'?groupingQuestion:bracketsQuestion;
+  const gen=mode==='algebra'?algebraQuestion:mode==='fractions'?fractionQuestion:mode==='fractionDivision'?fractionDivisionQuestion:mode==='grouping'?groupingQuestion:bracketsQuestion;
   questions=Array.from({length:count},(_,i)=>gen(i,count));answers=Array(count).fill(null);current=0;finished=false;result.classList.add('hidden');$('#sendStatus').textContent='';$('#studentName').value='';
   clearInterval(timerId);
   timerMinutes=parseInt($('#timerSetting').value,10);
@@ -200,10 +216,10 @@ function makeQuestions(){
 }
 function typeset(){if(window.MathJax&&MathJax.typesetPromise)MathJax.typesetPromise([questionEl]).catch(()=>{})}
 function stats(){let correct=0,answered=0;answers.forEach(a=>{if(a!==null){answered++;if(a.ok)correct++}});return{correct,answered,score:correct*4,total:questions.length*4}}
-function title(){return mode==='algebra'?'Algebra with Variables on Both Sides':mode==='fractions'?'Cross-Cancellation in Fraction Multiplication':mode==='grouping'?'Rearranging & Grouping':'Brackets & Removing Brackets'}
+function title(){return mode==='algebra'?'Algebra with Variables on Both Sides':mode==='fractions'?'Cross-Cancellation in Fraction Multiplication':mode==='fractionDivision'?'Basic Division of Fractions':mode==='grouping'?'Rearranging & Grouping':'Brackets & Removing Brackets'}
 function render(){
   qnum.textContent=current+1;qtotal.textContent=questions.length;questionEl.innerHTML=questions[current].html;typeset();$('#topicTitle').textContent=title();
-  $('#algebraInputs').classList.toggle('hidden',mode!=='algebra');$('#fractionInputs').classList.toggle('hidden',mode!=='fractions');$('#numberInputs').classList.toggle('hidden',!(mode==='grouping'||mode==='brackets'));
+  $('#algebraInputs').classList.toggle('hidden',mode!=='algebra');$('#fractionInputs').classList.toggle('hidden',!(mode==='fractions'||mode==='fractionDivision'));$('#numberInputs').classList.toggle('hidden',!(mode==='grouping'||mode==='brackets'));
   $('#xanswer').value='';$('#num').value='';$('#den').value='';$('#numberAnswer').value='';feedback.textContent='';feedback.className='feedback';smartHint.classList.add('hidden');smartHint.textContent='';
   const s=stats();scoreEl.textContent=s.score;totalMarksEl.textContent=s.total;renderProgressOnly();
 }
