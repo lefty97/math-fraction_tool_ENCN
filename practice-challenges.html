@@ -28,6 +28,11 @@ input{width:130px;text-align:center}.setting{display:flex;gap:10px;align-items:e
 .frac-answer{display:flex;flex-direction:column;align-items:center;justify-content:center;gap:5px;margin-right:6px}.frac-answer .line{height:2px;background:var(--text);width:130px}.frac-answer input{width:130px}
 .smart{margin:14px auto 0;max-width:680px;border:1px dashed #f39c12;border-radius:8px;background:#fffde7;padding:12px 14px;text-align:center;color:#7f8c8d;line-height:1.5}.smart strong{color:#d35400}
 .send-box{max-width:520px;margin:18px auto 0;padding:16px;border:1px dashed var(--line);border-radius:12px;background:#fafafa}.send-box input{width:min(300px,100%);margin:8px auto 12px;display:block}.status{min-height:22px;margin-top:10px;font-weight:700}
+.balance-tools{margin-top:14px;text-align:center}.balance-panel{margin-top:16px;background:#fff;border:2px solid #d6eaf8;border-radius:10px;padding:16px}
+.balance-equation{font-size:1.8rem;font-weight:700;color:#d35400;background:#fef9e7;border:2px solid #f8c471;border-radius:10px;padding:12px;text-align:center;margin-bottom:12px}
+.balance-wrap{position:relative;width:100%;height:330px;background:#fafafa;border:1px solid #ecf0f1;border-radius:10px;overflow:hidden}
+.balance-controls{background:#ebf5fb;padding:14px;border-radius:10px;margin-top:12px;text-align:center}.balance-row{display:flex;gap:8px;flex-wrap:wrap;justify-content:center;margin:6px 0}
+.balance-row .btn{min-width:72px}.balance-hint{margin:10px auto 0;max-width:700px;background:#f5eef8;color:#8e44ad;border-left:5px solid #9b59b6;border-radius:8px;padding:10px 14px;font-weight:700;text-align:left}
 @media(max-width:650px){.grid{grid-template-columns:1fr}.progress{grid-template-columns:repeat(5,1fr)}.controls{align-items:stretch}.field{width:100%}input,select{width:100%}.btn{width:100%}.setting{width:100%}.frac-answer{width:100%;margin:0}.frac-answer input,.frac-answer .line{width:min(220px,80vw)}}
 
 .nav-bar{background-color:#34495e;padding:15px;text-align:center;margin-bottom:20px;border-radius:0 0 10px 10px;display:flex;justify-content:center;align-items:center;flex-wrap:wrap}
@@ -134,6 +139,33 @@ input{width:130px;text-align:center}.setting{display:flex;gap:10px;align-items:e
     <div class="field"><label for="xanswer">x =</label><input id="xanswer" type="number" step="1"></div>
     <button id="submitAlg" class="btn">Submit</button><button id="skipAlg" class="btn secondary">Skip</button>
   </div>
+  <div id="balanceTools" class="balance-tools hidden">
+    <button id="sendToScale" class="btn" type="button">⚖️ Send this question to Balance Scale</button>
+    <div id="balancePanel" class="balance-panel hidden">
+      <div style="display:flex;justify-content:space-between;gap:10px;align-items:center;flex-wrap:wrap;">
+        <strong style="font-size:1.2rem;color:#2c3e50;">⚖️ Algebraic Balance Scale</strong>
+        <button id="closeScale" class="btn secondary" type="button">Close</button>
+      </div>
+      <div class="note" style="margin:4px 0 12px;">Whatever you do to one side, do the same to the other.</div>
+      <div id="balanceEquation" class="balance-equation"></div>
+      <div class="balance-wrap"><svg id="practiceBalanceSvg" width="100%" height="330" viewBox="0 0 800 330" aria-label="Algebra balance scale"></svg></div>
+      <div class="balance-controls">
+        <div class="balance-row">
+          <button id="balAdd1" class="btn" type="button" style="background:#2ecc71;">+ 1</button>
+          <button id="balSub1" class="btn" type="button" style="background:#e74c3c;">− 1</button>
+          <button id="balAddX" class="btn" type="button" style="background:#2ecc71;">+ x</button>
+          <button id="balSubX" class="btn" type="button" style="background:#e74c3c;">− x</button>
+          <button id="balDiv" class="btn hidden" type="button">÷ <span id="balDivVal">2</span></button>
+        </div>
+        <div class="balance-row">
+          <button id="balHint" class="btn" type="button" style="background:#f39c12;">💡 Hint</button>
+          <button id="balShow" class="btn" type="button" style="background:#9b59b6;">🪄 Show Me</button>
+          <button id="balReset" class="btn secondary" type="button">🔄 Reset Scale</button>
+        </div>
+        <div id="balanceHint" class="balance-hint hidden"></div>
+      </div>
+    </div>
+  </div>
 
   <div id="fractionInputs" class="controls hidden">
     <div class="frac-answer" aria-label="fraction answer">
@@ -174,6 +206,7 @@ input{width:130px;text-align:center}.setting{display:flex;gap:10px;align-items:e
 const teacherEmail="anita20700@gmail.com";
 const $=s=>document.querySelector(s),home=$('#home'),game=$('#game'),timerEl=$('#timer'),scoreEl=$('#score'),qnum=$('#qnum'),qtotal=$('#qtotal'),totalMarksEl=$('#totalMarks'),questionEl=$('#question'),feedback=$('#feedback'),progress=$('#progress'),result=$('#result'),smartHint=$('#smartHint');
 let mode='algebra',questions=[],answers=[],current=0,seconds=600,timerId=null,finished=false,timerEnabled=true,timerPaused=false,timerMinutes=10;
+let balanceState=null,balanceInitial=null,balanceTrueX=null;
 const ri=(a,b)=>Math.floor(Math.random()*(b-a+1))+a;
 const pick=a=>a[ri(0,a.length-1)];
 const gcd=(a,b)=>{a=Math.abs(a);b=Math.abs(b);while(b){let t=b;b=a%b;a=t}return a||1};
@@ -193,7 +226,7 @@ function algebraQuestion(i,count){
   let b=ri(1+lv,4+lv*3),a=b+ri(1,3+lv*2),c=ri(-4-lv*5,8+lv*8),d=(a-b)*x+c,t=0;
   while((Math.abs(d)>180||d===c)&&t++<30){c=ri(-4-lv*4,8+lv*7);d=(a-b)*x+c}
   const text=a+'x'+signed(c)+' = '+b+'x'+signed(d);
-  return{html:'\\('+text+'\\)',text,answer:x,answerText:String(x),hint:'Move x-terms to one side and number terms to the other.'}
+  return{html:'\\('+text+'\\)',text,answer:x,answerText:String(x),hint:'Move x-terms to one side and number terms to the other.',balance:{lx:a,ln:c,rx:b,rn:d}}
 }
 function coprime(a,b){return gcd(a,b)===1}
 function fractionQuestion(i,count){
@@ -250,8 +283,9 @@ function typeset(){if(window.MathJax&&MathJax.typesetPromise)MathJax.typesetProm
 function stats(){let correct=0,answered=0;answers.forEach(a=>{if(a!==null){answered++;if(a.ok)correct++}});return{correct,answered,score:correct*4,total:questions.length*4}}
 function title(){return mode==='algebra'?'Algebra with Variables on Both Sides':mode==='fractions'?'Cross-Cancellation in Fraction Multiplication':mode==='fractionDivision'?'Basic Division of Fractions':mode==='grouping'?'Rearranging & Grouping':'Brackets & Removing Brackets'}
 function render(){
-  qnum.textContent=current+1;qtotal.textContent=questions.length;questionEl.innerHTML=questions[current].html;typeset();$('#topicTitle').textContent=title();
-  $('#algebraInputs').classList.toggle('hidden',mode!=='algebra');$('#fractionInputs').classList.toggle('hidden',!(mode==='fractions'||mode==='fractionDivision'));$('#numberInputs').classList.toggle('hidden',!(mode==='grouping'||mode==='brackets'));
+  qnum.textContent=current+1;qtotal.textContent=questions.length;questionEl.innerHTML=questions[current].html;$('#balancePanel').classList.add('hidden');typeset();$('#topicTitle').textContent=title();
+  $('#algebraInputs').classList.toggle('hidden',mode!=='algebra');$('#balanceTools').classList.toggle('hidden',mode!=='algebra');$('#fractionInputs').classList.toggle('hidden',!(mode==='fractions'||mode==='fractionDivision'));$('#numberInputs').classList.toggle('hidden',!(mode==='grouping'||mode==='brackets'));
+  if(mode!=='algebra') $('#balancePanel').classList.add('hidden');
   $('#xanswer').value='';$('#num').value='';$('#den').value='';$('#numberAnswer').value='';feedback.textContent='';feedback.className='feedback';smartHint.classList.add('hidden');smartHint.textContent='';
   const s=stats();scoreEl.textContent=s.score;totalMarksEl.textContent=s.total;renderProgressOnly();
 }
@@ -280,6 +314,113 @@ function renderProgressOnly(){
   progress.innerHTML='';
   questions.forEach((_,i)=>{const b=document.createElement('button');b.type='button';b.className='dot'+(i===current?' current':'')+(answers[i]?.ok?' ok':answers[i]?' no':'');b.textContent=answers[i]?.ok?'✓':answers[i]?'×':i+1;b.setAttribute('aria-label','Go to question '+(i+1));b.addEventListener('click',()=>{if(!finished){current=i;render()}});progress.appendChild(b)});
 }
+
+function fmtSide(xc,n){
+  const parts=[];
+  if(xc!==0) parts.push((xc===1?'':xc===-1?'-':xc)+'x');
+  if(n!==0) parts.push((n>0&&parts.length?'+ ':'')+n);
+  return parts.length?parts.join(' '):'0';
+}
+function balanceEquationText(){return fmtSide(balanceState.lx,balanceState.ln)+' = '+fmtSide(balanceState.rx,balanceState.rn)}
+function currentBalanceWeight(side){
+  const q=questions[current],tx=q?.answer||balanceTrueX||1;
+  return side==='L'?balanceState.lx*tx+balanceState.ln:balanceState.rx*tx+balanceState.rn;
+}
+function drawBalance(){
+  if(!balanceState)return;
+  $('#balanceEquation').textContent=balanceEquationText();
+  const svg=$('#practiceBalanceSvg');
+  const lw=currentBalanceWeight('L'),rw=currentBalanceWeight('R'),diff=lw-rw;
+  const angle=Math.max(-8,Math.min(8,diff*1.5));
+  const cx=400,cy=145,len=520,rad=angle*Math.PI/180;
+  const x1=cx-Math.cos(rad)*len/2,y1=cy-Math.sin(rad)*len/2,x2=cx+Math.cos(rad)*len/2,y2=cy+Math.sin(rad)*len/2;
+  let s='<rect x="0" y="0" width="800" height="330" fill="#fafafa"/>';
+  s+='<polygon points="370,300 430,300 400,165" fill="#95a5a6"/>';
+  s+='<line x1="'+x1+'" y1="'+y1+'" x2="'+x2+'" y2="'+y2+'" stroke="#34495e" stroke-width="12" stroke-linecap="round"/>';
+  s+='<circle cx="400" cy="145" r="14" fill="#e67e22"/>';
+  const trays=[{x:x1,y:y1,xc:balanceState.lx,n:balanceState.ln},{x:x2,y:y2,xc:balanceState.rx,n:balanceState.rn}];
+  trays.forEach(t=>{
+    const py=t.y+95;
+    s+='<line x1="'+t.x+'" y1="'+t.y+'" x2="'+t.x+'" y2="'+py+'" stroke="#7f8c8d" stroke-width="3"/>';
+    s+='<line x1="'+(t.x-95)+'" y1="'+py+'" x2="'+(t.x+95)+'" y2="'+py+'" stroke="#34495e" stroke-width="6"/>';
+    const items=[];
+    const maxX=Math.min(Math.abs(t.xc),6),maxN=Math.min(Math.abs(t.n),8);
+    for(let j=0;j<maxX;j++)items.push({kind:'x',neg:t.xc<0});
+    for(let j=0;j<maxN;j++)items.push({kind:'n',neg:t.n<0});
+    items.slice(0,12).forEach((it,j)=>{
+      const col=j%6,row=Math.floor(j/6),ix=t.x-75+col*30,iy=py-22-row*31;
+      if(it.kind==='x'){
+        s+='<circle cx="'+ix+'" cy="'+iy+'" r="12" fill="'+(it.neg?'#fdecea':'#2ecc71')+'" stroke="'+(it.neg?'#e74c3c':'#27ae60')+'" stroke-width="2"/>';
+        s+='<text x="'+ix+'" y="'+(iy+4)+'" text-anchor="middle" font-size="12" font-weight="700" fill="'+(it.neg?'#e74c3c':'#fff')+'">'+(it.neg?'-x':'x')+'</text>';
+      }else{
+        s+='<rect x="'+(ix-11)+'" y="'+(iy-11)+'" width="22" height="22" rx="3" fill="'+(it.neg?'#fdecea':'#3498db')+'" stroke="'+(it.neg?'#e74c3c':'#2980b9')+'" stroke-width="2"/>';
+        s+='<text x="'+ix+'" y="'+(iy+4)+'" text-anchor="middle" font-size="11" font-weight="700" fill="'+(it.neg?'#e74c3c':'#fff')+'">'+(it.neg?'-1':'1')+'</text>';
+      }
+    });
+    if(Math.abs(t.xc)>6||Math.abs(t.n)>8) s+='<text x="'+t.x+'" y="'+(py+28)+'" text-anchor="middle" font-size="12" fill="#7f8c8d">some blocks grouped</text>';
+  });
+  svg.innerHTML=s;
+  updateBalanceDivide();
+}
+function commonDivisor(){
+  if(!balanceState)return 1;
+  const vals=[balanceState.lx,balanceState.ln,balanceState.rx,balanceState.rn].filter(v=>v!==0).map(Math.abs);
+  if(!vals.length)return 1;
+  return vals.reduce((a,b)=>gcd(a,b));
+}
+function updateBalanceDivide(){
+  const g=commonDivisor();
+  $('#balDiv').classList.toggle('hidden',g<=1);
+  $('#balDivVal').textContent=g;
+}
+function openBalance(){
+  if(mode!=='algebra')return;
+  const q=questions[current];
+  balanceInitial={...q.balance};balanceState={...q.balance};balanceTrueX=q.answer;
+  $('#balancePanel').classList.remove('hidden');$('#balanceHint').classList.add('hidden');drawBalance();
+  $('#balancePanel').scrollIntoView({behavior:'smooth',block:'nearest'});
+}
+function balanceOp(type){
+  if(!balanceState)return;
+  if(type==='add1'){balanceState.ln++;balanceState.rn++}
+  if(type==='sub1'){balanceState.ln--;balanceState.rn--}
+  if(type==='addx'){balanceState.lx++;balanceState.rx++}
+  if(type==='subx'){balanceState.lx--;balanceState.rx--}
+  if(type==='div'){const g=commonDivisor();if(g>1){balanceState.lx/=g;balanceState.ln/=g;balanceState.rx/=g;balanceState.rn/=g}}
+  $('#balanceHint').classList.add('hidden');drawBalance();
+}
+function balanceSolved(){
+  return (balanceState.lx===1&&balanceState.ln===0&&balanceState.rx===0)||(balanceState.rx===1&&balanceState.rn===0&&balanceState.lx===0);
+}
+function showBalanceHint(){
+  let msg='';
+  if(balanceSolved()) msg='Perfectly balanced — x is isolated!';
+  else if(commonDivisor()>1 && ((balanceState.ln===0&&balanceState.rx===0)||(balanceState.rn===0&&balanceState.lx===0))) msg='Almost there! Divide both sides by '+commonDivisor()+'.';
+  else if(balanceState.lx!==0&&balanceState.rx!==0) msg='There are x terms on both sides. Subtract the smaller x-term from both sides.';
+  else if(balanceState.lx!==0&&balanceState.ln!==0) msg='Isolate x by cancelling the number beside it on both sides.';
+  else if(balanceState.rx!==0&&balanceState.rn!==0) msg='Isolate x by cancelling the number beside it on both sides.';
+  else msg='Keep doing the same operation to both sides.';
+  $('#balanceHint').textContent=msg;$('#balanceHint').classList.remove('hidden');
+}
+function showBalanceStep(){
+  if(balanceSolved()){showBalanceHint();return}
+  if(balanceState.lx!==0&&balanceState.rx!==0){
+    if(Math.abs(balanceState.lx)>=Math.abs(balanceState.rx)){
+      const n=balanceState.rx;
+      balanceState.lx-=n;balanceState.rx-=n;
+    }else{
+      const n=balanceState.lx;
+      balanceState.lx-=n;balanceState.rx-=n;
+    }
+  }else if(balanceState.lx!==0&&balanceState.ln!==0){
+    const n=balanceState.ln;balanceState.ln-=n;balanceState.rn-=n;
+  }else if(balanceState.rx!==0&&balanceState.rn!==0){
+    const n=balanceState.rn;balanceState.rn-=n;balanceState.ln-=n;
+  }else if(commonDivisor()>1){
+    const g=commonDivisor();balanceState.lx/=g;balanceState.ln/=g;balanceState.rx/=g;balanceState.rn/=g;
+  }
+  drawBalance();showBalanceHint();
+}
 function submitAlg(){const raw=$('#xanswer').value.trim();if(raw===''){feedback.textContent='Enter a value for x.';return}mark(Number(raw)===questions[current].answer,raw)}
 function submitFrac(){const nr=$('#num').value.trim(),dr=$('#den').value.trim();if(nr===''){feedback.textContent='Enter a numerator.';return}let n=Number(nr),d=dr===''?1:Number(dr);if(!Number.isInteger(n)||!Number.isInteger(d)||d===0){feedback.textContent='Enter a valid fraction.';return}[n,d]=reduce(n,d);const a=questions[current].answer;mark(n===a[0]&&d===a[1],n+'/'+d)}
 function submitNum(){const raw=$('#numberAnswer').value.trim();if(raw===''){feedback.textContent='Enter an answer.';return}const v=Number(raw);mark(Number.isFinite(v)&&Math.abs(v-questions[current].answer)<1e-9,raw)}
@@ -304,6 +445,8 @@ document.querySelectorAll('[data-mode]').forEach(b=>b.addEventListener('click',(
 $('#back').addEventListener('click',()=>{clearInterval(timerId);game.classList.add('hidden');home.classList.remove('hidden')});
 $('#newRound').addEventListener('click',makeQuestions);$('#playAgain').addEventListener('click',makeQuestions);$('#sendResult').addEventListener('click',sendResult);
 $('#questionCount').addEventListener('change',makeQuestions);$('#difficulty').addEventListener('change',makeQuestions);$('#timerSetting').addEventListener('change',makeQuestions);$('#pauseTimer').addEventListener('click',togglePause);
+$('#sendToScale').addEventListener('click',openBalance);$('#closeScale').addEventListener('click',()=>$('#balancePanel').classList.add('hidden'));
+$('#balAdd1').addEventListener('click',()=>balanceOp('add1'));$('#balSub1').addEventListener('click',()=>balanceOp('sub1'));$('#balAddX').addEventListener('click',()=>balanceOp('addx'));$('#balSubX').addEventListener('click',()=>balanceOp('subx'));$('#balDiv').addEventListener('click',()=>balanceOp('div'));$('#balHint').addEventListener('click',showBalanceHint);$('#balShow').addEventListener('click',showBalanceStep);$('#balReset').addEventListener('click',()=>{if(balanceInitial){balanceState={...balanceInitial};drawBalance();$('#balanceHint').classList.add('hidden')}});
 $('#submitAlg').addEventListener('click',submitAlg);$('#submitFrac').addEventListener('click',submitFrac);$('#submitNum').addEventListener('click',submitNum);
 $('#skipAlg').addEventListener('click',skip);$('#skipFrac').addEventListener('click',skip);$('#skipNum').addEventListener('click',skip);
 $('#xanswer').addEventListener('keydown',e=>{if(e.key==='Enter')submitAlg()});$('#den').addEventListener('keydown',e=>{if(e.key==='Enter')submitFrac()});$('#numberAnswer').addEventListener('keydown',e=>{if(e.key==='Enter')submitNum()});
