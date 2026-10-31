@@ -136,7 +136,10 @@ var domains=[
 {id:'fractions',label:'Fraction Meaning & Operations',next:'Use fraction strips, unit fractions and equal-sized wholes before symbolic rules.'},
 {id:'structure',label:'Factors & Multiplicative Reasoning',next:'Compare factors, multiples, unit rates and equivalent representations with visual models.'},
 {id:'algebra',label:'Equality & Algebra',next:'Use a balance model and ask for a reason for each same-on-both-sides operation.'},
-{id:'application',label:'Application & Modelling',next:'Give unfamiliar real-world problems; ask which quantities matter and whether the result is reasonable.'}
+{id:'application',label:'Application & Modelling',next:'Give unfamiliar real-world problems; ask which quantities matter and whether the result is reasonable.'},
+{id:'decimals',label:'Decimal Place Value',next:'Use a base-ten place-value chart and decimal number line, focusing on zeros and positional value.'},
+{id:'data',label:'Data & Graph Interpretation',next:'Read and critique charts, including misleading claims about trends or totals.'},
+{id:'probability',label:'Chance & Uncertainty',next:'Use physical counters to compare possible outcomes and discuss relative likelihood.'}
 ];
 var items=[
 {id:1,domain:'sense',title:'Which fraction is closer to one whole?',kind:'choice',
@@ -192,7 +195,7 @@ listen:'Uses the equal price per item (unit rate) rather than adding an arbitrar
 misconception:'Adds 2 to $6 simply because the number of pens increases from 3 to 5.',
 transfer:'At the same price, how much should 8 pens cost? Explain without counting each pen.',
 hint:'Find the price of one pen before finding the cost of five.'},
-{id:7,domain:'algebra',title:'Balance an equation in two clear steps',kind:'text',
+{id:7,domain:'algebra',title:'Balance an equation in two clear steps',kind:'balance',
 prompt:'Solve '+frac('3x',4)+' = '+frac(15,2)+'. Use the same operation on both sides of the equation.',
 ask:'Write the value of x. Explain your first operation and your second operation.',
 placeholder:'x = ...',
@@ -228,7 +231,7 @@ listen:'Compares ratios or fractions relative to each group’s total rather tha
 misconception:'Chooses Club B simply because 9 is greater than 6.',
 transfer:'If Club B had 12 chess players out of 15, which club would have the higher proportion?',
 hint:'Compare each part with the total number of students in its own club.'},
-{id:11,domain:'sense',extension:true,title:'Predict how multiplication changes size',kind:'choice',
+{id:11,domain:'sense',title:'Predict how multiplication changes size',kind:'choice',
 prompt:'Consider '+frac(7,9)+' × '+frac(13,14)+'. Do <em>not</em> calculate the exact product.',
 ask:'How does the product compare with '+frac(7,9)+'? Explain why.',
 options:['It is smaller','It is exactly equal','It is larger','There is not enough information'],
@@ -237,7 +240,7 @@ listen:'Understands multiplication as scaling rather than assuming it always inc
 misconception:'Believes multiplication always makes numbers bigger.',
 transfer:'What would multiplying 7/9 by 3/2 do to its size? Explain without calculating.',
 hint:'Think about taking only part of a positive amount instead of taking a whole amount.'},
-{id:12,domain:'fractions',extension:true,title:'A fraction depends on the whole',kind:'choice',visual:'halves',
+{id:12,domain:'fractions',extension:true,title:'A fraction depends on the whole',kind:'wholeBuilder',
 prompt:'Ada receives half of a 12-square chocolate bar. Ben receives half of an 18-square chocolate bar. The squares are the same size.',
 ask:'Who gets more chocolate? Explain why “one half” need not mean the same amount.',
 options:['Ada gets more','Ben gets more','They get the same amount','The amounts cannot be compared'],
@@ -246,7 +249,7 @@ listen:'References the whole explicitly, and can distinguish equal fractions of 
 misconception:'Assumes “one half” always means the same quantity regardless of the whole.',
 transfer:'Could 1/3 of one chocolate bar be more than 1/2 of another bar? Give a concrete example.',
 hint:'Check the original size of each whole bar before comparing their halves.'},
-{id:13,domain:'structure',extension:true,title:'Explain equivalent fractions',kind:'text',
+{id:13,domain:'structure',title:'Explain equivalent fractions',kind:'fractionStrips',
 prompt:'A student claims: “'+frac(6,8)+' is double '+frac(3,4)+' because the top number is doubled.” Explain whether the claim is true.',
 ask:'Are '+frac(3,4)+' and '+frac(6,8)+' equal or different amounts? Explain using a diagram or reasoning.',
 placeholder:'Equal or different? ...',
@@ -264,7 +267,7 @@ listen:'Tests a candidate solution against the original statement and distinguis
 misconception:'Confuses dividing by 4 with multiplying by 4 to undo division.',
 transfer:'Without solving anew, test whether x = 18 satisfies x/3 = 6.',
 hint:'Replace x with the proposed value in the original equation. Do both sides have the same value?'},
-{id:15,domain:'application',extension:true,title:'Build a model from a story',kind:'text',
+{id:15,domain:'application',title:'Build a model from a story',kind:'text',
 prompt:'A class has 30 students. '+frac(2,5)+' of the students choose soccer and '+frac(1,3)+' choose tennis. Assume every student chooses only one activity.',
 ask:'How many <strong>more</strong> students choose soccer than tennis? Show how you decided what to calculate.',
 placeholder:'Difference = ... students',
@@ -273,13 +276,65 @@ listen:'Identifies the shared whole (30), models two fractions of that whole, an
 misconception:'Subtracts 2/5 − 1/3 and reports the fraction as the number of students, or ignores the common whole.',
 transfer:'If 30 students had been split into groups of different sizes, what information would you need before comparing their fractions?',
 hint:'Turn each fraction of 30 into a number of students first. Then compare the counts.'}
+,
+{id:16,domain:'decimals',title:'Place a decimal and compare its value',kind:'decimalLine',
+prompt:'Position <strong>0.57</strong> on the number line from 0.50 to 0.60. Then compare <strong>0.57</strong> with <strong>0.507</strong>.',
+ask:'Move the point to 0.57 and explain which of the two numbers is larger.',
+expected:'0.57 = 0.570, which is greater than 0.507. On a line from 0.50 to 0.60, 0.57 is seven hundredths past 0.50.',
+listen:'Aligns place values and understands the zero in 0.507; does not compare decimal digits as isolated whole numbers.',
+misconception:'Treats 507 as larger than 57 just because it has more digits.',
+transfer:'Would 0.605 be greater or smaller than 0.65? Explain using place values.',
+hint:'Write the two decimals with the same number of digits after the decimal point.'},
+{id:17,domain:'data',title:'Investigate a claim about a graph',kind:'choice',visual:'dataChart',
+prompt:'A garden club recorded harvested tomatoes on four days: Monday 6, Tuesday 9, Wednesday 12, and Thursday 9. A student says, “The harvest increased every day.”',
+ask:'Choose the statement best supported by the data. Click the bars to inspect them, then explain.',
+options:['The harvest increased on every day','Thursday was lower than Wednesday','Wednesday and Thursday were equal','Monday and Thursday were equal'],
+expected:'Thursday had 9 tomatoes, fewer than Wednesday’s 12. The harvest increased Monday → Tuesday → Wednesday, then fell on Thursday.',
+listen:'Checks the whole sequence of data rather than focusing only on the highest value.',
+misconception:'Concludes “increased every day” merely because the final day is larger than the first day.',
+transfer:'Would “Thursday had more than Monday” be supported even though “increased every day” is false?',
+hint:'Check each pair of consecutive days. Does every move go upwards?'},
+{id:18,domain:'probability',extension:true,title:'Predict how probability changes',kind:'choice',visual:'probability',
+prompt:'A bag starts with <strong>2 red, 3 blue and 1 yellow</strong> counters. One counter will be drawn without looking. Try the “Add 2 red” button below.',
+ask:'After adding 2 red counters, which colour is now the most likely to be drawn?',
+options:['Red','Blue','Yellow','All colours are equally likely'],
+expected:'After adding two red, the bag contains 4 red, 3 blue, 1 yellow (8 counters). Red is most likely at 4/8, versus blue 3/8 and yellow 1/8.',
+listen:'Updates both favorable counts and the new total; understands that a probability depends on the composition of the bag.',
+misconception:'Thinks blue must remain most likely because it was most common before the change.',
+transfer:'How many extra blue counters would make blue more likely than red after the two reds were added?',
+hint:'Count the counters again after the change; both the red count and the total change.'},
+{id:19,domain:'application',title:'Build two rectangles with equal area',kind:'buildRect',
+prompt:'Use <strong>24 identical 1 cm × 1 cm tiles</strong> to build TWO different rectangles. Keep the same area but choose different perimeters.',
+ask:'Choose the side lengths for both rectangles. Calculate each perimeter and explain why the areas stay equal.',
+expected:'Any two different factor pairs of 24 (e.g. 4 × 6 and 3 × 8), with different perimeters (20 cm versus 22 cm), are acceptable. Both have area 24 cm².',
+listen:'Builds distinct configurations while preserving the number of unit squares; distinguishes area in cm² from perimeter in cm.',
+misconception:'Assumes equal area means equal perimeter or counts only two sides when finding perimeter.',
+transfer:'Could a 2 cm × 12 cm rectangle have the same area? What would its perimeter be?',
+hint:'Choose two different factor pairs of 24. Add up all four outside sides of each shape.'},
+{id:20,domain:'application',extension:true,title:'Compare two discount strategies',kind:'text',
+prompt:'Two shops list the same puzzle for <strong>$24</strong>. Shop A takes <strong>one third</strong> off its price. Shop B takes <strong>$6</strong> off its price.',
+ask:'Which shop charges less, and by how much? Explain with a number model or diagram.',
+placeholder:'Cheaper shop and difference = ...',
+expected:'Shop A gives a $8 discount (24 ÷ 3), so it costs $16. Shop B costs $18. Shop A is $2 cheaper.',
+listen:'Interprets a fraction of a quantity correctly, distinguishes price from amount saved, and checks the result makes sense.',
+misconception:'Mistakes one third off for one third of the original price as the final price.',
+transfer:'At what original price would a one-third discount save exactly $6?',
+hint:'Find the dollar value of one third of $24 first. Subtract each discount from the same original price.'}
+
 ];
-if(items.length!==15||items.filter(q=>!q.extension).length!==10)throw Error('Invalid diagnostic inventory');
-const key='benji-maths-concept-diagnostic-v1';
-const fresh=()=>({answers:{},version:1});
-let state=fresh(),current=0,view='question',teacherOpen=false;
-try{let saved=JSON.parse(localStorage.getItem(key)||'null');if(saved&&saved.version===1&&saved.answers&&typeof saved.answers==='object'){state=saved;}}catch(e){}
-function rec(id){if(!state.answers[id])state.answers[id]={answer:'',reasoning:'',note:'',score:null,hint:false};return state.answers[id];}
+const sections=[
+{id:1,title:'Fractions & Number Sense',subtitle:'Benchmarks, a number line, division meaning, and fraction scaling.',goal:'Can Benji explain fraction size and the meaning of operations?',ids:[1,3,4,11,12]},
+{id:2,title:'Factors, Structure & Balance',subtitle:'Common factors, unit rates, step-by-step balancing and error spotting.',goal:'Does he understand WHY procedures preserve mathematical relationships?',ids:[5,6,7,8,14]},
+{id:3,title:'Year 4–5 Foundations',subtitle:'Estimation, decimal place value, measurement, data and chance.',goal:'Are there gaps outside his strong fraction/algebra performance?',ids:[2,9,16,17,18]},
+{id:4,title:'Transfer & Critical Reasoning',subtitle:'Proportions, equivalent fractions, real-world modeling and construction.',goal:'Can he apply familiar ideas in unfamiliar problems and justify claims?',ids:[10,13,15,19,20]}
+];
+items=sections.flatMap(sec=>sec.ids.map((id,j)=>{let q=items.find(z=>z.id===id);if(!q)throw Error('Missing question '+id);return {...q,section:sec.id,extension:j===4};}));
+if(items.length!==20||items.filter(q=>!q.extension).length!==16||new Set(items.map(q=>q.id)).size!==20)throw Error('Invalid diagnostic inventory');
+const key='benji-maths-concept-diagnostic-v2';
+const fresh=()=>({answers:{},version:2});
+let state=fresh(),current=0,view='question',teacherOpen=false,activeSection=1;
+try{let saved=JSON.parse(localStorage.getItem(key)||'null');if(saved&&saved.version===2&&saved.answers&&typeof saved.answers==='object'){state=saved;}}catch(e){}
+function rec(id){if(!state.answers[id])state.answers[id]={answer:'',reasoning:'',note:'',score:null,hint:false,evidence:{},actions:[]};return state.answers[id];}
 function save(){try{localStorage.setItem(key,JSON.stringify(state));}catch(e){}}
 function hasAnswer(r){return String(r.answer||'').trim().length>0||String(r.reasoning||'').trim().length>0;}
 function selected(q,r){return q.options? (r.answer===''?'Not answered':q.options[Number(r.answer)]||'Not answered'):q.kind==='numberline'?r.answer===''?'Not answered': Number(r.answer)===4?'1':Number(r.answer)===0?'0':Number(r.answer)===8?'2':Number(r.answer)+'/4':r.answer||'Not answered';}
