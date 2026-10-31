@@ -730,6 +730,7 @@ function showSummary(){
  for(let sec of sections){let t=sectionStats(sec);if(t.core.length<3)suggest.push('<p>• <strong>Section '+sec.id+':</strong> Collect more independent core explanations before drawing conclusions.</p>');else if(t.points/t.max<.75)suggest.push('<p>• <strong>Section '+sec.id+':</strong> '+esc(sec.goal)+'</p>');}
  for(let d of domains){let done=items.filter(q=>q.domain===d.id&&observed(q)),pts=done.reduce((n,q)=>n+Number(rec(q.id).score),0);if(done.length>=2&&pts/(2*done.length)<.75)suggest.push('<p>• <strong>'+esc(d.label)+':</strong> '+esc(d.next)+'</p>');}
  $('recommendations').innerHTML=suggest.length?suggest.join(''):'<p>The assessed tasks show promising understanding. Explore unfamiliar representations and ask for counterexamples before introducing harder symbolic procedures.</p>';
+ updateDiagnosticSendPreview();
  $('reportView').scrollIntoView({block:'start',behavior:'instant'});
 }
 function download(filename,text,mime){let blob=new Blob([text],{type:mime||'text/plain;charset=utf-8'}),url=URL.createObjectURL(blob),a=document.createElement('a');a.href=url;a.download=filename;document.body.appendChild(a);a.click();a.remove();setTimeout(()=>URL.revokeObjectURL(url),2000);}
@@ -746,6 +747,145 @@ function downloadCSV(){
  }
  download('benji-maths-concept-diagnostic-v2.csv','\ufeff'+arr.map(row=>row.map(csvCell).join(',')).join('\r\n'),'text/csv;charset=utf-8');
 }
+
+// Reuse the teacher's existing FormSubmit destination from Practice Challenges.
+// This is the public site's same email-delivery workflow, not background storage.
+const diagnosticTeacherEmail='anita20700@gmail.com';
+let diagnosticSending=false;
+function diagnosticScopeItems(){
+ const scope=$('diagnosticSendScope').value;
+ return scope==='all'?items:items.filter(q=>String(q.section)===scope);
+}
+function diagnosticActivityCount(q){
+ const r=rec(q.id);
+ return !!(
+  hasAnswer(r)||r.score!==null||r.hint||(r.note&&r.note.trim())||
+  (r.actions||[]).length||Object.values(r.evidence||{}).some(Boolean)||
+  Object.keys(r.widget||{}).length
+ );
+}
+function diagnosticScopeLabel(){
+ const id=$('diagnosticSendScope').value;
+ return id==='all'?'All four sections':('Section '+id+' — '+sectionInfo(Number(id)).title);
+}
+function updateDiagnosticSendPreview(){
+ const scoped=diagnosticScopeItems(),withActivity=scoped.filter(diagnosticActivityCount);
+ const assessed=scoped.filter(observed),coreTotal=scoped.filter(q=>!q.extension).length;
+ const coreGraded=scoped.filter(q=>!q.extension&&observed(q)).length;
+ const optional=scoped.filter(q=>q.extension&&observed(q)).length;
+ $('diagnosticSendPreview').textContent=
+  'This report will include '+scoped.length+' questions: '+
+  withActivity.length+' with recorded activity, '+coreGraded+'/'+coreTotal+
+  ' core teacher assessments, and '+optional+' optional assessments. '+
+  (withActivity.length===0?'No responses or observations have been recorded in this selection yet.':
+  'Unanswered and unassessed items will be marked as such.');
+ $('sendDiagnosticBtn').disabled=diagnosticSending||withActivity.length===0;
+}
+function diagnosticQuestionText(q){
+ return q.prompt.replace(/<span class="frac"[^>]*><b>(.*?)<\/b><i>(.*?)<\/i><\/span>/g,'($1)/($2)')
+  .replace(/<[^>]*>/g,' ').replace(/&amp;/g,'&').replace(/&quot;/g,'"')
+  .replace(/&lt;/g,'<').replace(/&gt;/g,'>').replace(/\s+/g,' ').trim();
+}
+function buildDiagnosticEmail(name){
+ const chosen=diagnosticScopeItems(),domainNames=Object.fromEntries(domains.map(d=>[d.id,d.label]));
+ const assessed=chosen.filter(observed);
+ const core=chosen.filter(q=>!q.extension&&observed(q)).length;
+ const optional=chosen.filter(q=>q.extension&&observed(q)).length;
+ const activity=chosen.filter(diagnosticActivityCount).length;
+ const time=new Date().toLocaleString('en-AU',{timeZone:'Australia/Melbourne',dateStyle:'medium',timeStyle:'short'});
+ const lines=[
+  'Maths Concept Diagnostic — Formative Teacher Report',
+  'Student: '+name,
+  'Date/time (Melbourne): '+time,
+  'Scope: '+diagnosticScopeLabel(),
+  'Questions in scope: '+chosen.length,
+  'Items with activity: '+activity,
+  'Core questions assessed by teacher: '+core+'/'+chosen.filter(q=>!q.extension).length,
+  'Optional challenges assessed: '+optional+'/'+chosen.filter(q=>q.extension).length,
+  'Rubric: 2 = independent sound reasoning; 1 = partial / prompted; 0 = not yet demonstrated; — = not assessed.',
+  'IMPORTANT: Not assessed is NOT incorrect. This is an informal diagnostic, not a standardized grade.',
+  '',
+  '=== SECTION RESULTS ==='
+ ];
+ for(const sec of sections){
+  const subset=chosen.filter(q=>q.section===sec.id);if(!subset.length)continue;
+  const rated=subset.filter(observed),ratedCore=subset.filter(q=>!q.extension&&observed(q));
+  const points=rated.reduce((a,q)=>a+Number(rec(q.id).score),0);
+  lines.push('Section '+sec.id+' — '+sec.title,
+    'Core teacher observations: '+ratedCore.length+'/4; optional assessed: '+(rated.some(q=>q.extension)?'yes':'no'),
+    'Rubric points among assessed items: '+points+'/'+(2*rated.length),
+    'Focus: '+sec.goal,'');
+ }
+ lines.push('=== EVIDENCE DIMENSIONS ===');
+ for(const [type,label] of Object.entries(evidenceLabels())){
+  lines.push(label+': '+assessed.filter(q=>!!(rec(q.id).evidence||{})[type]).length+'/'+assessed.length+
+  ' graded questions explicitly ticked');
+ }
+ lines.push('','=== ITEM-BY-ITEM OBSERVATIONS ===');
+ for(const q of chosen){
+  const r=rec(q.id),e=r.evidence||{};
+  const signs=Object.entries(evidenceLabels()).filter(([k])=>!!e[k]).map(([,v])=>v);
+  lines.push(
+   'Section '+q.section+' — Question '+q.id+' ['+(q.extension?'Optional':'Core')+'] '+q.title,
+   'Area: '+domainNames[q.domain],
+   'Prompt: '+diagnosticQuestionText(q),
+   'Student answer/model: '+selected(q,r),
+   'Student explanation: '+(r.reasoning||'Not recorded'),
+   'Teacher observation: '+(r.note||'Not recorded'),
+   'Teacher score: '+(r.score===null?'Not assessed':r.score+'/2'),
+   'Evidence observed: '+(signs.join('; ')||'None ticked'),
+   'Hint used: '+(r.hint?'Yes':'No'),
+   'Interactive actions: '+((r.actions||[]).join(' → ')||'None recorded'),
+   ''
+  );
+ }
+ lines.push('=== INTERPRETATION NOTE ===',
+  'Review student explanations, model use and novel transfer before deciding readiness for more abstract mathematics.',
+  'An ungraded question was not marked incorrect. Numerical rubric totals apply only to teacher-rated questions.');
+ return lines.join('\n');
+}
+function setDiagnosticSendStatus(message,tone){
+ const status=$('diagnosticSendStatus');
+ status.textContent=message;
+ status.className=tone||'info';
+}
+async function sendDiagnosticResults(event){
+ event.preventDefault();
+ if(diagnosticSending)return;
+ const name=$('diagnosticStudentName').value.trim();
+ if(!name){setDiagnosticSendStatus('⚠ Enter the student name before sending.','bad');$('diagnosticStudentName').focus();return;}
+ const chosen=diagnosticScopeItems();
+ if(!chosen.some(diagnosticActivityCount)){
+  setDiagnosticSendStatus('⚠ This section has no recorded answers or teacher observations yet. Choose another section or complete a question.','bad');
+  updateDiagnosticSendPreview();return;
+ }
+ const scope=diagnosticScopeLabel(),scopeKey=$('diagnosticSendScope').value,report=buildDiagnosticEmail(name);
+ const btn=$('sendDiagnosticBtn');
+ diagnosticSending=true;btn.disabled=true;btn.textContent='Sending...';
+ setDiagnosticSendStatus('Sending the '+scope.toLowerCase()+' report to your teacher...','info');
+ try{
+  const response=await fetch('https://formsubmit.co/ajax/'+diagnosticTeacherEmail,{
+   method:'POST',
+   headers:{'Content-Type':'application/json','Accept':'application/json'},
+   body:JSON.stringify({
+    name:name,
+    _subject:'Maths Concept Diagnostic — '+name+' — '+scope,
+    message:report
+   })
+  });
+  if(!response.ok)throw new Error('Email provider returned HTTP '+response.status);
+  // FormSubmit may return a string or boolean "success" indicator.
+  const data=await response.json().catch(()=>null);
+  if(data&&('success' in data)&&(data.success===false||data.success==='false'))throw new Error('Email provider did not accept the report');
+  const sentAt=new Date().toLocaleString('en-AU',{timeZone:'Australia/Melbourne',dateStyle:'medium',timeStyle:'short'});
+  setDiagnosticSendStatus('✅ Report accepted for delivery ('+sentAt+'). The selected results were sent to the teacher email service.','good');
+ }catch(err){
+  setDiagnosticSendStatus('❌ Unable to send the report. Please try again, or download the report as a backup.','bad');
+ }finally{
+  diagnosticSending=false;btn.textContent='Send diagnostic results';updateDiagnosticSendPreview();
+ }
+}
+
 function clearAll(){
  if(!confirm('Clear ALL answers, teacher notes, model states and scores on this device? Export a report first if needed.'))return;
  state=fresh();save();current=0;teacherOpen=false;clock.remaining=720;clock.section=0;clock.running=false;showSections();
@@ -807,6 +947,11 @@ $('timerReset').addEventListener('click',()=>{clock.running=false;clock.remainin
 $('downloadBtn').addEventListener('click',()=>download('benji-maths-concept-diagnostic-v2-summary.txt',teacherSummary()));
 $('csvBtn').addEventListener('click',downloadCSV);
 $('printBtn').addEventListener('click',()=>window.print());
+$('diagnosticSendScope').addEventListener('change',()=>{
+ updateDiagnosticSendPreview();
+ setDiagnosticSendStatus('','info');
+});
+$('sendDiagnosticForm').addEventListener('submit',sendDiagnosticResults);
 renderSections();
 })();
 </script></body></html>
