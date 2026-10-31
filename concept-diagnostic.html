@@ -351,6 +351,85 @@ return out+'</div>';
 }
 function halves(){let out='<div>';for(let b of [{label:'Ada · 12 squares',n:12},{label:'Ben · 18 squares',n:18}]){out+='<div class="bar-row"><label>'+b.label+'</label><div class="bar-dots">';for(let i=0;i<b.n;i++)out+='<span class="'+(i<b.n/2?'on':'')+'"></span>';out+='</div></div>';}return out+'</div>';}
 
+
+function getWidget(r){if(!r.widget)r.widget={};return r.widget;}
+function logAction(r,t){if(!r.actions)r.actions=[];if(r.actions.length<90)r.actions.push(t);}
+function segments(total,filled,label){
+ let out='<div class="manip-bar" role="img" aria-label="'+esc(label)+'">';
+ for(let i=0;i<total;i++)out+='<span class="'+(i<filled?'filled':'')+'"></span>';
+ return out+'</div>';
+}
+function shapeHTML(width){
+ let rows=24/width,out='<div class="widget-shape" role="img" aria-label="'+width+' columns by '+rows+' rows" style="grid-template-columns:repeat('+width+',19px)">';
+ for(let i=0;i<24;i++)out+='<span></span>';return out+'</div>';
+}
+function wholeBuilderHTML(r){
+ let w=getWidget(r),a=w.ada??0,b=w.ben??0;
+ return '<div class="widget-box"><strong>Build two different halves</strong>'+
+ '<p class="fine">Both bars are made from identical unit squares. Shade HALF of each whole.</p>'+
+ '<label class="field" for="wholeAda">Ada — 12 squares · '+a+' shaded</label>'+
+ segments(12,a,a+' of Ada’s 12 squares shaded')+
+ '<input id="wholeAda" type="range" min="0" max="12" step="1" value="'+a+'">'+
+ '<label class="field" for="wholeBen">Ben — 18 squares · '+b+' shaded</label>'+
+ segments(18,b,b+' of Ben’s 18 squares shaded')+
+ '<input id="wholeBen" type="range" min="0" max="18" step="1" value="'+b+'">'+
+ '<p class="widget-message">Can both models show 1/2 if the shaded counts are different?</p></div>';
+}
+function fractionStripsHTML(r){
+ let w=getWidget(r),n=w.parts??0;
+ return '<div class="widget-box"><strong>Make an equivalent fraction</strong>'+
+ '<p class="fine">Each strip is the same-sized whole. Show the same blue amount using EIGHT equal parts.</p>'+
+ '<div class="widget-top"><strong>3/4</strong><span class="fine">Given model</span></div>'+
+ segments(4,3,'3 out of 4 equal pieces')+
+ '<label class="field" for="stripSlider">You shaded '+n+' out of 8 parts</label>'+
+ segments(8,n,n+' out of 8 equal pieces')+
+ '<input id="stripSlider" type="range" min="0" max="8" step="1" value="'+n+'">'+
+ '<p class="widget-message">Explain how the pieces change while the fraction of the whole stays the same.</p></div>';
+}
+function balanceHTML(r){
+ let w=getWidget(r),stage=w.stage??0;
+ const lines=[
+ frac('2x',3)+' = '+frac(14,3),
+ '2x = '+frac(42,3),
+ '2x = 14',
+ 'x = '+frac(14,2),
+ 'x = 7'
+ ];
+ let controls=(stage===0||stage===2)?
+ '<div class="widget-controls">'+['×3','÷3','×2','÷2'].map(op=>'<button type="button" class="btn secondary" data-balance-op="'+op+'">'+op+'</button>').join('')+'</div>':
+ stage===1?'<div class="widget-controls"><button type="button" class="btn secondary" data-balance-step="simplify">Simplify 42/3</button></div>':
+ stage===3?'<div class="widget-controls"><button type="button" class="btn secondary" data-balance-step="simplify">Simplify 14/2</button></div>':
+ '<p class="widget-message">Now explain why both sides stayed equal at each step.</p>';
+ return '<div class="widget-box"><div class="widget-top"><strong>⚖️ Step-by-step Balance</strong><span class="tag">Stage '+(stage+1)+'/5</span></div>'+
+ '<div class="prompt" style="font-size:25px;text-align:center;background:#fff;margin:12px 0">'+lines[stage]+'</div>'+
+ controls+'<div class="action-row">'+
+ '<button type="button" class="btn outline" data-balance-step="undo" '+(stage===0?'disabled':'')+'>↶ Undo</button>'+
+ '<button type="button" class="btn outline" data-balance-step="reset">Reset balance</button></div>'+
+ '<p class="widget-message" role="status">'+esc(w.message||'Predict the operation that removes the denominator beneath x.')+'</p>'+
+ '<p class="fine">Use whole-number operations on BOTH sides. Simplify the right-hand fraction when asked.</p></div>';
+}
+function buildRectHTML(r){
+ let w=getWidget(r),a=w.a??4,b=w.b??4;
+ let options=[2,3,4,6,8,12];
+ let selector=(key,val)=>'<select aria-label="Rectangle '+key+' dimensions" data-rectangle="'+key+'">'+options.map(x=>
+ '<option value="'+x+'" '+(x===val?'selected':'')+'>'+x+' cm × '+24/x+' cm</option>').join('')+'</select>';
+ return '<div class="widget-box"><strong>Build using 24 identical square tiles</strong><p class="fine">Find two equal-area rectangles with DIFFERENT perimeters.</p>'+
+ '<div class="shape-controls"><label>Rectangle A '+selector('a',a)+'</label><label>Rectangle B '+selector('b',b)+'</label></div>'+
+ '<div class="diagram"><div><div class="rect-label">A · '+a+' × '+24/a+'</div>'+shapeHTML(a)+'</div>'+
+ '<div><div class="rect-label">B · '+b+' × '+24/b+'</div>'+shapeHTML(b)+'</div></div>'+
+ '<p class="widget-message">'+(a===b?'Try another factor pair to make a different rectangle.':'Both contain 24 squares. Use all four sides to compare their perimeters.')+'</p></div>';
+}
+function widgetHTML(q,r){
+ if(q.kind==='wholeBuilder')return wholeBuilderHTML(r);
+ if(q.kind==='fractionStrips')return fractionStripsHTML(r);
+ if(q.kind==='balance')return balanceHTML(r);
+ if(q.kind==='buildRect')return buildRectHTML(r);
+ if(q.kind==='decimalLine')return decimalLineHTML(r);
+ if(q.visual==='dataChart')return chartHTML(r);
+ if(q.visual==='probability')return probabilityHTML(r);
+ return q.kind==='numberline'?lineGraphic():q.visual==='rectangles'?rectangles():q.visual==='halves'?halves():'';
+}
+
 const clock={section:0,remaining:720,running:false};
 function drawTimer(){
  const m=Math.floor(clock.remaining/60),ss=clock.remaining%60;
