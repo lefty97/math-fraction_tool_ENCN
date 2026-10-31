@@ -686,22 +686,79 @@ function showSummary(){
 }
 function download(filename,text,mime){let blob=new Blob([text],{type:mime||'text/plain;charset=utf-8'}),url=URL.createObjectURL(blob),a=document.createElement('a');a.href=url;a.download=filename;document.body.appendChild(a);a.click();a.remove();setTimeout(()=>URL.revokeObjectURL(url),2000);}
 function csvCell(s){return '"'+String(s===undefined||s===null?'':s).replace(/"/g,'""')+'"';}
+
 function downloadCSV(){
-let arr=[['Question','Section','Domain','Question title','Student answer','Reasoning','Teacher observations','Teacher score (0-2)','Hint opened']];
-for(let q of items){let r=rec(q.id);arr.push([q.id,q.extension?'Extension':'Core',domains.find(d=>d.id===q.domain).label,q.title,selected(q,r),r.reasoning,r.note,r.score===null?'':r.score,r.hint?'Yes':'No']);}
-download('benji-concept-diagnostic-observations.csv','\ufeff'+arr.map(row=>row.map(csvCell).join(',')).join('\r\n'),'text/csv;charset=utf-8');}
-function clearAll(){if(!confirm('Clear ALL answers, teacher notes and scores stored in this browser? Export your report first if you want to keep it.'))return;state=fresh();save();current=0;teacherOpen=false;renderQuestion();}
-$('startBtn').addEventListener('click',()=>go(0));$('showSummaryIntro').addEventListener('click',showSummary);$('clearBtnIntro').addEventListener('click',clearAll);$('clearBtnReport').addEventListener('click',clearAll);
+ let cols=['Section','Question','Type','Domain','Question title','Student answer/model','Student reasoning','Teacher observation','Teacher score 0-2','Hint opened','Accuracy evidence','Explanation evidence','Representation evidence','Transfer evidence','Interactive actions'];
+ let arr=[cols];
+ for(let q of items){
+  let r=rec(q.id),e=r.evidence||{};
+  arr.push([q.section,q.id,q.extension?'Optional':'Core',domains.find(d=>d.id===q.domain).label,
+  q.title,selected(q,r),r.reasoning,r.note,r.score===null?'':r.score,r.hint?'Yes':'No',
+  e.accuracy?'Yes':'',e.explanation?'Yes':'',e.representation?'Yes':'',e.transfer?'Yes':'',(r.actions||[]).join(' → ')]);
+ }
+ download('benji-maths-concept-diagnostic-v2.csv','\ufeff'+arr.map(row=>row.map(csvCell).join(',')).join('\r\n'),'text/csv;charset=utf-8');
+}
+function clearAll(){
+ if(!confirm('Clear ALL answers, teacher notes, model states and scores on this device? Export a report first if needed.'))return;
+ state=fresh();save();current=0;teacherOpen=false;clock.remaining=720;clock.section=0;clock.running=false;showSections();
+}
+$('startBtn').addEventListener('click',()=>startSection(1));
+$('sectionCards').addEventListener('click',e=>{let b=e.target.closest('[data-section]');if(b)startSection(Number(b.dataset.section));});
+$('sectionHomeBtn').addEventListener('click',showSections);
+$('finishSectionBtn').addEventListener('click',showSections);
+$('showSummaryIntro').addEventListener('click',showSummary);
+$('clearBtnIntro').addEventListener('click',clearAll);
+$('clearBtnReport').addEventListener('click',clearAll);
 $('questionNav').addEventListener('click',e=>{let b=e.target.closest('[data-goto]');if(b)go(Number(b.dataset.goto));});
-$('answerArea').addEventListener('click',e=>{let b=e.target.closest('[data-choice]');if(!b)return;rec(items[current].id).answer=b.dataset.choice;save();$('answerArea').querySelectorAll('[data-choice]').forEach(x=>{let yes=x===b;x.classList.toggle('selected',yes);x.setAttribute('aria-pressed',String(yes));});});
+$('answerArea').addEventListener('click',e=>{
+ let b=e.target.closest('[data-choice]');if(!b)return;
+ rec(items[current].id).answer=b.dataset.choice;save();
+ $('answerArea').querySelectorAll('[data-choice]').forEach(x=>{
+  let yes=x===b;x.classList.toggle('selected',yes);x.setAttribute('aria-pressed',String(yes));
+ });
+});
 $('answerArea').addEventListener('input',e=>{if(e.target.id==='studentAnswer'){rec(items[current].id).answer=e.target.value;save();}});
-$('questionVisual').addEventListener('input',e=>{if(e.target.id==='lineSlider'){rec(items[current].id).answer=e.target.value;updateLineDisplay(e.target.value);save();}});
+$('questionVisual').addEventListener('click',handleWidgetClick);
+$('questionVisual').addEventListener('input',handleWidgetInput);
+$('questionVisual').addEventListener('change',e=>{
+ if(e.target.matches('[data-rectangle]'))handleWidgetInput(e);
+});
 $('reasoning').addEventListener('input',e=>{rec(items[current].id).reasoning=e.target.value;save();});
 $('teacherNotes').addEventListener('input',e=>{rec(items[current].id).note=e.target.value;save();});
-$('hintBtn').addEventListener('click',()=>{let r=rec(items[current].id);r.hint=true;save();$('hintBox').classList.remove('hidden');$('hintStatus').textContent='Hint opened — record whether the explanation was independent.';$('hintWarning').textContent='⚠ A thinking hint was opened. Score 2 only if the subsequent explanation independently demonstrates understanding.';});
+$('hintBtn').addEventListener('click',()=>{
+ let r=rec(items[current].id);r.hint=true;save();
+ $('hintBox').classList.remove('hidden');
+ $('hintStatus').textContent='Hint opened — record whether the explanation was independent.';
+ $('hintWarning').textContent='⚠ A thinking hint was opened. Only award 2 for genuinely independent reasoning.';
+});
 $('teacherGuide').addEventListener('toggle',e=>{teacherOpen=e.target.open;});
-$('scoreButtons').addEventListener('click',e=>{let b=e.target.closest('[data-score]');if(!b)return;rec(items[current].id).score=Number(b.dataset.score);save();teacherOpen=true;renderQuestion();});
-$('previousBtn').addEventListener('click',()=>go(current-1));$('nextBtn').addEventListener('click',()=>go(current+1));$('summaryBtn').addEventListener('click',showSummary);$('returnBtn').addEventListener('click',()=>go(current));
-$('downloadBtn').addEventListener('click',()=>download('benji-concept-diagnostic-summary.txt',teacherSummary()));$('csvBtn').addEventListener('click',downloadCSV);$('printBtn').addEventListener('click',()=>window.print());
+$('scoreButtons').addEventListener('click',e=>{
+ let b=e.target.closest('[data-score]');if(!b)return;
+ rec(items[current].id).score=Number(b.dataset.score);save();teacherOpen=true;renderQuestion();
+});
+$('evidenceTags').addEventListener('change',e=>{
+ if(!e.target.matches('[data-evidence]'))return;
+ let r=rec(items[current].id);if(!r.evidence)r.evidence={};
+ r.evidence[e.target.dataset.evidence]=!!e.target.checked;save();
+});
+$('previousBtn').addEventListener('click',()=>{
+ let q=items[current],sec=sectionInfo(q.section),pos=sec.ids.indexOf(q.id);
+ if(pos>0)go(current-1);
+});
+$('nextBtn').addEventListener('click',()=>{
+ let q=items[current],sec=sectionInfo(q.section),pos=sec.ids.indexOf(q.id);
+ if(pos>=4)showSections();else go(current+1);
+});
+$('summaryBtn').addEventListener('click',showSummary);
+$('returnBtn').addEventListener('click',()=>go(current));
+$('timerToggle').addEventListener('click',()=>{
+ if(clock.remaining<=0)return;
+ clock.running=!clock.running;drawTimer();
+});
+$('timerReset').addEventListener('click',()=>{clock.running=false;clock.remaining=720;drawTimer();});
+$('downloadBtn').addEventListener('click',()=>download('benji-maths-concept-diagnostic-v2-summary.txt',teacherSummary()));
+$('csvBtn').addEventListener('click',downloadCSV);
+$('printBtn').addEventListener('click',()=>window.print());
+renderSections();
 })();
 </script></body></html>
