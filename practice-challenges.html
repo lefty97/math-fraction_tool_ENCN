@@ -14,6 +14,9 @@ window.MathJax={tex:{inlineMath:[['\\(','\\)']],displayMath:[['\\[','\\]']]},svg
 main{max-width:1010px;margin:0 auto;padding:0 0 48px}.practice-shell{background:white;max-width:950px;margin:0 auto;padding:30px;border-radius:15px;box-shadow:0 4px 8px rgba(0,0,0,.1);text-align:left}
 h1{font-size:clamp(28px,5vw,42px);margin:0 0 8px}.sub{color:var(--muted);margin-bottom:24px;line-height:1.45}
 .grid{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:18px}.card{background:var(--card);border:2px solid #d6eaf8;border-radius:10px;padding:20px;box-shadow:0 2px 5px rgba(0,0,0,.05)}
+.card.homework-feature{background:#fff5dc;border:3px solid #e6a13e;box-shadow:0 5px 15px rgba(189,118,17,.18)}
+.homework-feature .homework-label{display:inline-block;background:#99500c;color:white;font-size:12px;font-weight:800;letter-spacing:.04em;padding:7px 11px;border-radius:6px;margin-bottom:12px}
+.homework-feature h2{color:#743e0c}.homework-feature p{color:#654e2d}.homework-feature .btn{background:#b85d0d}.homework-feature .btn:hover{background:#904808}
 .card h2{margin:0 0 8px;font-size:21px;color:#2c3e50}.card p{color:var(--muted);line-height:1.45}.btn{border:0;border-radius:6px;padding:10px 16px;font-size:16px;font-weight:700;cursor:pointer;background:#2980b9;color:white;transition:.2s}.btn:hover{background:#1f618d}
 .btn.secondary{background:white;color:#34495e;border:1px solid #bdc3c7}.btn.secondary:hover{background:#f4f6f6}.btn.send{background:#1abc9c}.btn.send:hover{background:#16a085}.btn:disabled{opacity:.5;cursor:not-allowed}
 .hidden{display:none!important}.topbar{display:flex;gap:12px;flex-wrap:wrap;justify-content:space-between;align-items:center;margin-bottom:16px}
@@ -83,12 +86,18 @@ input{width:130px;text-align:center}.setting{display:flex;gap:10px;align-items:e
 <div class="sub">Choose a topic. Default: 25 questions, 10 minutes, progressive difficulty. Every round is marked out of 100.</div>
 <div class="card" style="margin-bottom:18px;background:#e8f8f5;border-color:#a3d9c5;"><h2>🧩 Fraction Algebra Balance Lab</h2><p>Visualize fraction equations, apply the same operation to both sides, and generate unlimited new questions with whole-number solutions.</p><a class="btn" href="fraction-algebra.html" style="display:inline-block;text-decoration:none;">Open Interactive Balance Lab</a></div>
 <div class="grid">
+  <div class="card homework-feature">
+    <div class="homework-label">📌 THIS WEEK'S HOMEWORK</div>
+    <h2>Fraction Algebra: Solve &amp; Balance</h2>
+    <p>Solve fraction equations with positive whole-number solutions. You can use the Balance tool when needed. Send your results to your teacher after each round.</p>
+    <button class="btn" data-mode="fractionAlgebra">Start This Week's Homework</button>
+  </div>
   <div class="card"><h2>Algebra with Variables on Both Sides</h2><p>Solve equations with x on both sides. Every generated equation has a whole-number solution.</p><button class="btn" data-mode="algebra">Start Algebra</button></div>
   <div class="card"><h2>Cross-Cancellation in Fraction Multiplication</h2><p>Cross-cancel before multiplying. Fractions are displayed vertically using LaTeX.</p><button class="btn" data-mode="fractions">Start Fractions</button></div>
   <div class="card"><h2>Rearranging & Grouping</h2><p>Rearrange and group addition, subtraction and multiplication to make calculations easier.</p><button class="btn" data-mode="grouping">Start Grouping</button></div>
   <div class="card"><h2>Brackets & Removing Brackets</h2><p>Work with brackets, use the correct order, and practise removing brackets safely.</p><button class="btn" data-mode="brackets">Start Brackets</button></div>
   <div class="card"><h2>Basic Division of Fractions</h2><p>Use the basic rule: divide by a fraction by multiplying by its reciprocal.</p><button class="btn" data-mode="fractionDivision">Start Fraction Division</button></div>
-  <div class="card"><h2>Fraction Algebra: Solve & Balance</h2><p>Solve fraction equations with positive whole-number solutions. Send any question to the interactive balance, then submit your answers for marking.</p><button class="btn" data-mode="fractionAlgebra">Start Fraction Algebra</button></div>
+
 </div>
 </section>
 
