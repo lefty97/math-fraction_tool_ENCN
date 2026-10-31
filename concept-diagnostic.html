@@ -54,7 +54,7 @@ body.diagnostic-unlocked #accessGate{display:none!important}
 <p><strong>Four sections · 10–15 minutes each.</strong> Each section has four core investigations and one optional challenge. You may do one section per lesson. The 12-minute timer is optional and never submits or locks the assessment.</p>
 <p class="fine">Teacher rubric: <strong>2</strong> = independent, correct reasoning; <strong>1</strong> = partial reasoning or correct after prompting; <strong>0</strong> = not yet demonstrated. Record accuracy, explanations, models and transfer separately. Opening a hint is recorded. Responses are saved only in this browser; export your report to keep a copy.</p>
 <div class="action-row"><button class="btn" id="startBtn">Start Section 1</button><button class="btn secondary" id="showSummaryIntro">Teacher summary</button><button class="btn outline" id="clearBtnIntro">Clear this device's responses</button></div></section>
-<section id="sectionChooser" class="card no-print"><h2>Choose a short diagnostic section</h2><p class="lede">Complete the four sections in any order. The fifth question in each section is optional. Responses and teacher observations are saved locally.</p><div class="section-grid" id="sectionCards"></div></section>
+<section id="sectionChooser" class="card no-print"><div class="headrow"><h2>Choose a short diagnostic section</h2><button type="button" class="btn secondary" id="sendReportFromSections">📨 View &amp; send results</button></div><p class="lede">Complete the four sections in any order. The fifth question in each section is optional. Responses and teacher observations are saved locally.</p><div class="section-grid" id="sectionCards"></div></section>
 <section id="questionView" class="hidden">
 <div class="card no-print">
 <div class="action-row"><button class="btn outline" id="sectionHomeBtn">← Four sections</button><span class="tag" id="activeSectionTag">Section 1</span><strong id="progressText">Question 1 of 5</strong><span class="muted" id="recordedText"></span></div>
@@ -821,6 +821,14 @@ function buildDiagnosticEmail(name){
   lines.push(label+': '+assessed.filter(q=>!!(rec(q.id).evidence||{})[type]).length+'/'+assessed.length+
   ' graded questions explicitly ticked');
  }
+ lines.push('','=== UNDERSTANDING BY DOMAIN ===');
+ for(const d of domains){
+  const inDomain=chosen.filter(q=>q.domain===d.id);
+  if(!inDomain.length)continue;
+  const graded=inDomain.filter(observed),pts=graded.reduce((n,q)=>n+Number(rec(q.id).score),0);
+  lines.push(d.label+': '+graded.length+'/'+inDomain.length+' questions assessed; '+
+   pts+'/'+(graded.length*2)+' rubric points among graded tasks; '+domainStatus(graded,pts));
+ }
  lines.push('','=== ITEM-BY-ITEM OBSERVATIONS ===');
  for(const q of chosen){
   const r=rec(q.id),e=r.evidence||{};
@@ -839,7 +847,15 @@ function buildDiagnosticEmail(name){
    ''
   );
  }
- lines.push('=== INTERPRETATION NOTE ===',
+ lines.push('=== SUGGESTED NEXT TEACHING MOVES ===');
+ for(const d of domains){
+  const rated=chosen.filter(q=>q.domain===d.id&&observed(q));
+  if(!rated.length)continue;
+  const pts=rated.reduce((n,q)=>n+Number(rec(q.id).score),0);
+  if(rated.length>=2&&pts/(rated.length*2)<.8)lines.push(d.label+': '+d.next);
+ }
+ lines.push('These are formative prompts, not a diagnostic of a fixed ability level.');
+ lines.push('','=== INTERPRETATION NOTE ===',
   'Review student explanations, model use and novel transfer before deciding readiness for more abstract mathematics.',
   'An ungraded question was not marked incorrect. Numerical rubric totals apply only to teacher-rated questions.');
  return lines.join('\n');
@@ -891,6 +907,7 @@ function clearAll(){
  state=fresh();save();current=0;teacherOpen=false;clock.remaining=720;clock.section=0;clock.running=false;showSections();
 }
 $('startBtn').addEventListener('click',()=>startSection(1));
+$('sendReportFromSections').addEventListener('click',showSummary);
 $('sectionCards').addEventListener('click',e=>{let b=e.target.closest('[data-section]');if(b)startSection(Number(b.dataset.section));});
 $('sectionHomeBtn').addEventListener('click',showSections);
 $('finishSectionBtn').addEventListener('click',showSections);
