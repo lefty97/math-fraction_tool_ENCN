@@ -4,8 +4,37 @@
 <style>
 :root{font-family:Segoe UI,Arial,sans-serif;background:#f0f8ff;color:#273849;--blue:#2579af;--navy:#34495e;--line:#cddfea;--muted:#5b7080}*{box-sizing:border-box}body{margin:0;padding:0 16px 42px}a{color:#176ca5}.nav{background:var(--navy);max-width:1100px;margin:0 auto 24px;border-radius:0 0 12px 12px;padding:13px 16px;display:flex;flex-wrap:wrap;gap:12px;align-items:center}.nav a{color:white;text-decoration:none;padding:7px 10px;border-radius:7px}.nav a:hover{background:#526c83}main{max-width:1010px;margin:0 auto}h1{font-size:clamp(25px,4.5vw,39px);margin:0 0 7px}h2{font-size:23px;margin:0 0 12px}h3{font-size:18px;margin:7px 0}.lede{color:var(--muted);line-height:1.55;max-width:900px;margin:8px 0 18px}.card{background:#fff;border:1px solid #d8e5ed;border-radius:14px;box-shadow:0 3px 10px #2d53670d;padding:clamp(16px,3vw,28px);margin:14px 0}.intro{background:#f8fcff;border-left:5px solid #3c91bf}.intro p{line-height:1.55}.muted{color:var(--muted)}.fine{font-size:13px;color:var(--muted);line-height:1.45}.btn{cursor:pointer;border:0;border-radius:9px;padding:11px 15px;font-size:15px;font-weight:700;background:var(--blue);color:white}.btn.secondary{background:#e9f3f9;color:#254b64}.btn.outline{background:white;border:1px solid #b0c6d6;color:#34566c}.btn:disabled{cursor:default;opacity:.45}.btn:hover:not(:disabled){filter:brightness(.94)}.btn:focus-visible,.option:focus-visible,.jump:focus-visible{outline:3px solid #ecae39;outline-offset:2px}.action-row{display:flex;gap:9px;align-items:center;flex-wrap:wrap}.tag{display:inline-block;padding:5px 9px;border-radius:30px;background:#eaf4fc;color:#155780;font-weight:750;font-size:12px}.tag.extension{background:#f7ebd7;color:#87500c}.tag.hint{background:#fff1dc;color:#8a5012}.headrow{display:flex;align-items:center;gap:12px;justify-content:space-between;flex-wrap:wrap}.question-nav{display:flex;gap:6px;flex-wrap:wrap;margin:18px 0}.jump{background:white;border:1px solid #bfd5e2;border-radius:7px;min-width:36px;height:38px;color:#35516a;font-weight:750;cursor:pointer}.jump.current{color:white;background:#226f9f;border-color:#226f9f}.jump.scored:not(.current){background:#def1e7;border-color:#9acdb1}.jump.touched:not(.current){background:#fdf2d8;border-color:#e8cb85}.progress-wrap{height:9px;background:#dceaf1;border-radius:20px;overflow:hidden;margin:9px 0}.progress-fill{height:100%;background:#2f9463;transition:width .2s}.prompt{font-size:clamp(21px,3vw,28px);font-weight:700;line-height:1.55;background:#fff6e8;border:1px solid #f0d5aa;border-radius:12px;padding:20px;margin:18px 0}.frac{display:inline-flex;vertical-align:middle;flex-direction:column;align-items:center;line-height:1.1;min-width:29px;font-size:.9em;transform:translateY(.13em)}.frac b{display:block;border-bottom:2px solid currentColor;padding:0 5px 3px;font-weight:inherit}.frac i{display:block;padding:3px 5px 0;font-style:normal}.ask{font-weight:700;line-height:1.5;margin:16px 0 7px}.answer-grid{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:10px;margin:12px 0}.option{border:2px solid #c3d8e6;background:#fbfdff;padding:14px 10px;border-radius:10px;font-size:16px;cursor:pointer;text-align:left;min-height:58px}.option.selected{background:#dff0ff;border-color:#247db3;font-weight:750}.option .letter{font-weight:800;color:#2579af;margin-right:6px}.field{display:block;font-weight:700;margin:16px 0 6px}input[type=text],textarea{width:100%;border:1px solid #acc6d5;border-radius:9px;font:inherit;font-size:16px;padding:12px;background:white;color:inherit}textarea{min-height:102px;resize:vertical;line-height:1.5}.under{font-size:13px;color:var(--muted);margin-top:6px}.hint-box{background:#fff5df;border:1px solid #e9cb82;border-radius:9px;padding:12px 14px;line-height:1.5}.teacher{background:#f5f0fc;border:1px solid #d7c6ed;margin-top:24px;padding:0;border-radius:12px;overflow:hidden}.teacher summary{cursor:pointer;padding:15px 17px;font-weight:750;background:#eee3fc;color:#4c287b}.teacher-body{padding:16px 19px}.teacher p{line-height:1.5}.teacher-label{font-size:12px;text-transform:uppercase;letter-spacing:.05em;font-weight:850;color:#69448a;margin:16px 0 4px}.rubrics{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:8px}.rubric{border:2px solid #cfbce2;background:white;padding:12px;border-radius:9px;cursor:pointer;color:#48345b;font-weight:700;line-height:1.35}.rubric.selected{background:#e2d3f6;border-color:#7b4eb6}.report-grid{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:12px}.report-box{background:#f9fcfe;border:1px solid var(--line);padding:15px;border-radius:10px}.report-box p{margin:7px 0}.report-box progress{width:100%;accent-color:#32865d}.report-list{width:100%;border-collapse:collapse;font-size:14px}.report-list th,.report-list td{padding:10px 8px;border-bottom:1px solid #dce7ee;text-align:left;vertical-align:top}.message{margin-top:10px;color:#1b734b;font-size:14px;font-weight:700}.hidden{display:none!important}.numberline{margin:24px 0 14px;padding:16px;background:#f9fbfe;border-radius:12px}.numberline svg{width:100%;height:auto;display:block}.numberline input{width:100%;accent-color:#227dac}.marker-label{font-weight:750;text-align:center;color:#155780}.diagram{display:flex;align-items:center;justify-content:center;gap:25px;flex-wrap:wrap;margin:18px 0}.rect-grid{display:grid;gap:1px;background:#386e9b;border:2px solid #386e9b;border-radius:4px}.rect-grid span{background:#b7ddf4;width:24px;height:24px}.rect-label{text-align:center;font-size:13px;color:#466173;margin-bottom:6px}.bar-row{display:flex;align-items:center;gap:12px;margin:12px auto;max-width:500px}.bar-row label{min-width:110px;font-weight:700}.bar-dots{display:flex;gap:2px;flex:1}.bar-dots span{height:27px;flex:1;background:#dbe9f0;border-radius:3px}.bar-dots span.on{background:#66a6cd}.summary-note{background:#fff6dc;border-radius:9px;padding:12px 16px;line-height:1.5}.footer{margin-top:22px;font-size:12px;color:#6d8090}.steps{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:10px}.step{background:#edf6fb;border-radius:10px;padding:12px;line-height:1.5}.step strong{display:block}.opt-small{font-size:12px;font-weight:500}.guidance{border-left:4px solid #d29f41;padding-left:11px;margin:12px 0;line-height:1.5}
 @media(max-width:650px){.answer-grid,.report-grid,.rubrics,.steps{grid-template-columns:1fr}.rect-grid span{width:18px;height:18px}.prompt{padding:14px}.btn{width:100%}.action-row .btn{flex:1}.nav{margin-bottom:15px}.question-nav{justify-content:center}}@media print{.nav,.no-print,.question-nav,#questionView,.intro{display:none!important}body{background:white;padding:0}main{max-width:none}.card{box-shadow:none;border:0}#reportView{display:block!important}.report-box{break-inside:avoid}textarea{border:0}}
-</style></head><body>
-<nav class="nav"><a href="index.html">🍕 Fraction Explorer</a><a href="practice-challenges.html">📝 Practice Challenges</a><a href="fraction-algebra.html">⚖️ Balance Lab</a></nav>
+
+/* Teacher-controlled entry: client-side convenience gate, not secure authentication. */
+body.diagnostic-locked #protectedContent{display:none!important}
+body.diagnostic-unlocked #accessGate{display:none!important}
+#accessGate{display:flex;align-items:center;justify-content:center;min-height:min(85vh,700px);padding:20px}
+.access-card{background:white;border:1px solid #ccdfea;border-radius:16px;padding:clamp(22px,5vw,42px);width:min(100%,490px);box-shadow:0 8px 30px #335e7e1c;text-align:center}
+.access-card h1{font-size:clamp(25px,5vw,34px)}
+.access-card p{line-height:1.55;color:#536c7e}
+.access-card label{display:block;font-weight:750;margin:22px 0 8px}
+.access-card input{display:block;width:100%;max-width:240px;margin:auto;border:2px solid #adc6d7;border-radius:9px;padding:13px 15px;text-align:center;font-size:22px;letter-spacing:.1em}
+.access-card .btn{margin-top:15px;min-width:150px}
+#gateError{min-height:25px;color:#b32429!important;font-weight:700}
+.nav #lockDiagnostic{background:#53687c;color:white;font-size:14px;padding:7px 12px;margin-left:auto}
+@media print{#accessGate{display:none!important}}
+</style></head><body class="diagnostic-locked">
+<section id="accessGate" aria-labelledby="gateHeading">
+  <div class="access-card">
+    <div style="font-size:34px" aria-hidden="true">🔒</div>
+    <h1 id="gateHeading">Teacher Access Required</h1>
+    <p>This maths diagnostic is teacher-guided. Ask your teacher before starting the assessment.</p>
+    <form id="gateForm">
+      <label for="gateCode">Enter access code</label>
+      <input id="gateCode" type="password" inputmode="numeric" autocomplete="off" required aria-describedby="gateError">
+      <button class="btn" type="submit">Unlock assessment</button>
+      <p id="gateError" aria-live="polite"></p>
+    </form>
+    <p class="fine"><a href="practice-challenges.html">← Back to Practice Challenges</a></p>
+  </div>
+</section>
+<div id="protectedContent">
+<nav class="nav"><a href="index.html">🍕 Fraction Explorer</a><a href="practice-challenges.html">📝 Practice Challenges</a><a href="fraction-algebra.html">⚖️ Balance Lab</a><button class="btn" id="lockDiagnostic" type="button">🔒 Lock assessment</button></nav>
 <main>
 <header><h1>🔎 Maths Concept Diagnostic</h1><p class="lede">A teacher-guided assessment for a strong Year 4 student preparing for Year 5. The goal is to investigate mathematical understanding—not speed, memorized rules, or the number of calculations completed.</p></header>
 <section class="card intro no-print">
@@ -51,10 +80,35 @@
 <h3 style="margin-top:25px">Suggested next teaching moves</h3><div id="recommendations"></div>
 <div class="action-row no-print" style="margin-top:24px"><button class="btn outline" id="clearBtnReport">Clear this device's responses</button></div></div></section>
 <footer class="footer">Teacher-guided, locally saved diagnostic · Year 4 → Year 5 transition · Not a formal standardized test</footer></main>
+</div>
 <script>
 (function(){
 'use strict';
 var $=id=>document.getElementById(id);
+const gateSessionKey='benji-maths-concept-diagnostic-access-v1';
+function setAccess(isUnlocked){
+ document.body.classList.toggle('diagnostic-locked',!isUnlocked);
+ document.body.classList.toggle('diagnostic-unlocked',isUnlocked);
+ if(!isUnlocked)$('gateCode').value='';
+}
+try{if(sessionStorage.getItem(gateSessionKey)==='yes')setAccess(true);}catch(e){}
+$('gateForm').addEventListener('submit',e=>{
+ e.preventDefault();
+ if($('gateCode').value.trim()==='123'){
+   try{sessionStorage.setItem(gateSessionKey,'yes');}catch(e){}
+   $('gateError').textContent='';
+   setAccess(true);
+ }else{
+   $('gateError').textContent='Incorrect access code. Please ask your teacher.';
+   $('gateCode').value='';
+   $('gateCode').focus();
+ }
+});
+$('lockDiagnostic').addEventListener('click',()=>{
+ try{sessionStorage.removeItem(gateSessionKey);}catch(e){}
+ setAccess(false);
+ $('gateCode').focus();
+});
 function frac(n,d){return '<span class="frac" aria-label="'+n+' over '+d+'"><b>'+n+'</b><i>'+d+'</i></span>';}
 function esc(s){return String(s==null?'':s).replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));}
 var domains=[
