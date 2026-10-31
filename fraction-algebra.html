@@ -112,7 +112,7 @@ function render(){
    ops.push({type:'div',r:f(state.a.n)},{type:'mul',r:f(state.a.n)});
  }
  $('controls').innerHTML='';
- ops.forEach(op=>{let b=document.createElement('button');b.className='op';b.type='button';b.innerHTML=(op.type==='add'?(op.r.n<0?'− ':'+ ')+absVal(op.r):(op.type==='div'?'÷ ':'× ')+val(op.r));b.disabled=steps.length>=12||solved()||unsimplified.length>0;b.addEventListener('click',()=>move(op));});
+ ops.forEach(op=>{let b=document.createElement('button');b.className='op';b.type='button';b.innerHTML=(op.type==='add'?(op.r.n<0?'− ':'+ ')+absVal(op.r):(op.type==='div'?'÷ ':'× ')+val(op.r));b.disabled=steps.length>=12||solved()||unsimplified.length>0;b.addEventListener('click',()=>move(op));$('controls').appendChild(b);});
 }
 function solved(){return equal(state.a,one)&&equal(state.b,zero)&&pending().length===0}
 function notify(msg){$('message').textContent=msg}
