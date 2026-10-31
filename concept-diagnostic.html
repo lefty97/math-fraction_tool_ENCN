@@ -196,14 +196,14 @@ misconception:'Adds 2 to $6 simply because the number of pens increases from 3 t
 transfer:'At the same price, how much should 8 pens cost? Explain without counting each pen.',
 hint:'Find the price of one pen before finding the cost of five.'},
 {id:7,domain:'algebra',title:'Balance an equation in two clear steps',kind:'balance',
-prompt:'Solve '+frac('3x',4)+' = '+frac(15,2)+'. Use the same operation on both sides of the equation.',
+prompt:'Solve '+frac('2x',3)+' = '+frac(14,3)+'. Use the same operation on both sides of the equation.',
 ask:'Write the value of x. Explain your first operation and your second operation.',
 placeholder:'x = ...',
-expected:'x = 10. Multiply both sides by 4: 3x = 30. Then divide both sides by 3: x = 10. Substitution checks: 3 × 10 / 4 = 30/4 = 15/2.',
-listen:'States why multiplying by 4 removes the denominator and why dividing by 3 isolates x, including “both sides.”',
-misconception:'Multiplies only one side, jumps directly to a complex reciprocal, or confuses 3x/4 with (3 + x)/4.',
+expected:'x = 7. Multiply both sides by 3: 2x = 42/3, simplify the right side to get 2x = 14, then divide both sides by 2: x = 14/2 = 7. Substitute: 2 × 7 / 3 = 14/3.',
+listen:'Explains why multiplying by 3 removes the denominator and dividing by 2 isolates x; includes both sides of the balance.',
+misconception:'Changes only one side, or jumps to multiplying by 3/2 without understanding the separate steps ×3 and ÷2.',
 transfer:'If 2x/5 = 8, which operation would you use first? Why?',
-hint:'First remove the 4 below 3x by doing the same multiplication on both sides.'},
+hint:'First clear the denominator below 2x by doing the same whole-number multiplication on both sides.'},
 {id:8,domain:'algebra',title:'Spot the unbalanced move',kind:'choice',
 prompt:'Raj starts with '+frac('x',5)+' + 2 = 6. He subtracts 2 only on the LEFT side and writes '+frac('x',5)+' = 6. Is his new equation balanced?',
 ask:'Choose your judgment. Explain what Raj should do, then solve for x.',
@@ -337,7 +337,13 @@ try{let saved=JSON.parse(localStorage.getItem(key)||'null');if(saved&&saved.vers
 function rec(id){if(!state.answers[id])state.answers[id]={answer:'',reasoning:'',note:'',score:null,hint:false,evidence:{},actions:[]};return state.answers[id];}
 function save(){try{localStorage.setItem(key,JSON.stringify(state));}catch(e){}}
 function hasAnswer(r){return String(r.answer||'').trim().length>0||String(r.reasoning||'').trim().length>0;}
-function selected(q,r){return q.options? (r.answer===''?'Not answered':q.options[Number(r.answer)]||'Not answered'):q.kind==='numberline'?r.answer===''?'Not answered': Number(r.answer)===4?'1':Number(r.answer)===0?'0':Number(r.answer)===8?'2':Number(r.answer)+'/4':r.answer||'Not answered';}
+function selected(q,r){
+ if(r.answer==='')return 'Not answered';
+ if(q.kind==='choice')return q.options[Number(r.answer)]||'Not answered';
+ if(q.kind==='numberline')return Number(r.answer)===4?'1':Number(r.answer)===0?'0':Number(r.answer)===8?'2':String(r.answer)+'/4';
+ if(q.kind==='decimalLine')return (0.5+Number(r.answer)/100).toFixed(2);
+ return String(r.answer);
+}
 function lineGraphic(){
 let svg='<div class="numberline"><svg viewBox="0 0 630 105" role="img" aria-label="Number line from zero to two with quarter marks"><line x1="30" y1="53" x2="600" y2="53" stroke="#4a768e" stroke-width="4"/><path d="M600 53 l-12 -7 v14 z" fill="#4a768e"/>';
 for(let i=0;i<=8;i++){let x=40+68*i;svg+='<line x1="'+x+'" y1="'+(i%4===0?33:42)+'" x2="'+x+'" y2="66" stroke="#33556b" stroke-width="2"/>';if(i%4===0)svg+='<text x="'+x+'" y="91" text-anchor="middle" font-size="22" fill="#273849">'+(i/4)+'</text>';}
@@ -621,7 +627,7 @@ function teacherSummary(){
  lines.push('DOMAIN EVIDENCE');
  for(let d of domains){
   let qs=items.filter(q=>q.domain===d.id),graded=qs.filter(observed),points=graded.reduce((v,q)=>v+Number(rec(q.id).score),0);
-  lines.push(d.label+': '+graded.length+'/'+qs.length+' observed; '+points+'/'+graded.length*2+' points — '+domainStatus(graded,points));
+  lines.push(d.label+': '+graded.length+'/'+qs.length+' observed; '+points+'/'+(graded.length*2)+' points — '+domainStatus(graded,points));
  }
  lines.push('','FOUR EVIDENCE DIMENSIONS (teacher-checked observations only)');
  let graded=items.filter(observed),labels=evidenceLabels();
