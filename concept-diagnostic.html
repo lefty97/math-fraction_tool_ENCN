@@ -597,25 +597,86 @@ function renderQuestion(){
 }
 function updateLineDisplay(raw){let n=Number(raw);if(!Number.isInteger(n)||n<0||n>8)return;let label=n===0?'0':n===4?'1':n===8?'2':n%4===0?String(n/4):n+'/4';$('lineLabel').textContent='Selected position: '+label;let dot=$('lineDot');dot.setAttribute('cx',String(40+68*n));dot.style.display='block';}
 function go(i){if(i<0||i>=items.length){showSummary();return;}current=i;teacherOpen=false;renderQuestion();}
-function teacherSummary(){
-let lines=['Maths Concept Diagnostic — Teacher Summary','Informal, teacher-guided assessment; no age-standardized score','Completed: '+new Date().toLocaleString(),'','Scores: 2 = independent reasoning; 1 = partial/prompted; 0 = not yet demonstrated; — = unobserved',''];
-for(let d of domains){let qs=items.filter(q=>q.domain===d.id),graded=qs.filter(q=>rec(q.id).score!==null),points=graded.reduce((v,q)=>v+Number(rec(q.id).score),0);lines.push(d.label+': '+points+'/'+(graded.length*2)+' points, '+graded.length+'/'+qs.length+' assessed. '+domainStatus(graded,points));}
-lines.push('','QUESTION EVIDENCE');
-for(let q of items){let r=rec(q.id);lines.push('#'+q.id+' '+q.title+' ['+(q.extension?'Extension':'Core')+']','Answer: '+selected(q,r),'Reasoning: '+(r.reasoning||'—'),'Teacher notes: '+(r.note||'—'),'Score: '+(r.score===null?'Not assessed':r.score+'/2')+'; Hint opened: '+(r.hint?'Yes':'No'),'');}
-lines.push('NEXT STEPS');
-for(let d of domains){let graded=items.filter(q=>q.domain===d.id&&rec(q.id).score!==null),points=graded.reduce((v,q)=>v+Number(rec(q.id).score),0);if(graded.length>=2&&points/(graded.length*2)<.8)lines.push('- '+d.label+': '+d.next);}
-lines.push('','Data entered on this browser only. Review the observed explanations before making teaching decisions.');return lines.join('\n');
+
+function domainStatus(graded,points){
+ if(graded.length<2)return 'Limited evidence';
+ let ratio=points/(graded.length*2);
+ return ratio>=.8?'Promising independent understanding':ratio>=.5?'Developing understanding':'Priority for review';
 }
-function domainStatus(graded,points){if(graded.length<2)return 'Insufficient evidence';let ratio=points/(graded.length*2);return ratio>=.8?'Strong evidence':ratio>=.5?'Developing understanding':'Priority for review';}
+function observed(q){return rec(q.id).score!==null;}
+function sectionStats(sec){
+ const all=items.filter(q=>q.section===sec.id),graded=all.filter(observed),core=all.filter(q=>!q.extension&&observed(q)),points=graded.reduce((n,q)=>n+Number(rec(q.id).score),0);
+ return {all,graded,core,points,max:graded.length*2};
+}
+function evidenceLabels(){return {accuracy:'Accurate result',explanation:'Sound explanation',representation:'Meaningful model',transfer:'Transferred to follow-up'};}
+function teacherSummary(){
+ let lines=['Maths Concept Diagnostic — Four-Section Teacher Summary','Formative, teacher-guided; NOT a standardized assessment or Year-level determination',
+ 'Exported: '+new Date().toLocaleString(),'Each section has 4 core questions and 1 optional challenge. Suggested 10–15 minutes per section.',
+ 'Rubric: 2 = independent and well reasoned; 1 = partial/prompted; 0 = not yet demonstrated; blank = not observed.',''];
+ for(let sec of sections){
+  let t=sectionStats(sec);lines.push('SECTION '+sec.id+' — '+sec.title+': '+t.core.length+'/4 core observed; '+
+  t.graded.length+'/5 total observed; '+t.points+'/'+t.max+' recorded rubric points.',
+  'Diagnostic focus: '+sec.goal,'');
+ }
+ lines.push('DOMAIN EVIDENCE');
+ for(let d of domains){
+  let qs=items.filter(q=>q.domain===d.id),graded=qs.filter(observed),points=graded.reduce((v,q)=>v+Number(rec(q.id).score),0);
+  lines.push(d.label+': '+graded.length+'/'+qs.length+' observed; '+points+'/'+graded.length*2+' points — '+domainStatus(graded,points));
+ }
+ lines.push('','FOUR EVIDENCE DIMENSIONS (teacher-checked observations only)');
+ let graded=items.filter(observed),labels=evidenceLabels();
+ for(let k of Object.keys(labels))lines.push(labels[k]+': '+graded.filter(q=>!!(rec(q.id).evidence||{})[k]).length+'/'+graded.length+' assessed items checked');
+ lines.push('','ITEM NOTES');
+ for(let q of items){
+  let r=rec(q.id),signs=Object.keys(labels).filter(k=>(r.evidence||{})[k]).map(k=>labels[k]);
+  lines.push('Section '+q.section+' / #'+q.id+' '+q.title+(q.extension?' [optional]':''),
+  'Student answer/model: '+selected(q,r),'Explanation: '+(r.reasoning||'—'),'Teacher: '+(r.note||'—'),
+  'Rubric: '+(r.score===null?'Not assessed':r.score+'/2')+'; Hint used: '+(r.hint?'Yes':'No'),
+  'Evidence checked: '+(signs.join('; ')||'None recorded'),'Interactive actions: '+((r.actions||[]).join(' → ')||'—'),'');
+ }
+ lines.push('NEXT STEPS');
+ for(let sec of sections){let t=sectionStats(sec);if(t.core.length<3)lines.push('Section '+sec.id+': insufficient core observations; assess more tasks before inferring readiness.');else if(t.points/t.max<.75)lines.push('Section '+sec.id+': '+sec.goal);}
+ lines.push('A blank observation is not a wrong answer. Check student explanations and context before planning instruction.',
+ 'Data stays on this device unless exported.');return lines.join('\n');
+}
 function showSummary(){
-view='report';$('questionView').classList.add('hidden');$('reportView').classList.remove('hidden');
-let gradedAll=items.filter(q=>rec(q.id).score!==null);let coreGraded=items.filter(q=>!q.extension&&rec(q.id).score!==null).length;let extended=items.filter(q=>q.extension&&rec(q.id).score!==null).length;
-$('reportOverview').innerHTML='<div class="summary-note"><strong>'+coreGraded+'/10 core</strong> and <strong>'+extended+'/5 extension</strong> questions assessed. '+gradedAll.length+' teacher observations in total. <strong>Do not interpret missing grades as wrong answers.</strong> Look at student explanations and prompted responses before selecting the next lesson.</div>';
-$('reportDomains').innerHTML=domains.map(d=>{let qs=items.filter(q=>q.domain===d.id),done=qs.filter(q=>rec(q.id).score!==null),pts=done.reduce((n,q)=>n+Number(rec(q.id).score),0),percent=done.length?Math.round(pts/(2*done.length)*100):0,tag=domainStatus(done,pts);return '<div class="report-box"><h3>'+esc(d.label)+'</h3><p><strong>'+pts+' / '+(2*done.length)+'</strong> observed points · '+done.length+'/3 questions assessed</p><progress max="100" value="'+percent+'"></progress><p>'+tag+'</p><p class="fine">'+(done.length<2?'Assess at least two questions in this domain before making an inference.':tag==='Strong evidence'?'Continue with varied transfer problems, and check the reasoning remains independent.':esc(d.next))+'</p></div>';}).join('');
-$('reportRows').innerHTML=items.map(q=>{let r=rec(q.id);return '<tr><td><strong>#'+q.id+'</strong> '+esc(q.title)+'<div class="fine">'+(q.extension?'Extension':'Core')+' · '+esc(domains.find(d=>d.id===q.domain).label)+'</div></td><td>'+esc(selected(q,r))+'</td><td><strong>Student:</strong> '+esc(r.reasoning||'—')+'<br><strong>Teacher:</strong> '+esc(r.note||'—')+'</td><td>'+(r.score===null?'—':r.score+'/2')+(r.hint?'<br><span class="tag hint">Hint used</span>':'')+'</td></tr>';}).join('');
-let suggest=domains.map(d=>{let done=items.filter(q=>q.domain===d.id&&rec(q.id).score!==null),pts=done.reduce((n,q)=>n+Number(rec(q.id).score),0),s=domainStatus(done,pts);return s==='Strong evidence'?'':s==='Insufficient evidence'?'<p>• <strong>'+esc(d.label)+':</strong> Collect one more independent explanation before judging.</p>':'<p>• <strong>'+esc(d.label)+':</strong> '+esc(d.next)+'</p>';}).filter(Boolean);
-$('recommendations').innerHTML=suggest.length?suggest.join(''):'<p>All assessed domains have strong evidence. Try unfamiliar transfer tasks before moving to harder symbolic algebra.</p>';
-$('reportView').scrollIntoView({block:'start',behavior:'instant'});
+ view='report';pauseClock();
+ $('introPanel').classList.add('hidden');$('sectionChooser').classList.add('hidden');
+ $('questionView').classList.add('hidden');$('reportView').classList.remove('hidden');
+ let assessed=items.filter(observed),core=items.filter(q=>!q.extension&&observed(q)).length,optional=items.filter(q=>q.extension&&observed(q)).length;
+ $('reportOverview').innerHTML='<div class="summary-note"><strong>'+core+'/16 core</strong> and <strong>'+optional+'/4 optional</strong> questions assessed, across four independently paced sections. Unassessed questions are NOT incorrect answers. This is an informal diagnostic; it does not provide a standardized Year level.</div>';
+ $('sectionReports').innerHTML=sections.map(sec=>{
+  let t=sectionStats(sec),status=domainStatus(t.graded,t.points);
+  return '<div class="report-box"><h3>Section '+sec.id+' · '+esc(sec.title)+'</h3>'+
+   '<p><strong>'+t.core.length+'/4</strong> core assessed'+(t.graded.some(q=>q.extension)?' · Optional assessed':'')+'</p>'+
+   '<p>'+t.points+'/'+t.max+' observed rubric points · '+status+'</p>'+
+   '<p class="fine">'+esc(sec.goal)+'</p></div>';
+ }).join('');
+ let keys=evidenceLabels(),all=items.filter(observed);
+ $('reportSignals').innerHTML='<p class="fine">These counts reflect only explicitly ticked evidence among teacher-assessed questions. An unchecked box does not necessarily mean a failure.</p>'+
+ '<div class="report-grid">'+Object.keys(keys).map(k=>{
+  let n=all.filter(q=>!!(rec(q.id).evidence||{})[k]).length;
+  return '<div class="report-box"><strong>'+esc(keys[k])+'</strong><p>'+n+' of '+all.length+' assessed questions explicitly observed</p></div>';
+ }).join('')+'</div>';
+ $('reportDomains').innerHTML=domains.map(d=>{
+  let qs=items.filter(q=>q.domain===d.id),done=qs.filter(observed),pts=done.reduce((n,q)=>n+Number(rec(q.id).score),0),pct=done.length?Math.round(pts/(2*done.length)*100):0,tag=domainStatus(done,pts);
+  return '<div class="report-box"><h3>'+esc(d.label)+'</h3><p><strong>'+pts+' / '+(2*done.length)+'</strong> observed points · '+done.length+'/'+qs.length+' tasks assessed</p>'+
+   '<progress max="100" value="'+pct+'"></progress><p>'+tag+'</p><p class="fine">'+(done.length<2?'Only a small sample: do not infer that the entire domain is mastered.':tag==='Promising independent understanding'?'Try a novel representation or unfamiliar question to confirm transfer.':esc(d.next))+'</p></div>';
+ }).join('');
+ $('reportRows').innerHTML=items.map(q=>{
+  let r=rec(q.id),signs=Object.keys(keys).filter(k=>(r.evidence||{})[k]).map(k=>keys[k]);
+  return '<tr><td><strong>S'+q.section+' · #'+q.id+'</strong> '+esc(q.title)+'<div class="fine">'+(q.extension?'Optional':'Core')+' · '+esc(domains.find(d=>d.id===q.domain).label)+'</div></td>'+
+  '<td>'+esc(selected(q,r))+'</td>'+
+  '<td><strong>Student:</strong> '+esc(r.reasoning||'—')+'<br><strong>Teacher:</strong> '+esc(r.note||'—')+
+  '<br><span class="fine">Interactive actions: '+esc((r.actions||[]).join(' → ')||'—')+'</span></td>'+
+  '<td>'+(r.score===null?'—':r.score+'/2')+(r.hint?'<br><span class="tag hint">Hint used</span>':'')+
+  '<div class="fine">'+esc(signs.join('; ')||'No evidence boxes checked')+'</div></td></tr>';
+ }).join('');
+ let suggest=[];
+ for(let sec of sections){let t=sectionStats(sec);if(t.core.length<3)suggest.push('<p>• <strong>Section '+sec.id+':</strong> Collect more independent core explanations before drawing conclusions.</p>');else if(t.points/t.max<.75)suggest.push('<p>• <strong>Section '+sec.id+':</strong> '+esc(sec.goal)+'</p>');}
+ for(let d of domains){let done=items.filter(q=>q.domain===d.id&&observed(q)),pts=done.reduce((n,q)=>n+Number(rec(q.id).score),0);if(done.length>=2&&pts/(2*done.length)<.75)suggest.push('<p>• <strong>'+esc(d.label)+':</strong> '+esc(d.next)+'</p>');}
+ $('recommendations').innerHTML=suggest.length?suggest.join(''):'<p>The assessed tasks show promising understanding. Explore unfamiliar representations and ask for counterexamples before introducing harder symbolic procedures.</p>';
+ $('reportView').scrollIntoView({block:'start',behavior:'instant'});
 }
 function download(filename,text,mime){let blob=new Blob([text],{type:mime||'text/plain;charset=utf-8'}),url=URL.createObjectURL(blob),a=document.createElement('a');a.href=url;a.download=filename;document.body.appendChild(a);a.click();a.remove();setTimeout(()=>URL.revokeObjectURL(url),2000);}
 function csvCell(s){return '"'+String(s===undefined||s===null?'':s).replace(/"/g,'""')+'"';}
