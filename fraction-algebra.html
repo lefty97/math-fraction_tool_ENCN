@@ -46,7 +46,7 @@ const ri=(a,b)=>Math.floor(Math.random()*(b-a+1))+a;
 const rawAdd=(a,b)=>{const d=a.d/gcd(a.d,b.d)*b.d;return {n:a.n*(d/a.d)+b.n*(d/b.d),d}};
 const rawMul=(a,b)=>({n:a.n*b.n,d:a.d*b.d});
 const reducible=r=>r.n!==0&&r.d>1&&gcd(r.n,r.d)>1;
-const pending=()=>['a','b','c'].filter(k=>reducible(state[k]));
+const pending=()=>reducible(state.c)?['c']:[];
 let workingLine='';
 const fraction=(r,part,isX=false)=>{
  if(r.d===1)return isX?(Math.abs(r.n)===1?'x':Math.abs(r.n)+'x'):String(Math.abs(r.n));
@@ -56,7 +56,7 @@ const fraction=(r,part,isX=false)=>{
 const val=(r,part)=>(r.n<0?'−':'')+fraction({...r,n:Math.abs(r.n)},part);
 const absVal=(r,part)=>val({...r,n:Math.abs(r.n)},part);
 const coef=(r,part)=>r.d===1?(r.n===1?'x':r.n===-1?'−x':r.n+'x'):(r.n<0?'−':'')+fraction({...r,n:Math.abs(r.n)},part,true);
-const equation=s=>coef(s.a,'a')+(s.b.n===0?'':(s.b.n<0?' − ':' + ')+absVal(s.b,'b'))+' = '+val(s.c,'c');
+const equation=s=>coef(s.a)+(s.b.n===0?'':(s.b.n<0?' − ':' + ')+absVal(s.b))+' = '+val(s.c,'c');
 const key=q=>[q.a.n,q.a.d,q.b.n,q.b.d,q.c.n,q.c.d].join(':');
 function create(){
  const fixed=fixedQuestion();
@@ -94,7 +94,7 @@ function tile(label,r,x=false){
 }
 function render(){
  $('equation').innerHTML=equation(state);
- $('left').innerHTML=(state.a.n?tile(coef(state.a,'a'),state.a,true):'')+(state.b.n?tile((state.b.n<0?'− ':'+ ')+absVal(state.b,'b'),state.b):'')||tile('0',zero);
+ $('left').innerHTML=(state.a.n?tile(coef(state.a),state.a,true):'')+(state.b.n?tile((state.b.n<0?'− ':'+ ')+absVal(state.b),state.b):'')||tile('0',zero);
  $('right').innerHTML=tile(val(state.c,'c'),state.c);
  const unsimplified=pending();
  $('simplify-note').textContent=unsimplified.length?'👆 Tap the highlighted fraction to simplify before your next move.':'';
@@ -113,7 +113,7 @@ function move(op){
  if(pending().length)return notify('Tap the highlighted fraction to simplify before another balance move.');
  if(steps.length>=12)return notify('Use Undo or Reset to try a shorter approach.');
  const before=state.c;
- const next=op.type==='add'?{a:state.a,b:rawAdd(state.b,op.r),c:rawAdd(state.c,op.r)}:{a:rawMul(state.a,op.r),b:rawMul(state.b,op.r),c:rawMul(state.c,op.r)};
+ const next=op.type==='add'?{a:state.a,b:f(...Object.values(rawAdd(state.b,op.r))),c:rawAdd(state.c,op.r)}:{a:mul(state.a,op.r),b:mul(state.b,op.r),c:rawMul(state.c,op.r)};
  if([next.a,next.b,next.c].some(v=>Math.abs(v.n)>100000||v.d>100000))return notify('Those numbers are too large. Try a simpler operation.');
  const label=(op.type==='add'?(op.r.n<0?'− ':'+ '):'× ')+(Math.abs(op.r.n)+'/'+op.r.d);
  steps.push({prev:state,label,prevLine:workingLine});state=next;
@@ -123,12 +123,12 @@ function move(op){
    const denom=before.d/gcd(before.d,op.r.d)*op.r.d;
    const first=before.n*(denom/before.d),second=op.r.n*(denom/op.r.d);
    workingLine='Right side: '+simpleText(before)+' '+(op.r.n<0?'−':' + ')+' '+simpleText({...op.r,n:Math.abs(op.r.n)})+' = ('+first+(second<0?' − ':' + ')+Math.abs(second)+')/'+denom+' = '+simpleText(next.c);
- }else workingLine='Both sides multiplied by '+simpleText(op.r)+'. Keep the products visible, then simplify.';
+ }else workingLine='Both sides multiplied by '+simpleText(op.r)+'. The x-side is simplified automatically; simplify the number on the right if needed.';
  notify(pending().length?'The calculation is complete. Now tap the highlighted fraction to simplify it.':solved()?'Great! x is isolated. Enter its value and check it.':state.b.n===0?'The extra number is gone. How do we make the coefficient of x equal to 1?':'Still balanced. Did your move bring x closer to being isolated?');
  render();
 }
 function simplifyPart(part){
-  if(!['a','b','c'].includes(part)||!reducible(state[part]))return;
+  if(part!=='c'||!reducible(state.c))return;
   const before=state[part],after=f(before.n,before.d);
   steps.push({prev:state,label:'simplify '+before.n+'/'+before.d+' → '+after.n+'/'+after.d,prevLine:workingLine});
   state={...state,[part]:after};
@@ -137,7 +137,7 @@ function simplifyPart(part){
   notify(pending().length?'Good! Simplify the other highlighted fraction.':solved()?'Great! x is isolated. Enter its value and check it.':'Well done! Choose your next balance move.');
   render();
  }
- ['equation','left','right'].forEach(id=>$(id).addEventListener('click',e=>{const target=e.target.closest('[data-simplify]');if(target&&$(id).contains(target))simplifyPart(target.dataset.simplify)}));
+ ['equation','right'].forEach(id=>$(id).addEventListener('click',e=>{const target=e.target.closest('[data-simplify]');if(target&&$(id).contains(target))simplifyPart(target.dataset.simplify)}));
  if(!embedded)$('new').addEventListener('click',create);
 if(!embedded)$('difficulty').addEventListener('change',create);
 $('reset').addEventListener('click',()=>{reportPracticeActivity('reset');state={...initial};steps=[];workingLine='';$('answer').value='';notify('Reset. Try a different strategy.');render()});
