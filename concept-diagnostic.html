@@ -347,7 +347,7 @@ function selected(q,r){
 function lineGraphic(){
 let svg='<div class="numberline"><svg viewBox="0 0 630 105" role="img" aria-label="Number line from zero to two with quarter marks"><line x1="30" y1="53" x2="600" y2="53" stroke="#4a768e" stroke-width="4"/><path d="M600 53 l-12 -7 v14 z" fill="#4a768e"/>';
 for(let i=0;i<=8;i++){let x=40+68*i;svg+='<line x1="'+x+'" y1="'+(i%4===0?33:42)+'" x2="'+x+'" y2="66" stroke="#33556b" stroke-width="2"/>';if(i%4===0)svg+='<text x="'+x+'" y="91" text-anchor="middle" font-size="22" fill="#273849">'+(i/4)+'</text>';}
-svg+='<circle id="lineDot" cx="0" cy="53" r="9" fill="#db6b2e" style="display:none"/></svg><label class="field" for="lineSlider">Drag or tap to place the point</label><input id="lineSlider" type="range" min="0" max="8" step="1" value="4" aria-label="Position on number line"><div class="marker-label" id="lineLabel">Move the slider to choose a position</div></div>';
+svg+='<circle id="lineDot" cx="0" cy="53" r="9" fill="#db6b2e" style="display:none"/></svg><label class="field" for="lineSlider">Drag or tap to place the point</label><input id="lineSlider" type="range" min="0" max="8" step="1" value="0" aria-label="Move marker to a position on the number line"><div class="marker-label" id="lineLabel">Move the slider to choose a position</div></div>';
 return svg;
 }
 function rectangles(){
@@ -438,7 +438,7 @@ function decimalLineHTML(r){
  '<line x1="40" y1="53" x2="590" y2="53" stroke="#42738d" stroke-width="3"/>'+ticks+
  '<circle id="decimalDot" cx="0" cy="53" r="9" fill="#de7730" style="display:none"/></svg>'+
  '<label class="field" for="decimalSlider">Move the marker in hundredths</label>'+
- '<input id="decimalSlider" type="range" min="0" max="10" step="1" value="'+(r.answer===''?5:esc(r.answer))+'">'+
+ '<input id="decimalSlider" type="range" min="0" max="10" step="1" value="'+(r.answer===''?0:esc(r.answer))+'">'+
  '<div class="marker-label" id="decimalLabel">Move the slider to select a position</div></div>';
 }
 function chartHTML(r){
@@ -464,7 +464,7 @@ function probabilityHTML(r){
 }
 function updateDecimalDisplay(raw){
  let n=Number(raw);if(!Number.isInteger(n)||n<0||n>10)return;
- $('decimalLabel').textContent='Selected point: '+(0.5+n/100).toFixed(2);
+ $('decimalLabel').textContent='Point placed. Explain why it belongs here.';
  $('decimalDot').setAttribute('cx',String(40+n*54));$('decimalDot').style.display='block';
 }
 function rerenderWidget(){
@@ -617,7 +617,14 @@ function renderQuestion(){
  $('coreTransition').textContent=pos===3?'Four core questions complete. The fifth question is optional; you can finish this section now.':q.extension?'Optional challenge: stop here if the student is tired.':'';
  $('questionView').scrollIntoView({block:'start',behavior:'instant'});
 }
-function updateLineDisplay(raw){let n=Number(raw);if(!Number.isInteger(n)||n<0||n>8)return;let label=n===0?'0':n===4?'1':n===8?'2':n%4===0?String(n/4):n+'/4';$('lineLabel').textContent='Selected position: '+label;let dot=$('lineDot');dot.setAttribute('cx',String(40+68*n));dot.style.display='block';}
+function updateLineDisplay(raw){
+ let n=Number(raw);
+ if(!Number.isInteger(n)||n<0||n>8)return;
+ // In a diagnostic, displaying the exact value lets the learner match the target
+ // without reasoning about the number line. Only show the marker and an neutral prompt.
+ $('lineLabel').textContent='Point placed. Explain why you chose this position.';
+ let dot=$('lineDot');dot.setAttribute('cx',String(40+68*n));dot.style.display='block';
+}
 function go(i){if(i<0||i>=items.length){showSummary();return;}current=i;teacherOpen=false;renderQuestion();}
 
 function domainStatus(graded,points){
