@@ -21,8 +21,9 @@ let initial,state,solution,steps=[],previous=new Set();
 const ri=(a,b)=>Math.floor(Math.random()*(b-a+1))+a;
 const fraction=r=>r.d===1?String(r.n):'<span class="frac"><span>'+Math.abs(r.n)+'</span><span>'+r.d+'</span></span>';
 const val=r=>(r.n<0?'−':'')+fraction({...r,n:Math.abs(r.n)});
+const absVal=r=>val({...r,n:Math.abs(r.n)});
 const coef=r=>r.d===1?(r.n===1?'x':r.n===-1?'−x':r.n+'x'):(r.n<0?'−':'')+'<span class="frac"><span>'+(Math.abs(r.n)===1?'x':Math.abs(r.n)+'x')+'</span><span>'+r.d+'</span></span>';
-const equation=s=>coef(s.a)+(s.b.n===0?'':(s.b.n<0?' − ':' + ')+val(s.b))+' = '+val(s.c);
+const equation=s=>coef(s.a)+(s.b.n===0?'':(s.b.n<0?' − ':' + ')+absVal(s.b))+' = '+val(s.c);
 const key=q=>[q.a.n,q.a.d,q.b.n,q.b.d,q.c.n,q.c.d].join(':');
 function create(){
  const mode=$('difficulty').value;let q,x;
@@ -55,7 +56,7 @@ function tile(label,r,x=false){
 }
 function render(){
  $('equation').innerHTML=equation(state);
- $('left').innerHTML=(state.a.n?tile(coef(state.a),state.a,true):'')+(state.b.n?tile((state.b.n<0?'− ':'+ ')+val(state.b),state.b):'')||tile('0',zero);
+ $('left').innerHTML=(state.a.n?tile(coef(state.a),state.a,true):'')+(state.b.n?tile((state.b.n<0?'− ':'+ ')+absVal(state.b),state.b):'')||tile('0',zero);
  $('right').innerHTML=tile(val(state.c),state.c);
  $('history').textContent=steps.length?'Moves: '+steps.map(s=>s.label).join(' → '):'No moves yet.';
  $('undo').disabled=!steps.length;
@@ -63,14 +64,14 @@ function render(){
  else{ops.push({type:'add',r:f(1,2)});ops.push({type:'add',r:f(-1,2)});}
  if(state.a.n!==0){ops.push({type:'mul',r:rec(state.a)});ops.push({type:'mul',r:state.a});}
  $('controls').innerHTML='';
- ops.forEach(op=>{let b=document.createElement('button');b.className='op';b.type='button';b.innerHTML=(op.type==='add'?(op.r.n<0?'− ':'+ ')+val(op.r):'× '+val(op.r));b.disabled=steps.length>=8||solved();b.addEventListener('click',()=>move(op));$('controls').appendChild(b);});
+ ops.forEach(op=>{let b=document.createElement('button');b.className='op';b.type='button';b.innerHTML=(op.type==='add'?(op.r.n<0?'− ':'+ ')+absVal(op.r):'× '+val(op.r));b.disabled=steps.length>=8||solved();b.addEventListener('click',()=>move(op));$('controls').appendChild(b);});
 }
 function solved(){return equal(state.a,one)&&equal(state.b,zero)}
 function notify(msg){$('message').textContent=msg}
 function move(op){
  const next=op.type==='add'?{a:state.a,b:add(state.b,op.r),c:add(state.c,op.r)}:{a:mul(state.a,op.r),b:mul(state.b,op.r),c:mul(state.c,op.r)};
  if([next.a,next.b,next.c].some(v=>Math.abs(v.n)>100000||v.d>100000))return notify('Those numbers are too large. Try a simpler operation.');
- const label=(op.type==='add'?(op.r.n<0?'− ':'+ '):'× ')+(op.r.n+'/'+op.r.d);
+ const label=(op.type==='add'?(op.r.n<0?'− ':'+ '):'× ')+(Math.abs(op.r.n)+'/'+op.r.d);
  steps.push({prev:state,label});state=next;
  notify(solved()?'Great! x is isolated. Enter its value and check it.':state.b.n===0?'The extra number is gone. How do we make the coefficient of x equal to 1?':'Still balanced. Did your move bring x closer to being isolated?');
  render();
