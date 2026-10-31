@@ -17,6 +17,12 @@ const $=id=>document.getElementById(id);
 const params=new URLSearchParams(window.location.search);
 const embedded=params.get('embed')==='1';
 if(embedded)document.body.classList.add('embedded');
+function reportPracticeActivity(action){
+ if(!embedded||window.parent===window)return;
+ const round=Number(params.get('round')),question=Number(params.get('question'));
+ if(!Number.isSafeInteger(round)||round<1||!Number.isSafeInteger(question)||question<0)return;
+ window.parent.postMessage({type:'fraction-algebra-activity',round,question,action},window.location.origin);
+}
 function fixedQuestion(){
  if(!embedded)return null;
  const fields=['an','ad','bn','bd','cn','cd'].map(k=>params.get(k));
@@ -111,6 +117,7 @@ function move(op){
  if([next.a,next.b,next.c].some(v=>Math.abs(v.n)>100000||v.d>100000))return notify('Those numbers are too large. Try a simpler operation.');
  const label=(op.type==='add'?(op.r.n<0?'− ':'+ '):'× ')+(Math.abs(op.r.n)+'/'+op.r.d);
  steps.push({prev:state,label,prevLine:workingLine});state=next;
+ reportPracticeActivity('move');
  const simpleText=r=>r.n+'/'+r.d;
  if(op.type==='add'){
    const denom=before.d/gcd(before.d,op.r.d)*op.r.d;
@@ -125,6 +132,7 @@ function simplifyPart(part){
   const before=state[part],after=f(before.n,before.d);
   steps.push({prev:state,label:'simplify '+before.n+'/'+before.d+' → '+after.n+'/'+after.d,prevLine:workingLine});
   state={...state,[part]:after};
+  reportPracticeActivity('simplify');
   workingLine='Simplified '+before.n+'/'+before.d+' by dividing numerator and denominator by '+gcd(before.n,before.d)+'.';
   notify(pending().length?'Good! Simplify the other highlighted fraction.':solved()?'Great! x is isolated. Enter its value and check it.':'Well done! Choose your next balance move.');
   render();
@@ -132,10 +140,10 @@ function simplifyPart(part){
  ['equation','left','right'].forEach(id=>$(id).addEventListener('click',e=>{const target=e.target.closest('[data-simplify]');if(target&&$(id).contains(target))simplifyPart(target.dataset.simplify)}));
  if(!embedded)$('new').addEventListener('click',create);
 if(!embedded)$('difficulty').addEventListener('change',create);
-$('reset').addEventListener('click',()=>{state={...initial};steps=[];workingLine='';$('answer').value='';notify('Reset. Try a different strategy.');render()});
-$('undo').addEventListener('click',()=>{if(!steps.length)return;const last=steps.pop();state=last.prev;workingLine=last.prevLine;notify('Undone. Choose your next move.');render()});
-$('hint').addEventListener('click',()=>notify(pending().length?'Tap the highlighted numerator or denominator to reduce the fraction.':solved()?'x is already isolated. Check your answer.':state.b.n!==0?'Undo the addition or subtraction beside x on both sides.':'Multiply both sides by the reciprocal of the coefficient of x.'));
-$('check').addEventListener('click',()=>{const raw=$('answer').value.trim();if(!raw)return notify('Enter your answer first.');const n=Number(raw);if(!Number.isFinite(n))return notify('Enter a valid number.');notify(n===solution?(solved()?'✓ Correct! You isolated x and found its value.':'✓ Your answer is correct. Now use balance moves to isolate x.'):'Not quite. Substitute your answer into the original equation and try again.');});
+$('reset').addEventListener('click',()=>{reportPracticeActivity('reset');state={...initial};steps=[];workingLine='';$('answer').value='';notify('Reset. Try a different strategy.');render()});
+$('undo').addEventListener('click',()=>{if(!steps.length)return;reportPracticeActivity('undo');const last=steps.pop();state=last.prev;workingLine=last.prevLine;notify('Undone. Choose your next move.');render()});
+$('hint').addEventListener('click',()=>{reportPracticeActivity('hint');notify(pending().length?'Tap the highlighted numerator or denominator to reduce the fraction.':solved()?'x is already isolated. Check your answer.':state.b.n!==0?'Undo the addition or subtraction beside x on both sides.':'Multiply both sides by the reciprocal of the coefficient of x.');});
+$('check').addEventListener('click',()=>{const raw=$('answer').value.trim();if(!raw)return notify('Enter your answer first.');const n=Number(raw);if(!Number.isFinite(n))return notify('Enter a valid number.');reportPracticeActivity('check');notify(n===solution?(solved()?'✓ Correct! You isolated x and found its value.':'✓ Your answer is correct. Now use balance moves to isolate x.'):'Not quite. Substitute your answer into the original equation and try again.');});
 $('answer').addEventListener('keydown',e=>{if(e.key==='Enter')$('check').click()});
 create();
 if(embedded&&window.parent!==window){
