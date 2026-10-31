@@ -323,9 +323,9 @@ hint:'Think of 25% as a fraction of one whole. Find how much is saved before com
 
 ];
 const sections=[
-{id:1,title:'Fractions & Number Sense',subtitle:'Benchmarks, a number line, division meaning, and fraction scaling.',goal:'Can Benji explain fraction size and the meaning of operations?',ids:[1,3,4,11,12]},
+{id:1,title:'Fractions & Number Sense',subtitle:'Benchmarks, a number line, division meaning, and fraction scaling.',goal:'Can Benji explain fraction size and the meaning of operations?',ids:[1,3,4,12,11]},
 {id:2,title:'Factors, Structure & Balance',subtitle:'Common factors, unit rates, step-by-step balancing and error spotting.',goal:'Does he understand WHY procedures preserve mathematical relationships?',ids:[5,6,7,8,14]},
-{id:3,title:'Year 4–5 Foundations',subtitle:'Estimation, decimal place value, measurement, data and chance.',goal:'Are there gaps outside his strong fraction/algebra performance?',ids:[2,9,16,17,18]},
+{id:3,title:'Year 4–5 Foundations',subtitle:'Estimation, decimal place value, measurement, data and chance.',goal:'Are there gaps outside his strong fraction/algebra performance?',ids:[2,16,17,18,9]},
 {id:4,title:'Transfer & Critical Reasoning',subtitle:'Proportions, equivalent fractions, real-world modeling and construction.',goal:'Can he apply familiar ideas in unfamiliar problems and justify claims?',ids:[10,13,15,19,20]}
 ];
 items=sections.flatMap(sec=>sec.ids.map((id,j)=>{let q=items.find(z=>z.id===id);if(!q)throw Error('Missing question '+id);return {...q,section:sec.id,extension:j===4};}));
