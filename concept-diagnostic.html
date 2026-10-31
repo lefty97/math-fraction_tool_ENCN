@@ -48,7 +48,7 @@ body.diagnostic-unlocked #accessGate{display:none!important}
 <nav class="nav"><a href="index.html">🍕 Fraction Explorer</a><a href="practice-challenges.html">📝 Practice Challenges</a><a href="fraction-algebra.html">⚖️ Balance Lab</a><button class="btn" id="lockDiagnostic" type="button">🔒 Lock assessment</button></nav>
 <main>
 <header><h1>🔎 Maths Concept Diagnostic</h1><p class="lede">Four teacher-guided mini-assessments for a strong Year 4 student preparing for Year 5. Each section takes about 10–15 minutes and investigates understanding, not speed or memorized rules.</p></header>
-<section class="card intro no-print">
+<section id="introPanel" class="card intro no-print">
 <div class="steps"><div class="step"><strong>1 · Predict</strong>Choose or write an answer before calculating when possible.</div><div class="step"><strong>2 · Explain</strong>Say WHY. Use words, drawings, examples or a number line.</div><div class="step"><strong>3 · Discuss</strong>The teacher reveals the guide and records understanding.</div></div>
 <p><strong>Four sections · 10–15 minutes each.</strong> Each section has four core investigations and one optional challenge. You may do one section per lesson. The 12-minute timer is optional and never submits or locks the assessment.</p>
 <p class="fine">Teacher rubric: <strong>2</strong> = independent, correct reasoning; <strong>1</strong> = partial reasoning or correct after prompting; <strong>0</strong> = not yet demonstrated. Record accuracy, explanations, models and transfer separately. Opening a hint is recorded. Responses are saved only in this browser; export your report to keep a copy.</p>
@@ -350,33 +350,82 @@ for(let t of [{n:'A · 6 cm × 4 cm',cols:6,rows:4},{n:'B · 8 cm × 3 cm',cols:
 return out+'</div>';
 }
 function halves(){let out='<div>';for(let b of [{label:'Ada · 12 squares',n:12},{label:'Ben · 18 squares',n:18}]){out+='<div class="bar-row"><label>'+b.label+'</label><div class="bar-dots">';for(let i=0;i<b.n;i++)out+='<span class="'+(i<b.n/2?'on':'')+'"></span>';out+='</div></div>';}return out+'</div>';}
+
+const clock={section:0,remaining:720,running:false};
+function drawTimer(){
+ const m=Math.floor(clock.remaining/60),ss=clock.remaining%60;
+ $('sectionClock').textContent=String(m).padStart(2,'0')+':'+String(ss).padStart(2,'0');
+ $('timerToggle').textContent=clock.running?'Pause timer':clock.remaining===720?'Start 12-min timer':'Resume timer';
+ $('timerToggle').disabled=clock.remaining===0;
+}
+function pauseClock(){clock.running=false;drawTimer();}
+function switchClock(sec){if(clock.section!==sec){clock.section=sec;clock.remaining=720;clock.running=false;}drawTimer();}
+setInterval(()=>{if(clock.running&&view==='question'){clock.remaining=Math.max(0,clock.remaining-1);if(clock.remaining===0)clock.running=false;drawTimer();}},1000);
+function sectionInfo(id){return sections.find(z=>z.id===id);}
+function renderSections(){
+ $('sectionCards').innerHTML=sections.map(sec=>{
+  let qs=items.filter(x=>x.section===sec.id),core=qs.filter(q=>!q.extension&&rec(q.id).score!==null).length,extra=qs.filter(q=>q.extension&&rec(q.id).score!==null).length;
+  let touched=qs.some(q=>hasAnswer(rec(q.id))||rec(q.id).score!==null);
+  return '<article class="section-tile"><span class="tag">SECTION '+sec.id+' · 10–15 MIN</span><h3>'+esc(sec.title)+'</h3>'+
+   '<p>'+esc(sec.subtitle)+'</p><p class="fine"><strong>Diagnosis:</strong> '+esc(sec.goal)+'</p>'+
+   '<p class="fine"><strong>'+core+'/4</strong> core observations recorded'+(extra?' · Optional challenge assessed':'')+'</p>'+
+   '<button type="button" class="btn" data-section="'+sec.id+'">'+(touched?'Resume':'Start')+' Section '+sec.id+'</button></article>';
+ }).join('');
+}
+function showSections(){
+ view='home';pauseClock();
+ $('introPanel').classList.remove('hidden');$('sectionChooser').classList.remove('hidden');
+ $('questionView').classList.add('hidden');$('reportView').classList.add('hidden');renderSections();
+ $('sectionChooser').scrollIntoView({block:'start',behavior:'instant'});
+}
+function startSection(id){
+ let sec=sectionInfo(id);if(!sec)return;
+ activeSection=id;switchClock(id);
+ let first=items.findIndex(q=>q.id===sec.ids[0]);go(first);
+}
 function renderQuestion(){
-view='question';$('questionView').classList.remove('hidden');$('reportView').classList.add('hidden');
-let q=items[current],r=rec(q.id);
-$('progressText').textContent='Question '+(current+1)+' of '+items.length;
-$('recordedText').textContent=items.filter(x=>rec(x.id).score!==null).length+' teacher observations recorded';
-$('progressFill').style.width=(items.filter(x=>rec(x.id).score!==null).length/items.length*100)+'%';
-$('questionNav').innerHTML=items.map((x,i)=>'<button class="jump '+(i===current?'current':rec(x.id).score!==null?'scored':hasAnswer(rec(x.id))?'touched':'')+'" data-goto="'+i+'" aria-label="Go to question '+(i+1)+'" '+(i===current?'aria-current="step"':'')+'>'+ (i+1)+'</button>').join('');
-$('partTag').className=q.extension?'tag extension':'tag';$('partTag').textContent=q.extension?'EXTENSION · OPTIONAL':'CORE · QUESTIONS 1–10';
-$('domainTag').textContent=domains.find(d=>d.id===q.domain).label;
-$('questionPosition').textContent=(q.extension?'Extension '+(current-9)+'/5':'Core '+(current+1)+'/10');
-$('questionTitle').textContent=q.title;$('questionPrompt').innerHTML=q.prompt;
-$('questionVisual').innerHTML=q.kind==='numberline'?lineGraphic():q.visual==='rectangles'?rectangles():q.visual==='halves'?halves():'';
-if(q.kind==='choice'){$('answerArea').innerHTML='<div class="ask">'+q.ask+'</div><div class="answer-grid">'+q.options.map((o,i)=>'<button class="option '+(String(r.answer)===String(i)?'selected':'')+'" data-choice="'+i+'" aria-pressed="'+(String(r.answer)===String(i))+'"><span class="letter">'+String.fromCharCode(65+i)+'.</span> '+esc(o)+'</button>').join('')+'</div>';}
-else if(q.kind==='text'){$('answerArea').innerHTML='<label class="field" for="studentAnswer">'+q.ask+'</label><input id="studentAnswer" type="text" placeholder="'+esc(q.placeholder)+'" autocomplete="off" value="'+esc(r.answer)+'">';}
-else {$('answerArea').innerHTML='<div class="ask">'+q.ask+'</div>';}
-if(q.kind==='numberline'&&r.answer!==''){$('lineSlider').value=r.answer;updateLineDisplay(r.answer);}
-$('reasoning').value=r.reasoning||'';$('teacherNotes').value=r.note||'';
-$('hintBox').textContent=q.hint;$('hintBox').classList.toggle('hidden',!r.hint);
-$('hintStatus').textContent=r.hint?'Hint opened — record whether the explanation was independent.':'';
-$('teacherExpected').innerHTML='<p>'+q.expected+'</p>';
-$('teacherLookFor').textContent=q.listen;$('teacherMisconception').textContent=q.misconception;$('teacherTransfer').textContent=q.transfer;
-$('hintWarning').textContent=r.hint?'⚠ A thinking hint was opened. Score 2 only if the subsequent explanation independently demonstrates understanding.':'Score reasoning, not only whether the answer is correct.';
-$('scoreButtons').querySelectorAll('.rubric').forEach(b=>{b.classList.toggle('selected',String(r.score)===b.dataset.score);b.setAttribute('aria-pressed',String(r.score)===b.dataset.score?'true':'false');});
-$('teacherGuide').open=teacherOpen;
-$('previousBtn').disabled=current===0;$('nextBtn').textContent=current===items.length-1?'See teacher summary →':'Next question →';
-$('coreTransition').textContent=current===9?'You have completed the core sequence. The next five questions are optional extensions. You may open the Teacher summary now.':q.extension?'Optional extension — skip if the student is tired.':'';
-$('questionView').scrollIntoView({block:'start',behavior:'instant'});
+ view='question';$('introPanel').classList.add('hidden');$('sectionChooser').classList.add('hidden');
+ $('questionView').classList.remove('hidden');$('reportView').classList.add('hidden');
+ let q=items[current],r=rec(q.id),sec=sectionInfo(q.section),pos=sec.ids.indexOf(q.id);
+ activeSection=sec.id;switchClock(sec.id);
+ $('activeSectionTag').textContent='Section '+sec.id+' · '+sec.title;
+ $('progressText').textContent='Question '+(pos+1)+' of 5';
+ $('recordedText').textContent=items.filter(z=>z.section===sec.id&&rec(z.id).score!==null).length+'/5 teacher observations';
+ $('progressFill').style.width=(items.filter(z=>z.section===sec.id&&rec(z.id).score!==null).length/5*100)+'%';
+ $('questionNav').innerHTML=sec.ids.map((id,j)=>{
+   let x=items.find(z=>z.id===id),rr=rec(id);
+   return '<button type="button" class="jump '+(j===pos?'current':rr.score!==null?'scored':hasAnswer(rr)?'touched':'')+
+    '" data-goto="'+items.indexOf(x)+'" aria-label="Section '+sec.id+' question '+(j+1)+(j===4?' optional':'')+'">'+
+    (j===4?'★':j+1)+'</button>';
+ }).join('');
+ $('partTag').className=q.extension?'tag extension':'tag';
+ $('partTag').textContent=q.extension?'OPTIONAL CHALLENGE':'CORE · SECTION '+sec.id;
+ $('domainTag').textContent=domains.find(d=>d.id===q.domain).label;
+ $('questionPosition').textContent=(pos+1)+'/5 · '+sec.title;
+ $('questionTitle').textContent=q.title;$('questionPrompt').innerHTML=q.prompt;
+ $('questionVisual').innerHTML=widgetHTML(q,r);
+ if(q.kind==='choice'){
+   $('answerArea').innerHTML='<div class="ask">'+q.ask+'</div><div class="answer-grid">'+q.options.map((o,i)=>
+   '<button class="option '+(String(r.answer)===String(i)?'selected':'')+'" data-choice="'+i+'" aria-pressed="'+(String(r.answer)===String(i))+'"><span class="letter">'+String.fromCharCode(65+i)+'.</span> '+esc(o)+'</button>').join('')+'</div>';
+ }else if(q.kind==='text'||q.kind==='balance'){
+   $('answerArea').innerHTML='<label class="field" for="studentAnswer">'+q.ask+'</label>'+
+   '<input id="studentAnswer" type="text" placeholder="'+esc(q.placeholder||'Your answer...')+'" autocomplete="off" value="'+esc(r.answer)+'">';
+ }else $('answerArea').innerHTML='<div class="ask">'+q.ask+'</div>';
+ if(q.kind==='numberline'&&r.answer!==''){$('lineSlider').value=r.answer;updateLineDisplay(r.answer);}
+ if(q.kind==='decimalLine'&&r.answer!==''){$('decimalSlider').value=r.answer;updateDecimalDisplay(r.answer);}
+ $('reasoning').value=r.reasoning||'';$('teacherNotes').value=r.note||'';
+ $('hintBox').textContent=q.hint;$('hintBox').classList.toggle('hidden',!r.hint);
+ $('hintStatus').textContent=r.hint?'Hint opened — record whether the explanation was independent.':'';
+ $('teacherExpected').innerHTML='<p>'+q.expected+'</p>';
+ $('teacherLookFor').textContent=q.listen;$('teacherMisconception').textContent=q.misconception;$('teacherTransfer').textContent=q.transfer;
+ $('hintWarning').textContent=r.hint?'⚠ A hint was opened. Record whether reasoning is independent.':'A correct guess or copied answer alone is not evidence of deep understanding.';
+ $('scoreButtons').querySelectorAll('.rubric').forEach(b=>{b.classList.toggle('selected',String(r.score)===b.dataset.score);b.setAttribute('aria-pressed',String(r.score)===b.dataset.score?'true':'false');});
+ $('evidenceTags').querySelectorAll('[data-evidence]').forEach(x=>{x.checked=!!(r.evidence||{})[x.dataset.evidence];});
+ $('teacherGuide').open=teacherOpen;
+ $('previousBtn').disabled=pos===0;
+ $('nextBtn').textContent=pos===4?'Finish section →':pos===3?'Optional challenge →':'Next question →';
+ $('coreTransition').textContent=pos===3?'Four core questions complete. The fifth question is optional; you can finish this section now.':q.extension?'Optional challenge: stop here if the student is tired.':'';
+ $('questionView').scrollIntoView({block:'start',behavior:'instant'});
 }
 function updateLineDisplay(raw){let n=Number(raw);if(!Number.isInteger(n)||n<0||n>8)return;let label=n===0?'0':n===4?'1':n===8?'2':n%4===0?String(n/4):n+'/4';$('lineLabel').textContent='Selected position: '+label;let dot=$('lineDot');dot.setAttribute('cx',String(40+68*n));dot.style.display='block';}
 function go(i){if(i<0||i>=items.length){showSummary();return;}current=i;teacherOpen=false;renderQuestion();}
