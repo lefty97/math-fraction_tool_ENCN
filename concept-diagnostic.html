@@ -499,17 +499,33 @@ function handleWidgetClick(e){
   save();rerenderWidget();
  }
 }
+function updateFilledBar(el,value,total){
+ if(!el)return;
+ el.querySelectorAll('span').forEach((x,i)=>x.classList.toggle('filled',i<value));
+ el.setAttribute('aria-label',value+' of '+total+' shaded');
+}
 function handleWidgetInput(e){
- let q=items[current],r=rec(q.id),w=getWidget(r);
- if(e.target.id==='lineSlider'){r.answer=e.target.value;updateLineDisplay(r.answer);}
- else if(e.target.id==='decimalSlider'){r.answer=e.target.value;updateDecimalDisplay(r.answer);}
- else if(e.target.id==='wholeAda'||e.target.id==='wholeBen'){
-  if(e.target.id==='wholeAda')w.ada=Number(e.target.value);else w.ben=Number(e.target.value);
-  r.answer='Ada '+(w.ada??0)+'/12; Ben '+(w.ben??0)+'/18';rerenderWidget();
- }else if(e.target.id==='stripSlider'){w.parts=Number(e.target.value);r.answer=w.parts+'/8';rerenderWidget();}
- else if(e.target.matches('[data-rectangle]')){
-  w[e.target.dataset.rectangle]=Number(e.target.value);
-  r.answer='A '+(w.a??4)+' × '+(24/(w.a??4))+'; B '+(w.b??4)+' × '+(24/(w.b??4));rerenderWidget();
+ let q=items[current],r=rec(q.id),w=getWidget(r),target=e.target;
+ if(target.id==='lineSlider'){r.answer=target.value;updateLineDisplay(r.answer);}
+ else if(target.id==='decimalSlider'){r.answer=target.value;updateDecimalDisplay(r.answer);}
+ else if(target.id==='wholeAda'||target.id==='wholeBen'){
+  const ada=target.id==='wholeAda',count=Number(target.value);
+  if(ada)w.ada=count;else w.ben=count;
+  r.answer='Ada '+(w.ada??0)+'/12; Ben '+(w.ben??0)+'/18';
+  const bars=$('questionVisual').querySelectorAll('.manip-bar');
+  updateFilledBar(bars[ada?0:1],count,ada?12:18);
+  const label=$('questionVisual').querySelector('label[for="'+target.id+'"]');
+  if(label)label.textContent=(ada?'Ada — 12 squares · ':'Ben — 18 squares · ')+count+' shaded';
+ }else if(target.id==='stripSlider'){
+  w.parts=Number(target.value);r.answer=w.parts+'/8';
+  const bars=$('questionVisual').querySelectorAll('.manip-bar');
+  updateFilledBar(bars[1],w.parts,8);
+  const label=$('questionVisual').querySelector('label[for="stripSlider"]');
+  if(label)label.textContent='You shaded '+w.parts+' out of 8 parts';
+ }else if(target.matches('[data-rectangle]')){
+  w[target.dataset.rectangle]=Number(target.value);
+  r.answer='A '+(w.a??4)+' × '+(24/(w.a??4))+'; B '+(w.b??4)+' × '+(24/(w.b??4));
+  rerenderWidget();
  }else return;
  save();
 }
