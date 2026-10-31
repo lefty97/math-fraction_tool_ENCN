@@ -101,22 +101,38 @@ function render(){
  $('calculation').textContent=workingLine;
  $('history').textContent=steps.length?'Moves: '+steps.map(s=>s.label).join(' → '):'No moves yet.';
  $('undo').disabled=!steps.length;
- let ops=[];if(state.b.n!==0){ops.push({type:'add',r:neg(state.b)});ops.push({type:'add',r:state.b});}
- else{ops.push({type:'add',r:f(1,2)});ops.push({type:'add',r:f(-1,2)});}
- if(state.a.n!==0){ops.push({type:'mul',r:rec(state.a)});ops.push({type:'mul',r:state.a});}
+ let ops=[];
+ if(state.b.n!==0){
+   ops.push({type:'add',r:neg(state.b)},{type:'add',r:state.b});
+ }else if(state.a.d>1){
+   // First clear the denominator: 2x/3 -> 2x by multiplying both sides by 3.
+   ops.push({type:'mul',r:f(state.a.d)},{type:'div',r:f(state.a.d)});
+ }else if(state.a.n>1){
+   // Then isolate x: 2x -> x by dividing both sides by 2.
+   ops.push({type:'div',r:f(state.a.n)},{type:'mul',r:f(state.a.n)});
+ }
  $('controls').innerHTML='';
- ops.forEach(op=>{let b=document.createElement('button');b.className='op';b.type='button';b.innerHTML=(op.type==='add'?(op.r.n<0?'− ':'+ ')+absVal(op.r):'× '+val(op.r));b.disabled=steps.length>=12||solved()||unsimplified.length>0;b.addEventListener('click',()=>move(op));$('controls').appendChild(b);});
+ ops.forEach(op=>{let b=document.createElement('button');b.className='op';b.type='button';b.innerHTML=(op.type==='add'?(op.r.n<0?'− ':'+ ')+absVal(op.r):(op.type==='div'?'÷ ':'× ')+val(op.r));b.disabled=steps.length>=12||solved()||unsimplified.length>0;b.addEventListener('click',()=>move(op));});
 }
 function solved(){return equal(state.a,one)&&equal(state.b,zero)&&pending().length===0}
 function notify(msg){$('message').textContent=msg}
 const isolatedMessage=embedded?'Great! x is isolated. Close Balance and enter your answer on the practice page.':'Great! x is isolated. Enter its value and check it.';
+function nextStepPrompt(){
+ if(solved())return isolatedMessage;
+ if(state.b.n!==0)return 'Still balanced. Which operation will remove the extra number beside x?';
+ if(state.a.d>1)return 'The extra number is gone. Which whole number removes the denominator below x?';
+ if(state.a.n>1)return 'The denominator is gone. How can we change '+state.a.n+'x into x?';
+ return 'Choose your next balance move.';
+}
 function move(op){
  if(pending().length)return notify('Tap the highlighted fraction to simplify before another balance move.');
  if(steps.length>=12)return notify('Use Undo or Reset to try a shorter approach.');
  const before=state.c;
- const next=op.type==='add'?{a:state.a,b:f(...Object.values(rawAdd(state.b,op.r))),c:rawAdd(state.c,op.r)}:{a:mul(state.a,op.r),b:mul(state.b,op.r),c:rawMul(state.c,op.r)};
+ const multiplier=op.type==='div'?rec(op.r):op.r;
+ const next=op.type==='add'?{a:state.a,b:f(...Object.values(rawAdd(state.b,op.r))),c:rawAdd(state.c,op.r)}:{a:mul(state.a,multiplier),b:mul(state.b,multiplier),c:rawMul(state.c,multiplier)};
  if([next.a,next.b,next.c].some(v=>Math.abs(v.n)>100000||v.d>100000))return notify('Those numbers are too large. Try a simpler operation.');
- const label=(op.type==='add'?(op.r.n<0?'− ':'+ '):'× ')+(Math.abs(op.r.n)+'/'+op.r.d);
+ const operand=op.r.d===1?String(Math.abs(op.r.n)):Math.abs(op.r.n)+'/'+op.r.d;
+ const label=(op.type==='add'?(op.r.n<0?'− ':'+ '):op.type==='div'?'÷ ':'× ')+operand;
  steps.push({prev:state,label,prevLine:workingLine});state=next;
  reportPracticeActivity('move');
  const simpleText=r=>r.n+'/'+r.d;
@@ -124,8 +140,12 @@ function move(op){
    const denom=before.d/gcd(before.d,op.r.d)*op.r.d;
    const first=before.n*(denom/before.d),second=op.r.n*(denom/op.r.d);
    workingLine='Right side: '+simpleText(before)+' '+(op.r.n<0?'−':' + ')+' '+simpleText({...op.r,n:Math.abs(op.r.n)})+' = ('+first+(second<0?' − ':' + ')+Math.abs(second)+')/'+denom+' = '+simpleText(next.c);
- }else workingLine='Both sides multiplied by '+simpleText(op.r)+'. The x-side is simplified automatically; simplify the number on the right if needed.';
- notify(pending().length?'The calculation is complete. Now tap the highlighted fraction to simplify it.':solved()?isolatedMessage:state.b.n===0?'The extra number is gone. How do we make the coefficient of x equal to 1?':'Still balanced. Did your move bring x closer to being isolated?');
+ }else if(op.type==='div'){
+   workingLine='Divided both sides by '+operand+'. The number multiplying x is removed. Tap the right-side fraction to simplify if highlighted.';
+ }else{
+   workingLine='Multiplied both sides by '+operand+'. The denominator beneath x is removed. Tap the right-side fraction to simplify if highlighted.';
+ }
+ notify(pending().length?'Now tap the highlighted fraction on the right to simplify it.':nextStepPrompt());
  render();
 }
 function simplifyPart(part){
@@ -135,7 +155,7 @@ function simplifyPart(part){
   state={...state,[part]:after};
   reportPracticeActivity('simplify');
   workingLine='Simplified '+before.n+'/'+before.d+' by dividing numerator and denominator by '+gcd(before.n,before.d)+'.';
-  notify(pending().length?'Good! Simplify the other highlighted fraction.':solved()?isolatedMessage:'Well done! Choose your next balance move.');
+  notify(pending().length?'Tap the highlighted fraction to simplify.':nextStepPrompt());
   render();
  }
  ['equation','right'].forEach(id=>$(id).addEventListener('click',e=>{const target=e.target.closest('[data-simplify]');if(target&&$(id).contains(target))simplifyPart(target.dataset.simplify)}));
@@ -143,7 +163,7 @@ function simplifyPart(part){
 if(!embedded)$('difficulty').addEventListener('change',create);
 $('reset').addEventListener('click',()=>{reportPracticeActivity('reset');state={...initial};steps=[];workingLine='';$('answer').value='';notify('Reset. Try a different strategy.');render()});
 $('undo').addEventListener('click',()=>{if(!steps.length)return;reportPracticeActivity('undo');const last=steps.pop();state=last.prev;workingLine=last.prevLine;notify('Undone. Choose your next move.');render()});
-$('hint').addEventListener('click',()=>{reportPracticeActivity('hint');notify(pending().length?'Tap the highlighted numerator or denominator to reduce the fraction.':solved()?(embedded?'x is already isolated. Close Balance and enter your answer on the practice page.':'x is already isolated. Check your answer.'):state.b.n!==0?'Undo the addition or subtraction beside x on both sides.':'Multiply both sides by the reciprocal of the coefficient of x.');});
+$('hint').addEventListener('click',()=>{reportPracticeActivity('hint');notify(pending().length?'Tap the highlighted numerator or denominator to reduce the fraction.':solved()?(embedded?'x is already isolated. Close Balance and enter your answer on the practice page.':'x is already isolated. Check your answer.'):state.b.n!==0?'Undo the addition or subtraction beside x on both sides.':state.a.d>1?'First multiply both sides by '+state.a.d+' to remove the denominator under x.':state.a.n>1?'Now divide both sides by '+state.a.n+' to leave x on its own.':'x is isolated.');});
 $('check').addEventListener('click',()=>{const raw=$('answer').value.trim();if(!raw)return notify('Enter your answer first.');const n=Number(raw);if(!Number.isFinite(n))return notify('Enter a valid number.');reportPracticeActivity('check');notify(n===solution?(solved()?'✓ Correct! You isolated x and found its value.':'✓ Your answer is correct. Now use balance moves to isolate x.'):'Not quite. Substitute your answer into the original equation and try again.');});
 $('answer').addEventListener('keydown',e=>{if(e.key==='Enter')$('check').click()});
 create();
