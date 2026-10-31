@@ -419,6 +419,95 @@ function buildRectHTML(r){
  '<div><div class="rect-label">B · '+b+' × '+24/b+'</div>'+shapeHTML(b)+'</div></div>'+
  '<p class="widget-message">'+(a===b?'Try another factor pair to make a different rectangle.':'Both contain 24 squares. Use all four sides to compare their perimeters.')+'</p></div>';
 }
+
+function decimalLineHTML(r){
+ let ticks='';
+ for(let i=0;i<=10;i++){
+  let x=40+i*54;
+  ticks+='<line x1="'+x+'" y1="'+(i%5===0?33:42)+'" x2="'+x+'" y2="66" stroke="#365970" stroke-width="2"/>';
+  if(i%5===0)ticks+='<text x="'+x+'" y="90" font-size="19" fill="#285070" text-anchor="middle">'+(0.5+i/100).toFixed(2)+'</text>';
+ }
+ return '<div class="numberline widget-box"><strong>Place 0.57 on the number line</strong>'+
+ '<svg viewBox="0 0 630 102" role="img" aria-label="Decimal number line from 0.50 to 0.60, with hundredth marks">'+
+ '<line x1="40" y1="53" x2="590" y2="53" stroke="#42738d" stroke-width="3"/>'+ticks+
+ '<circle id="decimalDot" cx="0" cy="53" r="9" fill="#de7730" style="display:none"/></svg>'+
+ '<label class="field" for="decimalSlider">Move the marker in hundredths</label>'+
+ '<input id="decimalSlider" type="range" min="0" max="10" step="1" value="'+(r.answer===''?5:esc(r.answer))+'">'+
+ '<div class="marker-label" id="decimalLabel">Move the slider to select a position</div></div>';
+}
+function chartHTML(r){
+ let w=getWidget(r),rows=[['Monday',6],['Tuesday',9],['Wednesday',12],['Thursday',9]];
+ return '<div class="widget-box"><strong>Garden harvest · tomatoes per day</strong>'+
+ '<p class="fine">Click any bar to inspect its count.</p><div class="chart-bars">'+rows.map(pair=>
+ '<div class="chart-bar"><span class="bar-name">'+pair[0]+'</span>'+
+ '<button type="button" data-chart-day="'+pair[0]+'" class="'+(w.inspect===pair[0]?'selected':'')+
+ '" style="width:'+(pair[1]/12*63)+'%" aria-label="Inspect '+pair[0]+' tomatoes"></button>'+
+ '<span class="bar-count">'+(w.inspect===pair[0]?pair[1]+' tomatoes':'Tap bar')+'</span></div>').join('')+'</div>'+
+ '<p class="widget-message">Check EACH step from one day to the next.</p></div>';
+}
+function probabilityHTML(r){
+ let w=getWidget(r),added=!!w.added,counts=[['Red',added?4:2,'#da6d71'],['Blue',3,'#609ed3'],['Yellow',1,'#e5bd55']];
+ return '<div class="widget-box"><div class="widget-top"><strong>Bag of counters</strong><span class="tag">'+(added?'8':'6')+' counters</span></div>'+
+ '<p class="fine">One counter will be drawn at random. Predict what changes when two reds are added.</p>'+
+ counts.map(pair=>'<div class="bar-row"><label>'+pair[0]+'</label><div class="bar-dots">'+
+ Array.from({length:pair[1]},()=>'<span style="background:'+pair[2]+'"></span>').join('')+
+ '</div><strong>'+pair[1]+'</strong></div>').join('')+
+ '<div class="widget-controls"><button type="button" class="btn secondary" data-probability="add" '+(added?'disabled':'')+'>+ Add 2 red</button>'+
+ '<button type="button" class="btn outline" data-probability="reset">Reset bag</button></div>'+
+ '<p class="widget-message">'+(added?'Now compare the counts and the new total.':'Which colour was most likely before the change?')+'</p></div>';
+}
+function updateDecimalDisplay(raw){
+ let n=Number(raw);if(!Number.isInteger(n)||n<0||n>10)return;
+ $('decimalLabel').textContent='Selected point: '+(0.5+n/100).toFixed(2);
+ $('decimalDot').setAttribute('cx',String(40+n*54));$('decimalDot').style.display='block';
+}
+function rerenderWidget(){
+ let q=items[current],r=rec(q.id);$('questionVisual').innerHTML=widgetHTML(q,r);
+ if(q.kind==='decimalLine'&&r.answer!=='')updateDecimalDisplay(r.answer);
+}
+function handleWidgetClick(e){
+ let q=items[current],r=rec(q.id),w=getWidget(r);
+ let op=e.target.closest('[data-balance-op]');
+ if(op&&q.kind==='balance'){
+  let stage=w.stage??0,actual=op.dataset.balanceOp,expected=stage===0?'×3':stage===2?'÷2':null;
+  logAction(r,actual+(actual===expected?' [progress]':' [not simplifying x]'));
+  if(actual===expected){w.stage=stage+1;w.message=stage===0?'Both sides are multiplied by 3. Simplify the right fraction.':'Both sides are divided by 2. Simplify the right fraction.';}
+  else w.message='The equation stays balanced, but this move does not simplify the x-side. Try another operation.';
+  save();rerenderWidget();return;
+ }
+ let step=e.target.closest('[data-balance-step]');
+ if(step&&q.kind==='balance'){
+  let stage=w.stage??0,action=step.dataset.balanceStep;
+  if(action==='simplify'&&(stage===1||stage===3)){
+   w.stage=stage+1;logAction(r,stage===1?'simplify 42/3 → 14':'simplify 14/2 → 7');
+   w.message=stage===1?'Now remove the factor of 2 multiplying x.':'x is isolated. Why did the operations keep the balance equal?';
+  }else if(action==='undo'&&stage>0){w.stage=stage-1;w.message='Undone. Choose your next move.';logAction(r,'undo');}
+  else if(action==='reset'){w.stage=0;w.message='Reset. Identify the denominator first.';logAction(r,'reset');}
+  save();rerenderWidget();return;
+ }
+ let bar=e.target.closest('[data-chart-day]');
+ if(bar&&q.visual==='dataChart'){w.inspect=bar.dataset.chartDay;logAction(r,'inspected '+w.inspect);save();rerenderWidget();return;}
+ let action=e.target.closest('[data-probability]');
+ if(action&&q.visual==='probability'){
+  w.added=action.dataset.probability==='add';logAction(r,w.added?'added 2 red':'reset counters');
+  save();rerenderWidget();
+ }
+}
+function handleWidgetInput(e){
+ let q=items[current],r=rec(q.id),w=getWidget(r);
+ if(e.target.id==='lineSlider'){r.answer=e.target.value;updateLineDisplay(r.answer);}
+ else if(e.target.id==='decimalSlider'){r.answer=e.target.value;updateDecimalDisplay(r.answer);}
+ else if(e.target.id==='wholeAda'||e.target.id==='wholeBen'){
+  if(e.target.id==='wholeAda')w.ada=Number(e.target.value);else w.ben=Number(e.target.value);
+  r.answer='Ada '+(w.ada??0)+'/12; Ben '+(w.ben??0)+'/18';rerenderWidget();
+ }else if(e.target.id==='stripSlider'){w.parts=Number(e.target.value);r.answer=w.parts+'/8';rerenderWidget();}
+ else if(e.target.matches('[data-rectangle]')){
+  w[e.target.dataset.rectangle]=Number(e.target.value);
+  r.answer='A '+(w.a??4)+' × '+(24/(w.a??4))+'; B '+(w.b??4)+' × '+(24/(w.b??4));rerenderWidget();
+ }else return;
+ save();
+}
+
 function widgetHTML(q,r){
  if(q.kind==='wholeBuilder')return wholeBuilderHTML(r);
  if(q.kind==='fractionStrips')return fractionStripsHTML(r);
