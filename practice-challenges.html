@@ -620,6 +620,10 @@ $('#balAdd1').addEventListener('click',()=>balanceOp('add1'));$('#balSub1').addE
 $('#submitAlg').addEventListener('click',submitAlg);$('#submitFractionAlgebra').addEventListener('click',submitFractionAlgebra);$('#submitFrac').addEventListener('click',submitFrac);$('#submitNum').addEventListener('click',submitNum);
 $('#skipAlg').addEventListener('click',skip);$('#skipFractionAlgebra').addEventListener('click',skip);$('#skipFrac').addEventListener('click',skip);$('#skipNum').addEventListener('click',skip);
 $('#xanswer').addEventListener('keydown',e=>{if(e.key==='Enter')submitAlg()});$('#fractionAlgebraAnswer').addEventListener('keydown',e=>{if(e.key==='Enter')submitFractionAlgebra()});$('#den').addEventListener('keydown',e=>{if(e.key==='Enter')submitFrac()});$('#numberAnswer').addEventListener('keydown',e=>{if(e.key==='Enter')submitNum()});
+if(new URLSearchParams(window.location.search).get('mode')==='fractionAlgebra'){
+  const start=document.querySelector('[data-mode="fractionAlgebra"]');
+  if(start)start.click();
+}
 })();
 </script>
 </body>
