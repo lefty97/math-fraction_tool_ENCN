@@ -2,7 +2,7 @@
 <html lang="en"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1"><title>Fraction Algebra Balance Lab</title>
 <style>
 :root{font-family:Segoe UI,Arial,sans-serif;color:#263746;background:#f0f8ff}*{box-sizing:border-box}body{margin:0;padding:0 16px 36px}.nav{background:#34495e;padding:14px;text-align:center;border-radius:0 0 10px 10px;max-width:1100px;margin:auto}.nav a{color:white;text-decoration:none;margin:8px;display:inline-block;padding:8px;border-radius:6px}.nav a:hover{background:#e67e22}main{max-width:1000px;margin:22px auto;background:white;border-radius:14px;padding:clamp(15px,4vw,30px);box-shadow:0 4px 12px #0001}h1{margin:0;color:#2c3e50}.sub{color:#657587;line-height:1.5}.top{display:flex;gap:12px;align-items:end;flex-wrap:wrap;justify-content:space-between}.field{display:flex;flex-direction:column;gap:4px;font-size:14px}.field select{font-size:16px;padding:10px;border-radius:8px;border:1px solid #aac5d5}.btn{padding:11px 16px;border:0;border-radius:9px;background:#287db3;color:white;cursor:pointer;font-weight:700;font-size:15px}.btn.secondary{color:#23435b;background:#eaf2f8}.btn:disabled{opacity:.4;cursor:default}.card{background:#f8fbff;border:1px solid #cfdfed;border-radius:12px;padding:18px;margin-top:18px}.eq{font-size:clamp(25px,5vw,38px);font-weight:750;text-align:center;display:flex;align-items:center;justify-content:center;flex-wrap:wrap;gap:8px;margin:14px 0}.frac{display:inline-flex;flex-direction:column;align-items:center;vertical-align:middle;line-height:1.1;font-size:.83em;min-width:30px}.frac span:first-child{border-bottom:2px solid currentColor;padding:0 5px 3px}.frac span:last-child{padding-top:3px}.panrow{display:grid;grid-template-columns:1fr 1fr;gap:14px;margin-top:16px}.pan{text-align:center;background:#fff;border:2px solid #abc5da;border-radius:12px;min-height:150px;padding:12px 8px}.pan h3{margin:0 0 12px;font-size:13px;color:#637e90}.pieces{display:flex;gap:8px;justify-content:center;flex-wrap:wrap}.tile{padding:10px;min-width:80px;border-radius:9px;background:#dfeffa;color:#1d5182;border:1px solid #99bfdb;font-weight:700}.tile.constant{background:#e6f5e9;color:#276a44;border-color:#b2dbbe}.bar{display:flex;min-width:62px;max-width:130px;height:16px;border:1px solid currentColor;margin:8px auto 0}.cell{flex:1;border-right:1px solid currentColor;background:currentColor;opacity:.12}.cell.filled{opacity:.8}.cell:last-child{border:0}.beam{width:100%;height:65px;color:#5b7082}#controls{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:10px;margin:14px 0}.op{font-size:19px;font-weight:700;min-height:55px;border:1px solid #bdd5e3;background:white;border-radius:10px;cursor:pointer}.op:hover{background:#eaf5fb}.actions{display:flex;gap:8px;justify-content:center;flex-wrap:wrap}.status{min-height:48px;line-height:1.5;text-align:center;font-weight:600;color:#25618c}.answer{display:flex;gap:12px;justify-content:center;align-items:center;flex-wrap:wrap}.answer input{width:90px;padding:10px;font-size:17px;border:1px solid #b4cbd9;border-radius:8px;text-align:center}#history{font-size:13px;color:#697d8d;text-align:center;margin:12px auto;line-height:1.5}.small{font-size:12px;color:#6b8193;text-align:center}.simplify-btn{border:2px dashed #e39d29;background:#fff4d8;color:inherit;border-radius:6px;padding:2px 5px;cursor:pointer;font:inherit;vertical-align:middle;animation:none}.simplify-btn:hover,.simplify-btn:focus-visible{background:#ffe9ac;outline:2px solid #cb8020;outline-offset:2px}.simplify-note{font-size:14px;color:#855b17;text-align:center;font-weight:700;min-height:22px;margin:5px 0 0}.calculation{font-size:13px;color:#486176;text-align:center;min-height:21px;margin:4px 0 8px}@media(max-width:500px){.panrow{gap:7px}.pan{padding:9px 4px}.tile{min-width:58px;padding:7px 4px}.op{font-size:16px}}
-</style></head><body>
+body.embedded{background:#fff;padding:0}body.embedded .nav{display:none}body.embedded main{margin:0 auto;max-width:none;box-shadow:none;padding:10px 12px;border-radius:0}body.embedded h1,body.embedded main>.sub,body.embedded main>.top{display:none}body.embedded .card{margin-top:8px}body.embedded h2{margin:12px 0 5px}body.embedded .beam{height:46px}</style></head><body>
 <nav class="nav"><a href="index.html">🍕 Fractions</a><a href="algebra.html">⚖️ Algebra Balance</a><a href="practice-challenges.html">📝 Practice Challenges</a><a href="fraction-algebra.html">🧩 Fraction Algebra Lab</a></nav>
 <main><h1>🧩 Fraction Algebra Balance Lab</h1><p class="sub">Make the same move on both sides. Remove the extra number, then isolate <strong>x</strong>. Generate as many new questions as you like; every equation has a whole-number solution.</p>
 <div class="top"><label class="field">Difficulty<select id="difficulty"><option value="basic">Basic — x divided by a number</option><option value="medium" selected>Medium — two steps</option><option value="advanced">Advanced — fractional coefficients</option></select></label><button id="new" class="btn">🎲 New Question</button></div>
@@ -14,6 +14,21 @@
 <script>
 (()=>{'use strict';
 const $=id=>document.getElementById(id);
+const params=new URLSearchParams(window.location.search);
+const embedded=params.get('embed')==='1';
+if(embedded)document.body.classList.add('embedded');
+function fixedQuestion(){
+ if(!embedded)return null;
+ const fields=['an','ad','bn','bd','cn','cd'].map(k=>params.get(k));
+ if(fields.some(v=>v===null||!/^\-?\d+$/.test(v)))return null;
+ const nums=fields.map(Number);
+ if(nums.some(n=>!Number.isSafeInteger(n)||Math.abs(n)>2000)||nums[1]<=0||nums[3]<=0||nums[5]<=0||nums[1]>100||nums[3]>100||nums[5]>100)return null;
+ const [an,ad,bn,bd,cn,cd]=nums;
+ if(an<=0||an/ad>4)return null;
+ const sol=(cn/cd-bn/bd)/(an/ad);
+ if(!Number.isInteger(sol)||sol<=0||sol>200)return null;
+ return {a:f(an,ad),b:f(bn,bd),c:f(cn,cd),x:sol};
+}
 const gcd=(a,b)=>{a=Math.abs(a);b=Math.abs(b);while(b){let t=b;b=a%b;a=t}return a||1};
 const f=(n,d=1)=>{if(d<0){n=-n;d=-d}let g=gcd(n,d);return{n:n/g,d:d/g}};
 const add=(a,b)=>f(a.n*b.d+b.n*a.d,a.d*b.d),neg=a=>f(-a.n,a.d),mul=(a,b)=>f(a.n*b.n,a.d*b.d),rec=a=>f(a.d*(a.n<0?-1:1),Math.abs(a.n)),equal=(a,b)=>a.n===b.n&&a.d===b.d,zero=f(0),one=f(1);
@@ -35,6 +50,11 @@ const coef=(r,part)=>r.d===1?(r.n===1?'x':r.n===-1?'−x':r.n+'x'):(r.n<0?'−':
 const equation=s=>coef(s.a,'a')+(s.b.n===0?'':(s.b.n<0?' − ':' + ')+absVal(s.b,'b'))+' = '+val(s.c,'c');
 const key=q=>[q.a.n,q.a.d,q.b.n,q.b.d,q.c.n,q.c.d].join(':');
 function create(){
+ const fixed=fixedQuestion();
+ if(fixed){
+   initial={a:fixed.a,b:fixed.b,c:fixed.c};solution=fixed.x;state={...initial};steps=[];workingLine='';$('answer').value='';
+   notify('This is the exact question from your practice round. Choose a balance operation.');render();return;
+ }
  const mode=$('difficulty').value;let q,x;
  for(let i=0;i<100;i++){
  x=ri(2,mode==='advanced'?12:16);
@@ -107,13 +127,19 @@ function simplifyPart(part){
   render();
  }
  ['equation','left','right'].forEach(id=>$(id).addEventListener('click',e=>{const target=e.target.closest('[data-simplify]');if(target&&$(id).contains(target))simplifyPart(target.dataset.simplify)}));
- $('new').addEventListener('click',create);
-$('difficulty').addEventListener('change',create);
+ if(!embedded)$('new').addEventListener('click',create);
+if(!embedded)$('difficulty').addEventListener('change',create);
 $('reset').addEventListener('click',()=>{state={...initial};steps=[];workingLine='';$('answer').value='';notify('Reset. Try a different strategy.');render()});
 $('undo').addEventListener('click',()=>{if(!steps.length)return;const last=steps.pop();state=last.prev;workingLine=last.prevLine;notify('Undone. Choose your next move.');render()});
 $('hint').addEventListener('click',()=>notify(pending().length?'Tap the highlighted numerator or denominator to reduce the fraction.':solved()?'x is already isolated. Check your answer.':state.b.n!==0?'Undo the addition or subtraction beside x on both sides.':'Multiply both sides by the reciprocal of the coefficient of x.'));
 $('check').addEventListener('click',()=>{const raw=$('answer').value.trim();if(!raw)return notify('Enter your answer first.');const n=Number(raw);if(!Number.isFinite(n))return notify('Enter a valid number.');notify(n===solution?(solved()?'✓ Correct! You isolated x and found its value.':'✓ Your answer is correct. Now use balance moves to isolate x.'):'Not quite. Substitute your answer into the original equation and try again.');});
 $('answer').addEventListener('keydown',e=>{if(e.key==='Enter')$('check').click()});
 create();
+if(embedded&&window.parent!==window){
+ const reportHeight=()=>window.parent.postMessage({type:'fraction-algebra-height',height:Math.ceil(document.documentElement.scrollHeight)},window.location.origin);
+ reportHeight();
+ if('ResizeObserver' in window)new ResizeObserver(reportHeight).observe(document.querySelector('main'));
+ window.addEventListener('load',reportHeight);
+}
 })();
 </script></body></html>
