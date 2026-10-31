@@ -208,7 +208,7 @@ try{let saved=JSON.parse(localStorage.getItem(key)||'null');if(saved&&saved.vers
 function rec(id){if(!state.answers[id])state.answers[id]={answer:'',reasoning:'',note:'',score:null,hint:false};return state.answers[id];}
 function save(){try{localStorage.setItem(key,JSON.stringify(state));}catch(e){}}
 function hasAnswer(r){return String(r.answer||'').trim().length>0||String(r.reasoning||'').trim().length>0;}
-function selected(q,r){return q.options? q.options[Number(r.answer)]||'Not answered':q.kind==='numberline'?r.answer===''?'Not answered': Number(r.answer)===4?'1':Number(r.answer)===0?'0':Number(r.answer)===8?'2':Number(r.answer)+'/4':r.answer||'Not answered';}
+function selected(q,r){return q.options? (r.answer===''?'Not answered':q.options[Number(r.answer)]||'Not answered'):q.kind==='numberline'?r.answer===''?'Not answered': Number(r.answer)===4?'1':Number(r.answer)===0?'0':Number(r.answer)===8?'2':Number(r.answer)+'/4':r.answer||'Not answered';}
 function lineGraphic(){
 let svg='<div class="numberline"><svg viewBox="0 0 630 105" role="img" aria-label="Number line from zero to two with quarter marks"><line x1="30" y1="53" x2="600" y2="53" stroke="#4a768e" stroke-width="4"/><path d="M600 53 l-12 -7 v14 z" fill="#4a768e"/>';
 for(let i=0;i<=8;i++){let x=40+68*i;svg+='<line x1="'+x+'" y1="'+(i%4===0?33:42)+'" x2="'+x+'" y2="66" stroke="#33556b" stroke-width="2"/>';if(i%4===0)svg+='<text x="'+x+'" y="91" text-anchor="middle" font-size="22" fill="#273849">'+(i/4)+'</text>';}
