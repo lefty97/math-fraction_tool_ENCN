@@ -37,7 +37,7 @@ input{width:130px;text-align:center}.setting{display:flex;gap:10px;align-items:e
 .frac-answer{display:flex;flex-direction:column;align-items:center;justify-content:center;gap:5px;margin-right:6px}.frac-answer .line{height:2px;background:var(--text);width:130px}.frac-answer input{width:130px}
 .smart{margin:14px auto 0;max-width:680px;border:1px dashed #f39c12;border-radius:8px;background:#fffde7;padding:12px 14px;text-align:center;color:#7f8c8d;line-height:1.5}.smart strong{color:#d35400}
 .send-box{max-width:520px;margin:18px auto 0;padding:16px;border:1px dashed var(--line);border-radius:12px;background:#fafafa}.send-box input{width:min(300px,100%);margin:8px auto 12px;display:block}.status{min-height:22px;margin-top:10px;font-weight:700}
-.balance-tools{margin-top:14px;text-align:center}.balance-panel{margin-top:16px;background:#fff;border:2px solid #d6eaf8;border-radius:10px;padding:16px}
+.fraction-algebra-panel{margin-top:14px;background:#fff;padding:12px;border:2px solid #d6eaf8;border-radius:10px}.fraction-algebra-frame{width:100%;height:820px;border:0;display:block;background:white;border-radius:9px}.balance-tools{margin-top:14px;text-align:center}.balance-panel{margin-top:16px;background:#fff;border:2px solid #d6eaf8;border-radius:10px;padding:16px}
 .balance-equation{font-size:1.8rem;font-weight:700;color:#d35400;background:#fef9e7;border:2px solid #f8c471;border-radius:10px;padding:12px;text-align:center;margin-bottom:12px}
 .balance-wrap{position:relative;width:100%;height:330px;background:#fafafa;border:1px solid #ecf0f1;border-radius:10px;overflow:hidden}
 .balance-controls{background:#ebf5fb;padding:14px;border-radius:10px;margin-top:12px;text-align:center}.balance-row{display:flex;gap:8px;flex-wrap:wrap;justify-content:center;margin:6px 0}
@@ -88,6 +88,7 @@ input{width:130px;text-align:center}.setting{display:flex;gap:10px;align-items:e
   <div class="card"><h2>Rearranging & Grouping</h2><p>Rearrange and group addition, subtraction and multiplication to make calculations easier.</p><button class="btn" data-mode="grouping">Start Grouping</button></div>
   <div class="card"><h2>Brackets & Removing Brackets</h2><p>Work with brackets, use the correct order, and practise removing brackets safely.</p><button class="btn" data-mode="brackets">Start Brackets</button></div>
   <div class="card"><h2>Basic Division of Fractions</h2><p>Use the basic rule: divide by a fraction by multiplying by its reciprocal.</p><button class="btn" data-mode="fractionDivision">Start Fraction Division</button></div>
+  <div class="card"><h2>Fraction Algebra: Solve & Balance</h2><p>Solve fraction equations with positive whole-number solutions. Send any question to the interactive balance, then submit your answers for marking.</p><button class="btn" data-mode="fractionAlgebra">Start Fraction Algebra</button></div>
 </div>
 </section>
 
@@ -178,6 +179,24 @@ input{width:130px;text-align:center}.setting{display:flex;gap:10px;align-items:e
     </div>
   </div>
 
+  <div id="fractionAlgebraTools" class="balance-tools hidden">
+    <button id="sendFractionAlgebraBalance" class="btn" type="button">⚖️ Send this question to Balance</button>
+    <div id="fractionAlgebraPanel" class="fraction-algebra-panel hidden">
+      <div style="display:flex;align-items:center;justify-content:space-between;flex-wrap:wrap;gap:10px;">
+        <strong>Fraction Algebra Balance Lab</strong>
+        <button id="closeFractionAlgebraBalance" class="btn secondary" type="button">Close Balance</button>
+      </div>
+      <p class="note">This balance shows your current question. Use it to explore the steps, then enter your answer below.</p>
+      <iframe id="fractionAlgebraFrame" class="fraction-algebra-frame" title="Interactive fraction algebra balance for the current question" loading="lazy"></iframe>
+    </div>
+  </div>
+
+  <div id="fractionAlgebraInputs" class="controls hidden">
+    <div class="field"><label for="fractionAlgebraAnswer">x =</label><input id="fractionAlgebraAnswer" type="number" min="1" step="1"></div>
+    <button id="submitFractionAlgebra" class="btn">Submit</button>
+    <button id="skipFractionAlgebra" class="btn secondary">Skip</button>
+  </div>
+
   <div id="fractionInputs" class="controls hidden">
     <div class="frac-answer" aria-label="fraction answer">
       <div class="field"><label for="num">Numerator</label><input id="num" type="number" step="1"></div>
@@ -219,6 +238,7 @@ const $=s=>document.querySelector(s),home=$('#home'),game=$('#game'),timerEl=$('
 let mode='algebra',questions=[],answers=[],current=0,seconds=600,timerId=null,finished=false,timerEnabled=true,timerPaused=false,timerMinutes=10;
 let balanceState=null,balanceInitial=null,balanceTrueX=null;
 let ccSelected=null;
+let fractionAlgebraSeen=new Set();
 const ri=(a,b)=>Math.floor(Math.random()*(b-a+1))+a;
 const pick=a=>a[ri(0,a.length-1)];
 const gcd=(a,b)=>{a=Math.abs(a);b=Math.abs(b);while(b){let t=b;b=a%b;a=t}return a||1};
@@ -293,9 +313,41 @@ function bracketsQuestion(i,count){
   const a=ri(25,70+lv*10),b=ri(5,15+lv*2),c=ri(2,b-1),text=a+' - ('+b+' - '+c+')';
   return{html:'\\('+text+'\\)',text,answer:a-(b-c),answerText:String(a-(b-c)),hint:'A minus before brackets changes the signs inside.'}
 }
+function fractionAlgebraQuestion(i,count){
+  const lv=levelFor(i,count);
+  for(let attempt=0;attempt<200;attempt++){
+    let an=1,ad=ri(2,6),bn=0,bd=1,x;
+    if(lv===0){
+      const right=ri(2,8);
+      x=ad*right;
+    }else{
+      x=ri(3,lv>=4?14:12);
+      if(lv>=3){an=ri(2,5);[an,ad]=reduce(an,ad);}
+      bd=pick([2,3,4,5]);
+      bn=ri(1,Math.min(8,bd+lv+1));
+      if(lv>=3&&Math.random()<0.4)bn=-bn;
+      [bn,bd]=reduce(bn,bd);
+    }
+    const [cn,cd]=reduce(an*x*bd+bn*ad,ad*bd);
+    if(cn<=0||cn>100||cd>30)continue;
+    const key=[an,ad,bn,bd,cn,cd].join('/');
+    if(fractionAlgebraSeen.has(key))continue;
+    fractionAlgebraSeen.add(key);
+    const ft=(n,d)=>d===1?String(n):'\\\\frac{'+n+'}{'+d+'}';
+    const xterm=ad===1?(an===1?'x':an+'x'):'\\\\frac{'+(an===1?'x':an+'x')+'}{'+ad+'}';
+    const tex=xterm+(bn===0?'':(bn<0?' - ':' + ')+ft(Math.abs(bn),bd))+' = '+ft(cn,cd);
+    const text=(an===1?'x':an+'x')+'/'+ad+(bn===0?'':(bn<0?' - ':' + ')+Math.abs(bn)+'/'+bd)+' = '+cn+'/'+cd;
+    return{html:'\\\\('+tex+'\\\\)',text,answer:x,answerText:String(x),
+      hint:bn===0?'Use the inverse operation to isolate x.':
+        'First remove the extra fraction from both sides. Then multiply by the reciprocal of the coefficient of x.',
+      balance:{an,ad,bn,bd,cn,cd}};
+  }
+  throw Error('Unable to generate a unique fraction algebra question.');
+}
 function makeQuestions(){
   const count=parseInt($('#questionCount').value,10);
-  const gen=mode==='algebra'?algebraQuestion:mode==='fractions'?fractionQuestion:mode==='fractionDivision'?fractionDivisionQuestion:mode==='grouping'?groupingQuestion:bracketsQuestion;
+  const gen=mode==='algebra'?algebraQuestion:mode==='fractionAlgebra'?fractionAlgebraQuestion:mode==='fractions'?fractionQuestion:mode==='fractionDivision'?fractionDivisionQuestion:mode==='grouping'?groupingQuestion:bracketsQuestion;
+  fractionAlgebraSeen=new Set();
   questions=Array.from({length:count},(_,i)=>gen(i,count));answers=Array(count).fill(null);current=0;finished=false;result.classList.add('hidden');$('#sendStatus').textContent='';$('#studentName').value='';
   clearInterval(timerId);
   timerMinutes=parseInt($('#timerSetting').value,10);
@@ -311,17 +363,17 @@ function typeset(){if(window.MathJax&&MathJax.typesetPromise)MathJax.typesetProm
 function markValue(){return questions.length?100/questions.length:0}
 function formatMarks(v){return Number.isInteger(v)?String(v):String(Math.round(v*100)/100)}
 function stats(){let correct=0,answered=0;answers.forEach(a=>{if(a!==null){answered++;if(a.ok)correct++}});return{correct,answered,score:correct*markValue(),total:100}}
-function title(){return mode==='algebra'?'Algebra with Variables on Both Sides':mode==='fractions'?'Cross-Cancellation in Fraction Multiplication':mode==='fractionDivision'?'Basic Division of Fractions':mode==='grouping'?'Rearranging & Grouping':'Brackets & Removing Brackets'}
+function title(){return mode==='algebra'?'Algebra with Variables on Both Sides':mode==='fractionAlgebra'?'Fraction Algebra: Solve & Balance':mode==='fractions'?'Cross-Cancellation in Fraction Multiplication':mode==='fractionDivision'?'Basic Division of Fractions':mode==='grouping'?'Rearranging & Grouping':'Brackets & Removing Brackets'}
 function render(){
-  qnum.textContent=current+1;qtotal.textContent=questions.length;$('#balancePanel').classList.add('hidden');$('#topicTitle').textContent=title();
+  qnum.textContent=current+1;qtotal.textContent=questions.length;$('#balancePanel').classList.add('hidden');$('#fractionAlgebraPanel').classList.add('hidden');$('#fractionAlgebraFrame').removeAttribute('src');$('#topicTitle').textContent=title();
   ccSelected=null;
   if(mode==='fractions'){renderCrossCancelQuestion();}
   else{questionEl.innerHTML=questions[current].html;typeset();}
   $('#crossCancelHelp').classList.toggle('hidden',mode!=='fractions');
   if(mode==='fractions'){setCcMessage('Tap one numerator and one denominator to cross-cancel.','');}
-  $('#algebraInputs').classList.toggle('hidden',mode!=='algebra');$('#balanceTools').classList.toggle('hidden',mode!=='algebra');$('#fractionInputs').classList.toggle('hidden',!(mode==='fractions'||mode==='fractionDivision'));$('#numberInputs').classList.toggle('hidden',!(mode==='grouping'||mode==='brackets'));
+  $('#algebraInputs').classList.toggle('hidden',mode!=='algebra');$('#balanceTools').classList.toggle('hidden',mode!=='algebra');$('#fractionAlgebraTools').classList.toggle('hidden',mode!=='fractionAlgebra');$('#fractionAlgebraInputs').classList.toggle('hidden',mode!=='fractionAlgebra');$('#fractionInputs').classList.toggle('hidden',!(mode==='fractions'||mode==='fractionDivision'));$('#numberInputs').classList.toggle('hidden',!(mode==='grouping'||mode==='brackets'));
   if(mode!=='algebra') $('#balancePanel').classList.add('hidden');
-  $('#xanswer').value='';$('#num').value='';$('#den').value='';$('#numberAnswer').value='';feedback.textContent='';feedback.className='feedback';smartHint.classList.add('hidden');smartHint.textContent='';
+  $('#xanswer').value='';$('#fractionAlgebraAnswer').value='';$('#num').value='';$('#den').value='';$('#numberAnswer').value='';feedback.textContent='';feedback.className='feedback';smartHint.classList.add('hidden');smartHint.textContent='';
   const s=stats();scoreEl.textContent=formatMarks(s.score);totalMarksEl.textContent=100;marksEachEl.textContent=formatMarks(markValue());renderProgressOnly();
 }
 function startTimer(){
@@ -511,6 +563,26 @@ function showBalanceStep(){
   }
   drawBalance();showBalanceHint();
 }
+function openFractionAlgebraBalance(){
+  if(mode!=='fractionAlgebra')return;
+  const panel=$('#fractionAlgebraPanel');
+  if(!panel.classList.contains('hidden')){panel.classList.add('hidden');return;}
+  const q=questions[current];
+  const url=new URL('fraction-algebra.html',window.location.href);
+  url.searchParams.set('embed','1');
+  for(const [k,v] of Object.entries(q.balance))url.searchParams.set(k,String(v));
+  const frame=$('#fractionAlgebraFrame');
+  if(frame.src!==url.href)frame.src=url.href;
+  panel.classList.remove('hidden');
+  panel.scrollIntoView({behavior:'smooth',block:'nearest'});
+}
+function submitFractionAlgebra(){
+  const raw=$('#fractionAlgebraAnswer').value.trim();
+  if(raw===''){feedback.textContent='Enter a value for x.';return;}
+  const value=Number(raw);
+  if(!Number.isSafeInteger(value)||value<=0){feedback.textContent='Enter a positive whole number for x.';return;}
+  mark(value===questions[current].answer,raw);
+}
 function submitAlg(){const raw=$('#xanswer').value.trim();if(raw===''){feedback.textContent='Enter a value for x.';return}mark(Number(raw)===questions[current].answer,raw)}
 function submitFrac(){const nr=$('#num').value.trim(),dr=$('#den').value.trim();if(nr===''){feedback.textContent='Enter a numerator.';return}let n=Number(nr),d=dr===''?1:Number(dr);if(!Number.isInteger(n)||!Number.isInteger(d)||d===0){feedback.textContent='Enter a valid fraction.';return}[n,d]=reduce(n,d);const a=questions[current].answer;mark(n===a[0]&&d===a[1],n+'/'+d)}
 function submitNum(){const raw=$('#numberAnswer').value.trim();if(raw===''){feedback.textContent='Enter an answer.';return}const v=Number(raw);mark(Number.isFinite(v)&&Math.abs(v-questions[current].answer)<1e-9,raw)}
@@ -536,10 +608,18 @@ $('#back').addEventListener('click',()=>{clearInterval(timerId);game.classList.a
 $('#newRound').addEventListener('click',makeQuestions);$('#playAgain').addEventListener('click',makeQuestions);$('#sendResult').addEventListener('click',sendResult);
 $('#questionCount').addEventListener('change',makeQuestions);$('#difficulty').addEventListener('change',makeQuestions);$('#timerSetting').addEventListener('change',makeQuestions);$('#pauseTimer').addEventListener('click',togglePause);
 $('#sendToScale').addEventListener('click',openBalance);$('#closeScale').addEventListener('click',()=>$('#balancePanel').classList.add('hidden'));
+$('#sendFractionAlgebraBalance').addEventListener('click',openFractionAlgebraBalance);
+$('#closeFractionAlgebraBalance').addEventListener('click',()=>$('#fractionAlgebraPanel').classList.add('hidden'));
+window.addEventListener('message',event=>{
+  const iframe=$('#fractionAlgebraFrame');
+  if(event.origin!==window.location.origin||event.source!==iframe.contentWindow||event.data?.type!=='fraction-algebra-height')return;
+  const height=Math.min(1900,Math.max(520,Number(event.data.height)||820));
+  iframe.style.height=height+'px';
+});
 $('#balAdd1').addEventListener('click',()=>balanceOp('add1'));$('#balSub1').addEventListener('click',()=>balanceOp('sub1'));$('#balAddX').addEventListener('click',()=>balanceOp('addx'));$('#balSubX').addEventListener('click',()=>balanceOp('subx'));$('#balDiv').addEventListener('click',()=>balanceOp('div'));$('#balHint').addEventListener('click',showBalanceHint);$('#balShow').addEventListener('click',showBalanceStep);$('#balReset').addEventListener('click',()=>{if(balanceInitial){balanceState={...balanceInitial};drawBalance();$('#balanceHint').classList.add('hidden')}});
-$('#submitAlg').addEventListener('click',submitAlg);$('#submitFrac').addEventListener('click',submitFrac);$('#submitNum').addEventListener('click',submitNum);
-$('#skipAlg').addEventListener('click',skip);$('#skipFrac').addEventListener('click',skip);$('#skipNum').addEventListener('click',skip);
-$('#xanswer').addEventListener('keydown',e=>{if(e.key==='Enter')submitAlg()});$('#den').addEventListener('keydown',e=>{if(e.key==='Enter')submitFrac()});$('#numberAnswer').addEventListener('keydown',e=>{if(e.key==='Enter')submitNum()});
+$('#submitAlg').addEventListener('click',submitAlg);$('#submitFractionAlgebra').addEventListener('click',submitFractionAlgebra);$('#submitFrac').addEventListener('click',submitFrac);$('#submitNum').addEventListener('click',submitNum);
+$('#skipAlg').addEventListener('click',skip);$('#skipFractionAlgebra').addEventListener('click',skip);$('#skipFrac').addEventListener('click',skip);$('#skipNum').addEventListener('click',skip);
+$('#xanswer').addEventListener('keydown',e=>{if(e.key==='Enter')submitAlg()});$('#fractionAlgebraAnswer').addEventListener('keydown',e=>{if(e.key==='Enter')submitFractionAlgebra()});$('#den').addEventListener('keydown',e=>{if(e.key==='Enter')submitFrac()});$('#numberAnswer').addEventListener('keydown',e=>{if(e.key==='Enter')submitNum()});
 })();
 </script>
 </body>
