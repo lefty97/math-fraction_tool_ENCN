@@ -25,8 +25,11 @@ function fixedQuestion(){
  if(nums.some(n=>!Number.isSafeInteger(n)||Math.abs(n)>2000)||nums[1]<=0||nums[3]<=0||nums[5]<=0||nums[1]>100||nums[3]>100||nums[5]>100)return null;
  const [an,ad,bn,bd,cn,cd]=nums;
  if(an<=0||an/ad>4)return null;
- const sol=(cn/cd-bn/bd)/(an/ad);
- if(!Number.isInteger(sol)||sol<=0||sol>200)return null;
+ const solNum=(cn*bd-bn*cd)*ad;
+ const solDen=cd*bd*an;
+ if(solDen<=0||solNum%solDen!==0)return null;
+ const sol=solNum/solDen;
+ if(!Number.isSafeInteger(sol)||sol<=0||sol>200)return null;
  return {a:f(an,ad),b:f(bn,bd),c:f(cn,cd),x:sol};
 }
 const gcd=(a,b)=>{a=Math.abs(a);b=Math.abs(b);while(b){let t=b;b=a%b;a=t}return a||1};
