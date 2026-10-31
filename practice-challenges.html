@@ -145,6 +145,7 @@ input{width:130px;text-align:center}.setting{display:flex;gap:10px;align-items:e
     </div>
   </div>
   <div id="question" class="question"></div>
+  <p id="fractionAlgebraNotice" class="note hidden" style="text-align:center;background:#fff4da;border:1px solid #edce89;border-radius:9px;padding:10px;margin:8px 0 12px;font-weight:600;">⚖️ Using the Balance tool is recorded for each question. Your teacher will receive which questions used Balance, along with the number of operations and hints, when you send your results.</p>
   <div id="crossCancelHelp" class="cc-help hidden"></div>
 
   <div id="algebraInputs" class="controls hidden">
@@ -383,6 +384,7 @@ function render(){
   ccSelected=null;
   if(mode==='fractions'){renderCrossCancelQuestion();}
   else{questionEl.innerHTML=questions[current].html;typeset();}
+  $('#fractionAlgebraNotice').classList.toggle('hidden',mode!=='fractionAlgebra');
   $('#crossCancelHelp').classList.toggle('hidden',mode!=='fractions');
   if(mode==='fractions'){setCcMessage('Tap one numerator and one denominator to cross-cancel.','');}
   $('#algebraInputs').classList.toggle('hidden',mode!=='algebra');$('#balanceTools').classList.toggle('hidden',mode!=='algebra');$('#fractionAlgebraTools').classList.toggle('hidden',mode!=='fractionAlgebra');$('#fractionAlgebraInputs').classList.toggle('hidden',mode!=='fractionAlgebra');$('#fractionInputs').classList.toggle('hidden',!(mode==='fractions'||mode==='fractionDivision'));$('#numberInputs').classList.toggle('hidden',!(mode==='grouping'||mode==='brackets'));
