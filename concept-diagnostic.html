@@ -593,13 +593,13 @@ function fdivHandleClick(e,r){
   else{
    const correct=/^(?:4\s*\/\s*3|1\s*(?:and\s*)?1\s*\/\s*3|1\s*\+\s*1\s*\/\s*3|1\s*⅓)$/i.test(response);
    logAction(r,'Checked final group count '+response+': '+(correct?'equivalent to 4/3':'needs reconsideration'));
-   if(correct){w.stage=5;w.message='Now connect the measured number of groups with the division shortcut.';}
-   else w.message='Try one complete group PLUS the remaining part of a group. Express the total as a fraction or mixed number.';
+   if(correct){w.finalCheck='correct';w.stage=5;w.message='Now connect the measured number of groups with the division shortcut.';}
+   else{w.finalCheck='wrong';w.message='Check how many thirds of a quarter-group remain.';}
   }
  }else if(task==='back'&&stage>0){
   w.stage=stage-1;w.message='Previous step. Explain your choice before moving forward.';logAction(r,'Returned to model step '+(w.stage+1));
  }else if(task==='reset'){
-  w.stage=0;w.prediction=null;w.cells=[];w.leftover='';w.final='';w.message='';
+  w.stage=0;w.prediction=null;w.cells=[];w.leftover='';w.final='';w.message='';w.finalCheck=null;
   logAction(r,'Reset fraction division model');
  }else return;
  fdivAnswerSummary(r);save();rerenderWidget();
@@ -641,7 +641,7 @@ function updateFilledBar(el,value,total){
 }
 function handleWidgetInput(e){
  let q=items[current],r=rec(q.id),w=getWidget(r),target=e.target;
- if(q.kind==='fractionDivisionModel'&&target.id==='fdivFinal'){w.final=target.value;fdivAnswerSummary(r);save();return;}
+ if(q.kind==='fractionDivisionModel'&&target.id==='fdivFinal'){w.final=target.value;w.finalCheck=null;fdivAnswerSummary(r);save();return;}
  if(target.id==='lineSlider'){r.answer=target.value;updateLineDisplay(r.answer);}
  else if(target.id==='decimalSlider'){r.answer=target.value;updateDecimalDisplay(r.answer);}
  else if(target.id==='wholeAda'||target.id==='wholeBen'){
@@ -692,7 +692,11 @@ function fdivStrip(total,filled,selected=[],showRemainder=false,clickable=false)
 }
 function fdivHTML(r){
  const w=getWidget(r),stage=w.stage??0;
- const status=w.message?'<p class="fdiv-status" role="status">'+esc(w.message)+'</p>':'';
+ const status=w.finalCheck==='wrong'?
+ '<p class="answer-feedback wrong" role="status">✗ Not quite. You found a complete group; now add the remaining fraction OF ONE GROUP. Try again.</p>':
+ w.finalCheck==='correct'?
+ '<p class="answer-feedback correct" role="status">✓ Correct! Your answer gives the number of quarter-groups in one-third.</p>':
+ w.message?'<p class="fdiv-status" role="status">'+esc(w.message)+'</p>':'';
  const wrapStart='<div class="widget-box" id="fractionDivisionLab"><div class="widget-top"><strong>🧩 How Many Groups Fit?</strong><span class="tag">STEP '+(stage+1)+' OF 6</span></div>'+
  '<p class="fine">A diagnostic model: make a prediction, then explain what the model means. No reciprocal rule until the end.</p>';
  let body='';
