@@ -801,9 +801,15 @@ function updateFilledBar(el,value,total){
 }
 function handleWidgetInput(e){
  let q=items[current],r=rec(q.id),w=getWidget(r),target=e.target;
- if(q.kind==='fractionDivisionModel'&&target.id==='fdivFinal'){w.final=target.value;w.finalCheck=null;fdivAnswerSummary(r);save();return;}
+ if(q.kind==='fractionDivisionModel'&&target.id==='fdivFinal'){
+  w.final=target.value;w.finalCheck=null;fdivAnswerSummary(r);save();
+  const oldFeedback=$('questionVisual').querySelector('.answer-feedback');if(oldFeedback?.remove)oldFeedback.remove();
+  return;
+ }
  if((q.kind==='wholeBalance'||q.kind==='balance')&&target.id==='algebraModelAnswer'){
-  w.final=target.value;w.finalCheck=null;r.answer=target.value;save();return;
+  w.final=target.value;w.finalCheck=null;r.answer=target.value;save();
+  const oldFeedback=$('questionVisual').querySelector('.answer-feedback');if(oldFeedback?.remove)oldFeedback.remove();
+  return;
  }
  if(target.id==='lineSlider'){r.answer=target.value;updateLineDisplay(r.answer);}
  else if(target.id==='decimalSlider'){r.answer=target.value;updateDecimalDisplay(r.answer);}
@@ -907,7 +913,7 @@ function fdivHTML(r){
    '<div class="fdiv-strip-label">Size of one '+frac(1,4)+' group</div>'+fdivStrip(12,3)+'</div>'+
    '<label class="field" for="fdivFinal">Your final answer (as a fraction or mixed number)</label>'+
    '<input class="fdiv-input" id="fdivFinal" type="text" autocomplete="off" inputmode="text" placeholder="Number of groups" value="'+esc(w.final||'')+'">'+
-   '<div class="fdiv-actions"><button type="button" class="btn" data-fdiv-action="check">Check and connect to the rule</button></div>'+
+   '<div class="fdiv-actions"><button type="button" class="btn" data-fdiv-action="check">Check final answer</button></div>'+
    '<p class="fdiv-caption">Explain in the answer box below why the remaining piece is a part of a GROUP, not a part of the original whole.</p>'+status+'</section>';
  }else{
   body='<section class="fdiv-stage"><h3>6 · Connect the model to the shortcut</h3>'+
@@ -1119,7 +1125,7 @@ function downloadCSV(){
   q.title,selected(q,r),r.reasoning,r.note,r.score===null?'':r.score,r.hint?'Yes':'No',
   e.accuracy?'Yes':'',e.explanation?'Yes':'',e.representation?'Yes':'',e.transfer?'Yes':'',(r.actions||[]).join(' → ')]);
  }
- download('benji-maths-concept-diagnostic-v2.csv','\ufeff'+arr.map(row=>row.map(csvCell).join(',')).join('\r\n'),'text/csv;charset=utf-8');
+ download('benji-maths-concept-diagnostic-observations.csv','\ufeff'+arr.map(row=>row.map(csvCell).join(',')).join('\r\n'),'text/csv;charset=utf-8');
 }
 
 // Reuse the teacher's existing FormSubmit destination from Practice Challenges.
@@ -1342,7 +1348,7 @@ $('timerToggle').addEventListener('click',()=>{
  clock.running=!clock.running;drawTimer();
 });
 $('timerReset').addEventListener('click',()=>{clock.running=false;clock.remaining=720;drawTimer();});
-$('downloadBtn').addEventListener('click',()=>download('benji-maths-concept-diagnostic-v2-summary.txt',teacherSummary()));
+$('downloadBtn').addEventListener('click',()=>download('benji-maths-concept-diagnostic-summary.txt',teacherSummary()));
 $('csvBtn').addEventListener('click',downloadCSV);
 $('printBtn').addEventListener('click',()=>window.print());
 $('diagnosticSendScope').addEventListener('change',()=>{
