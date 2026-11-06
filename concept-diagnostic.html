@@ -513,8 +513,81 @@ function rerenderWidget(){
  let q=items[current],r=rec(q.id);$('questionVisual').innerHTML=widgetHTML(q,r);
  if(q.kind==='decimalLine'&&r.answer!=='')updateDecimalDisplay(r.answer);
 }
+
+function fdivHandleClick(e,r){
+ const w=getWidget(r),stage=w.stage??0,target=e.target;
+ const pred=target.closest('[data-fdiv-predict]');
+ if(pred&&stage===0){
+  const p=pred.dataset.fdivPredict;
+  if(!Object.prototype.hasOwnProperty.call(fdivPredictionLabels,p))return;
+  w.prediction=p;
+  w.message='Prediction recorded. Explain your reason aloud before exploring the model.';
+  logAction(r,'Predicted: '+fdivPredictionLabels[p]);
+  fdivAnswerSummary(r);save();rerenderWidget();return;
+ }
+ const partition=target.closest('[data-fdiv-partition]');
+ if(partition&&stage===1){
+  const n=Number(partition.dataset.fdivPartition);
+  if(![6,8,12,16].includes(n))return;
+  logAction(r,'Tried common subdivision: '+n+' equal pieces');
+  if(n===12){
+   w.stage=2;w.message='Both fractions can be measured in twelfths. Now build a complete quarter-group using the top strip.';
+  }else w.message='This choice cannot represent both thirds and quarters in whole cells. Think about a number divisible by both 3 and 4.';
+  save();rerenderWidget();return;
+ }
+ const cell=target.closest('[data-fdiv-cell]');
+ if(cell&&stage===2){
+  const n=Number(cell.dataset.fdivCell);
+  if(!Number.isInteger(n)||n<0||n>3)return;
+  let cells=Array.isArray(w.cells)?w.cells.slice():[];
+  if(cells.includes(n))cells=cells.filter(x=>x!==n);else if(cells.length<3)cells.push(n);
+  cells.sort((a,b)=>a-b);w.cells=cells;
+  logAction(r,'Toggled 1/12 cell '+(n+1)+'; selected '+cells.length);
+  if(cells.length===3){
+   if(cells[1]===cells[0]+1&&cells[2]===cells[1]+1){
+    w.stage=3;w.message='One continuous quarter-group fits. Now compare the leftover with the size of an entire group.';
+    logAction(r,'Built one 3/12 group in 4/12; one 1/12 remains');
+   }else w.message='A quarter-group must be one continuous length. Choose three neighboring twelfths.';
+  }else w.message='Keep building a group the same length as one quarter (three twelfths).';
+  fdivAnswerSummary(r);save();rerenderWidget();return;
+ }
+ const leftover=target.closest('[data-fdiv-leftover]');
+ if(leftover&&stage===3){
+  const v=leftover.dataset.fdivLeftover;
+  if(!['1/4','1/3','1/12','3/4'].includes(v))return;
+  logAction(r,'Estimated leftover compared with a full quarter-group: '+v);
+  if(v==='1/3'){w.leftover=v;w.stage=4;w.message='Use one complete group and the leftover part of a group to write your answer.';}
+  else{w.message='Compare the remaining ONE twelfth with the THREE twelfths in a full quarter-group. What fraction of THREE pieces is ONE piece?';}
+  fdivAnswerSummary(r);save();rerenderWidget();return;
+ }
+ const action=target.closest('[data-fdiv-action]');
+ if(!action)return;
+ const task=action.dataset.fdivAction;
+ if(task==='next'&&stage===0&&w.prediction){
+  w.stage=1;w.message='';logAction(r,'Opened the fraction bars after prediction');
+ }else if(task==='clear-cells'&&stage===2){
+  w.cells=[];w.message='Selection cleared. Find one complete quarter-group.';logAction(r,'Cleared selected twelfths');
+ }else if(task==='check'&&stage===4){
+  const response=(w.final||'').trim().replace(/\s+/g,' ');
+  if(!response){w.message='Write the total number of quarter-groups before checking.';}
+  else{
+   const correct=/^(?:4\s*\/\s*3|1\s*(?:and\s*)?1\s*\/\s*3|1\s*\+\s*1\s*\/\s*3|1\s*⅓)$/i.test(response);
+   logAction(r,'Checked final group count '+response+': '+(correct?'equivalent to 4/3':'needs reconsideration'));
+   if(correct){w.stage=5;w.message='Now connect the measured number of groups with the division shortcut.';}
+   else w.message='Try one complete group PLUS the remaining part of a group. Express the total as a fraction or mixed number.';
+  }
+ }else if(task==='back'&&stage>0){
+  w.stage=stage-1;w.message='Previous step. Explain your choice before moving forward.';logAction(r,'Returned to model step '+(w.stage+1));
+ }else if(task==='reset'){
+  w.stage=0;w.prediction=null;w.cells=[];w.leftover='';w.final='';w.message='';
+  logAction(r,'Reset fraction division model');
+ }else return;
+ fdivAnswerSummary(r);save();rerenderWidget();
+}
+
 function handleWidgetClick(e){
  let q=items[current],r=rec(q.id),w=getWidget(r);
+ if(q.kind==='fractionDivisionModel'){fdivHandleClick(e,r);return;}
  let op=e.target.closest('[data-balance-op]');
  if(op&&q.kind==='balance'){
   let stage=w.stage??0,actual=op.dataset.balanceOp,expected=stage===0?'×3':stage===2?'÷2':null;
@@ -548,6 +621,7 @@ function updateFilledBar(el,value,total){
 }
 function handleWidgetInput(e){
  let q=items[current],r=rec(q.id),w=getWidget(r),target=e.target;
+ if(q.kind==='fractionDivisionModel'&&target.id==='fdivFinal'){w.final=target.value;fdivAnswerSummary(r);save();return;}
  if(target.id==='lineSlider'){r.answer=target.value;updateLineDisplay(r.answer);}
  else if(target.id==='decimalSlider'){r.answer=target.value;updateDecimalDisplay(r.answer);}
  else if(target.id==='wholeAda'||target.id==='wholeBen'){
