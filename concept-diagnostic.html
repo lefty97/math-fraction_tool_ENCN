@@ -572,7 +572,102 @@ function handleWidgetInput(e){
  save();
 }
 
+
+const fdivPredictionLabels={less:'Less than 1 group',equal:'Exactly 1 group',more:'More than 1 group'};
+function fdivAnswerSummary(r){
+ const w=getWidget(r),parts=[];
+ if(w.prediction)parts.push('Prediction: '+fdivPredictionLabels[w.prediction]);
+ if(w.cells&&w.cells.length===3)parts.push('Grouped twelfths: '+w.cells.map(x=>x+1).join(','));
+ if(w.leftover)parts.push('Leftover compared with one quarter-group: '+w.leftover);
+ if(w.final&&w.final.trim())parts.push('Student final answer: '+w.final.trim());
+ r.answer=parts.join('; ');
+}
+function fdivStrip(total,filled,selected=[],showRemainder=false,clickable=false){
+ let out='<div class="fdiv-strip" style="grid-template-columns:repeat('+total+',minmax(0,1fr))" aria-label="One whole divided into '+total+' equal parts">';
+ for(let i=0;i<total;i++){
+  const active=i<filled,chosen=selected.includes(i);
+  const cls=chosen?'grouped':showRemainder&&active?'remainder':active?'filled':'';
+  if(clickable&&active){
+   out+='<button type="button" class="'+cls+' '+(chosen?'piece-selected':'')+'" data-fdiv-cell="'+i+'" '+
+    'aria-label="Twelfth '+(i+1)+(chosen?', included in the group':', not in the group')+'" aria-pressed="'+chosen+'"></button>';
+  }else{
+   out+='<span class="'+cls+'" aria-hidden="true"></span>';
+  }
+ }
+ return out+'</div>';
+}
+function fdivHTML(r){
+ const w=getWidget(r),stage=w.stage??0;
+ const status=w.message?'<p class="fdiv-status" role="status">'+esc(w.message)+'</p>':'';
+ const wrapStart='<div class="widget-box" id="fractionDivisionLab"><div class="widget-top"><strong>🧩 How Many Groups Fit?</strong><span class="tag">STEP '+(stage+1)+' OF 6</span></div>'+
+ '<p class="fine">A diagnostic model: make a prediction, then explain what the model means. No reciprocal rule until the end.</p>';
+ let body='';
+ if(stage===0){
+  body='<section class="fdiv-stage"><h3>1 · Predict before seeing the model</h3>'+
+   '<p>For <strong>25 ÷ 5</strong>, we ask: “How many groups of 5 fit in 25?”</p>'+
+   '<p>For '+frac(1,3)+' ÷ '+frac(1,4)+', how many groups of <strong>one quarter</strong> fit inside <strong>one third</strong>?</p>'+
+   '<p><strong>Will it be less than, equal to, or greater than one group?</strong></p>'+
+   '<div class="fdiv-predict">'+Object.entries(fdivPredictionLabels).map(([k,v])=>
+    '<button type="button" class="fdiv-choice '+(w.prediction===k?'selected':'')+'" data-fdiv-predict="'+k+'" aria-pressed="'+(w.prediction===k)+'">'+v+'</button>').join('')+'</div>'+
+   '<p class="fdiv-caption">Tell your teacher WHY before you reveal the visual model.</p>'+
+   '<div class="fdiv-actions"><button type="button" class="btn" data-fdiv-action="next" '+(!w.prediction?'disabled':'')+'>Explore with fraction bars →</button></div>'+status+'</section>';
+ }else if(stage===1){
+  body='<section class="fdiv-stage"><h3>2 · Choose a shared unit</h3>'+
+   '<p>Both bars represent the <strong>same whole length</strong>. The blue parts show each amount.</p>'+
+   '<div class="fdiv-compare"><div class="fdiv-strip-label">Amount we have: '+frac(1,3)+'</div>'+fdivStrip(3,1)+
+   '<div class="fdiv-strip-label">Size of one group: '+frac(1,4)+'</div>'+fdivStrip(4,1)+'</div>'+
+   '<p><strong>Into how many equal pieces can we divide the whole so that both amounts use complete pieces?</strong></p>'+
+   '<div class="fdiv-predict">'+[6,8,12,16].map(n=>
+   '<button type="button" class="fdiv-choice" data-fdiv-partition="'+n+'">'+n+' pieces</button>').join('')+'</div>'+status+'</section>';
+ }else if(stage===2){
+  body='<section class="fdiv-stage"><h3>3 · Make ONE complete quarter-group</h3>'+
+   '<p>Now both bars have <strong>12 equal parts</strong>, so we can compare the pieces fairly.</p>'+
+   '<div class="fdiv-compare"><div class="fdiv-strip-label">The amount we have: '+frac(1,3)+' = '+frac(4,12)+'</div>'+
+   fdivStrip(12,4,w.cells||[],false,true)+
+   '<div class="fdiv-strip-label">One full group: '+frac(1,4)+' = '+frac(3,12)+'</div>'+
+   fdivStrip(12,3)+'</div>'+
+   '<p><strong>Tap three neighboring blue pieces</strong> in the top bar to build ONE group the same size as '+frac(1,4)+'.</p>'+
+   '<p class="fdiv-caption">Selected: '+(w.cells||[]).length+' of 3 pieces. Three pieces must touch to form one continuous group.</p>'+
+   '<button type="button" class="btn secondary" data-fdiv-action="clear-cells">Clear selection</button>'+status+'</section>';
+ }else if(stage===3){
+  body='<section class="fdiv-stage"><h3>4 · What fraction of a group is left?</h3>'+
+   '<p>You have placed <strong>one whole quarter-group</strong> inside '+frac(1,3)+'.</p>'+
+   '<div class="fdiv-compare"><div class="fdiv-strip-label">Blue = one full group; gold = leftover</div>'+
+   fdivStrip(12,4,w.cells||[],true,false)+
+   '<div class="fdiv-strip-label">A complete quarter-group needs three twelfths</div>'+fdivStrip(12,3)+'</div>'+
+   '<p>There is '+frac(1,12)+' left over. Compared with the size of ONE group ('+frac(3,12)+'), what fraction of a group is that leftover?</p>'+
+   '<div class="fdiv-predict">'+['1/4','1/3','1/12','3/4'].map(v=>
+   '<button type="button" class="fdiv-choice '+(w.leftover===v?'selected':'')+'" data-fdiv-leftover="'+v+'">'+esc(v)+' of a group</button>').join('')+'</div>'+status+'</section>';
+ }else if(stage===4){
+  body='<section class="fdiv-stage"><h3>5 · Explain the number of groups</h3>'+
+   '<p>One complete group fits, plus a fraction of another group. What is the <strong>total number of quarter-groups</strong>?</p>'+
+   '<div class="fdiv-compare"><div class="fdiv-strip-label">Grouped amount and remaining part of '+frac(1,3)+'</div>'+
+   fdivStrip(12,4,w.cells||[],true,false)+
+   '<div class="fdiv-strip-label">Size of one '+frac(1,4)+' group</div>'+fdivStrip(12,3)+'</div>'+
+   '<label class="field" for="fdivFinal">Your final answer (as a fraction or mixed number)</label>'+
+   '<input class="fdiv-input" id="fdivFinal" type="text" autocomplete="off" inputmode="text" placeholder="Number of groups" value="'+esc(w.final||'')+'">'+
+   '<div class="fdiv-actions"><button type="button" class="btn" data-fdiv-action="check">Check and connect to the rule</button></div>'+
+   '<p class="fdiv-caption">Explain in the answer box below why the remaining piece is a part of a GROUP, not a part of the original whole.</p>'+status+'</section>';
+ }else{
+  body='<section class="fdiv-stage"><h3>6 · Connect the model to the shortcut</h3>'+
+   '<div class="fdiv-explain"><strong>What the model shows</strong>'+
+   '<p>The SAME whole was cut into twelfths. '+frac(1,3)+' is '+frac(4,12)+', and a '+frac(1,4)+' group is '+frac(3,12)+'.</p>'+
+   '<p>One full group fits. The remaining '+frac(1,12)+' is <strong>one third of a '+frac(3,12)+' group</strong>.</p>'+
+   '<div class="fdiv-formula">'+frac(1,3)+' ÷ '+frac(1,4)+' = '+frac(4,3)+' = 1 '+frac(1,3)+' groups</div></div>'+
+   '<div class="fdiv-explain" style="margin-top:13px;background:#eef5fc;border-color:#bbd2e5"><strong>Why the reciprocal shortcut works</strong>'+
+   '<p>When both quantities use twelfths, counting groups becomes <strong>4 pieces ÷ 3 pieces per group</strong>.</p>'+
+   '<div class="fdiv-formula">'+frac(4,12)+' ÷ '+frac(3,12)+' = 4 ÷ 3 = '+frac(4,3)+'</div>'+
+   '<p>The compact calculation '+frac(1,3)+' × '+frac(4,1)+' = '+frac(4,3)+' gives the same number of groups. It is a shortcut for this measurement relationship, not a new meaning of division.</p></div>'+
+   '<p class="fdiv-caption"><strong>Transfer (ask aloud):</strong> How many quarter-groups fit into two thirds? Explain the remainder relative to ONE quarter-group.</p>'+status+'</section>';
+ }
+ const back=stage>0?
+  '<div class="fdiv-actions"><button type="button" class="btn outline" data-fdiv-action="back">← Previous model step</button>'+
+  '<button type="button" class="btn outline" data-fdiv-action="reset">Reset fraction model</button></div>':'';
+ return wrapStart+body+back+'<p class="fdiv-footer">Your prediction, model moves, attempts and final answer are recorded for your teacher. Teacher scoring remains separate.</p></div>';
+}
+
 function widgetHTML(q,r){
+ if(q.kind==='fractionDivisionModel')return fdivHTML(r);
  if(q.kind==='wholeBuilder')return wholeBuilderHTML(r);
  if(q.kind==='fractionStrips')return fractionStripsHTML(r);
  if(q.kind==='balance')return balanceHTML(r);
