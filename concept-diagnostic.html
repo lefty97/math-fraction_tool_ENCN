@@ -618,9 +618,41 @@ function updateDecimalDisplay(raw){
  $('decimalLabel').textContent='Point placed. Explain why it belongs here.';
  $('decimalDot').setAttribute('cx',String(40+n*54));$('decimalDot').style.display='block';
 }
+function questionThinkingHint(q,r){
+ const st=getWidget(r).stage??0;
+ if(q.kind==='wholeBalance')return [
+  'Find the variable tile that appears on BOTH pans. Think of removing the same amount from each pan.',
+  'Which loose unit tiles are still attached to the x-tiles? Try making the x-term stand alone.',
+  'Two identical x-tiles match a total number of unit tiles. Think about sharing the total equally.',
+  'Replace x with your proposed value in the ORIGINAL equation. Compare the left and right totals.'
+ ][st]||q.hint;
+ if(q.kind==='balance')return [
+  'A denominator tells you how many equal fractional parts make a whole. Choose a whole-number action that clears it on both sides.',
+  'A whole contains three third-pieces. Think about regrouping the third-pieces into wholes.',
+  'Look at the number of x-tiles: what would leave just one on the left while preserving equality?',
+  'A quotient can be interpreted as sharing a number of units equally between equal groups.',
+  'Substitute your proposed x into the original fractional equation to check whether the sides match.'
+ ][st]||q.hint;
+ if(q.kind==='fractionDivisionModel')return [
+  'How many full groups of a quarter might fit inside a third? Compare their lengths relative to the same whole.',
+  'The new unit must divide each original partition into whole numbers of smaller equal pieces.',
+  'Look at the reference quarter-length. How many matching small pieces would you select for one such group?',
+  'Compare the leftover length to the size of the quarter-GROUP, not to the original whole.',
+  'Your result counts COMPLETE groups and a part of another group.'
+ ][st]||q.hint;
+ return q.hint;
+}
+function currentHintShown(q,r){
+ return !!(r.hint && (!['wholeBalance','balance','fractionDivisionModel'].includes(q.kind)||
+  getWidget(r).hintStage===(getWidget(r).stage??0)));
+}
+
 function rerenderWidget(){
  let q=items[current],r=rec(q.id);$('questionVisual').innerHTML=widgetHTML(q,r);
  if(q.kind==='decimalLine'&&r.answer!=='')updateDecimalDisplay(r.answer);
+ $('hintBox').textContent=questionThinkingHint(q,r);
+ $('hintBox').classList.toggle('hidden',!currentHintShown(q,r));
+ $('hintStatus').textContent=currentHintShown(q,r)?'Thinking hint opened for this step.':'';
 }
 
 function fdivHandleClick(e,r){
@@ -971,8 +1003,8 @@ function renderQuestion(){
  if(q.kind==='numberline'&&r.answer!==''){$('lineSlider').value=r.answer;updateLineDisplay(r.answer);}
  if(q.kind==='decimalLine'&&r.answer!==''){$('decimalSlider').value=r.answer;updateDecimalDisplay(r.answer);}
  $('reasoning').value=r.reasoning||'';$('teacherNotes').value=r.note||'';
- $('hintBox').textContent=q.hint;$('hintBox').classList.toggle('hidden',!r.hint);
- $('hintStatus').textContent=r.hint?'Hint opened — record whether the explanation was independent.':'';
+ $('hintBox').textContent=questionThinkingHint(q,r);$('hintBox').classList.toggle('hidden',!currentHintShown(q,r));
+ $('hintStatus').textContent=currentHintShown(q,r)?'Thinking hint opened for this step.':'';
  $('teacherExpected').innerHTML='<p>'+q.expected+'</p>';
  $('teacherLookFor').textContent=q.listen;$('teacherMisconception').textContent=q.misconception;$('teacherTransfer').textContent=q.transfer;
  $('hintWarning').textContent=r.hint?'⚠ A hint was opened. Record whether reasoning is independent.':'A correct guess or copied answer alone is not evidence of deep understanding.';
@@ -1273,9 +1305,16 @@ $('questionVisual').addEventListener('change',e=>{
 $('reasoning').addEventListener('input',e=>{rec(items[current].id).reasoning=e.target.value;save();});
 $('teacherNotes').addEventListener('input',e=>{rec(items[current].id).note=e.target.value;save();});
 $('hintBtn').addEventListener('click',()=>{
- let r=rec(items[current].id);r.hint=true;save();
+ const q=items[current],r=rec(q.id),w=getWidget(r),stage=w.stage??0;
+ r.hint=true;
+ if(['wholeBalance','balance','fractionDivisionModel'].includes(q.kind)){
+  if(w.hintStage!==stage)logAction(r,'Thinking hint opened: step '+(stage+1));
+  w.hintStage=stage;
+ }
+ save();
+ $('hintBox').textContent=questionThinkingHint(q,r);
  $('hintBox').classList.remove('hidden');
- $('hintStatus').textContent='Hint opened — record whether the explanation was independent.';
+ $('hintStatus').textContent='Thinking hint opened for this step.';
  $('hintWarning').textContent='⚠ A thinking hint was opened. Only award 2 for genuinely independent reasoning.';
 });
 $('teacherGuide').addEventListener('toggle',e=>{teacherOpen=e.target.open;});
