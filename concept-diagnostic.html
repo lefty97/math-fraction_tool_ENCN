@@ -694,27 +694,66 @@ function fdivHandleClick(e,r){
  fdivAnswerSummary(r);save();rerenderWidget();
 }
 
+
+function handleAlgebraClick(e,q,r){
+ const w=getWidget(r),stage=w.stage??0,mode=q.kind==='wholeBalance'?'whole':'fraction';
+ const op=e.target.closest('[data-algebra-op]');
+ if(op){
+  const actual=op.dataset.algebraOp,expected=
+   mode==='whole'?['−x','−5','÷2'][stage]:stage===0?'×3':stage===2?'÷2':null;
+  if(!expected)return;
+  if(actual===expected){
+   w.stage=stage+1;w.message=
+    mode==='whole'?
+     [ 'You took away one x-tile from BOTH sides: 3x − x becomes 2x.',
+       'You removed five units from BOTH sides. The x-term is now isolated.',
+       'You split both sides into two equal groups. Work out ONE x and check it.' ][stage]:
+     stage===0?'Multiplying BOTH sides by 3 clears the denominator below x. Now regroup the thirds on the right.':
+       'Dividing BOTH sides by 2 isolates x. Simplify the numerical right side.';
+   logAction(r,mode+' balance: '+actual+' on BOTH sides [useful step]');
+  }else{
+   w.message='Not the most useful move yet. Applying '+actual+
+   ' to BOTH sides can preserve equality, but what needs to disappear from the x-side FIRST?';
+   logAction(r,mode+' balance: tried '+actual+' on BOTH sides [not simplifying]');
+  }
+  w.finalCheck=null;save();rerenderWidget();return;
+ }
+ const button=e.target.closest('[data-algebra-step]');
+ if(button){
+  const action=button.dataset.algebraStep;
+  if(action==='simplify'&&mode==='fraction'&&(stage===1||stage===3)){
+   w.stage=stage+1;w.message=stage===1?'Forty-two thirds make fourteen wholes. Now choose a move that leaves ONE x-tile.':
+     'Now calculate the value of x yourself before viewing the check.';
+   logAction(r,stage===1?'Regrouped 42 thirds into 14 wholes':'Simplified 14 ÷ 2 (answer still hidden)');
+  }else if(action==='undo'&&stage>0){
+   w.stage=stage-1;w.message='One step back. Explain what changed on BOTH pans.';
+   logAction(r,mode+' balance undo');
+  }else if(action==='reset'){
+   w.stage=0;w.message='Start by comparing the terms on BOTH sides.';
+   w.final='';r.answer='';
+   logAction(r,mode+' balance reset');
+  }else return;
+  w.finalCheck=null;save();rerenderWidget();return;
+ }
+ const check=e.target.closest('[data-algebra-check]');
+ if(check){
+  if((mode==='whole'&&stage!==3)||(mode==='fraction'&&stage!==4))return;
+  const typed=String(w.final||'').trim().replace(/^x\s*=\s*/i,'').trim();
+  if(!typed){w.finalCheck='empty';w.message='Type a value for x before checking.';}
+  else{
+   const numeric=Number(typed),correct=Number.isFinite(numeric)&&numeric===(mode==='whole'?6:7);
+   w.finalCheck=correct?'correct':'wrong';
+   w.message=correct?'Correct. Check the equality in the ORIGINAL equation.':
+    'Not quite. Substitute this number into the ORIGINAL equation and compare the two sides.';
+   logAction(r,mode+' algebra final check: '+typed+' ['+(correct?'correct':'wrong')+']');
+  }
+  save();rerenderWidget();return;
+ }
+}
 function handleWidgetClick(e){
  let q=items[current],r=rec(q.id),w=getWidget(r);
  if(q.kind==='fractionDivisionModel'){fdivHandleClick(e,r);return;}
- let op=e.target.closest('[data-balance-op]');
- if(op&&q.kind==='balance'){
-  let stage=w.stage??0,actual=op.dataset.balanceOp,expected=stage===0?'×3':stage===2?'÷2':null;
-  logAction(r,actual+(actual===expected?' [progress]':' [not simplifying x]'));
-  if(actual===expected){w.stage=stage+1;w.message=stage===0?'Both sides are multiplied by 3. Simplify the right fraction.':'Both sides are divided by 2. Simplify the right fraction.';}
-  else w.message='The equation stays balanced, but this move does not simplify the x-side. Try another operation.';
-  save();rerenderWidget();return;
- }
- let step=e.target.closest('[data-balance-step]');
- if(step&&q.kind==='balance'){
-  let stage=w.stage??0,action=step.dataset.balanceStep;
-  if(action==='simplify'&&(stage===1||stage===3)){
-   w.stage=stage+1;logAction(r,stage===1?'simplify 42/3 → 14':'simplify 14/2 → 7');
-   w.message=stage===1?'Now remove the factor of 2 multiplying x.':'x is isolated. Why did the operations keep the balance equal?';
-  }else if(action==='undo'&&stage>0){w.stage=stage-1;w.message='Undone. Choose your next move.';logAction(r,'undo');}
-  else if(action==='reset'){w.stage=0;w.message='Reset. Identify the denominator first.';logAction(r,'reset');}
-  save();rerenderWidget();return;
- }
+ if(q.kind==='balance'||q.kind==='wholeBalance'){handleAlgebraClick(e,q,r);return;}
  let bar=e.target.closest('[data-chart-day]');
  if(bar&&q.visual==='dataChart'){w.inspect=bar.dataset.chartDay;logAction(r,'inspected '+w.inspect);save();rerenderWidget();return;}
  let action=e.target.closest('[data-probability]');
@@ -731,6 +770,9 @@ function updateFilledBar(el,value,total){
 function handleWidgetInput(e){
  let q=items[current],r=rec(q.id),w=getWidget(r),target=e.target;
  if(q.kind==='fractionDivisionModel'&&target.id==='fdivFinal'){w.final=target.value;w.finalCheck=null;fdivAnswerSummary(r);save();return;}
+ if((q.kind==='wholeBalance'||q.kind==='balance')&&target.id==='algebraModelAnswer'){
+  w.final=target.value;w.finalCheck=null;r.answer=target.value;save();return;
+ }
  if(target.id==='lineSlider'){r.answer=target.value;updateLineDisplay(r.answer);}
  else if(target.id==='decimalSlider'){r.answer=target.value;updateDecimalDisplay(r.answer);}
  else if(target.id==='wholeAda'||target.id==='wholeBen'){
@@ -922,7 +964,7 @@ function renderQuestion(){
  if(q.kind==='choice'){
    $('answerArea').innerHTML='<div class="ask">'+q.ask+'</div><div class="answer-grid">'+q.options.map((o,i)=>
    '<button class="option '+(String(r.answer)===String(i)?'selected':'')+'" data-choice="'+i+'" aria-pressed="'+(String(r.answer)===String(i))+'"><span class="letter">'+String.fromCharCode(65+i)+'.</span> '+esc(o)+'</button>').join('')+'</div>';
- }else if(q.kind==='text'||q.kind==='balance'){
+ }else if(q.kind==='text'){
    $('answerArea').innerHTML='<label class="field" for="studentAnswer">'+q.ask+'</label>'+
    '<input id="studentAnswer" type="text" placeholder="'+esc(q.placeholder||'Your answer...')+'" autocomplete="off" value="'+esc(r.answer)+'">';
  }else $('answerArea').innerHTML='<div class="ask">'+q.ask+'</div>';
