@@ -454,27 +454,116 @@ function fractionStripsHTML(r){
  '<input id="stripSlider" type="range" min="0" max="8" step="1" value="'+n+'">'+
  '<p class="widget-message">Explain how the pieces change while the fraction of the whole stays the same.</p></div>';
 }
-function balanceHTML(r){
- let w=getWidget(r),stage=w.stage??0;
- const lines=[
- frac('2x',3)+' = '+frac(14,3),
- '2x = '+frac(42,3),
- '2x = 14',
- 'x = '+frac(14,2),
- 'x = 7'
+
+function tileHTML(label,kind,count=1){
+ let n=Number(count)||1;
+ if(n>18)return '<span class="balance-token amount">'+n+' × '+esc(label)+'</span>';
+ return Array.from({length:n},()=>'<span class="balance-token '+(kind==='unit'?'unit':kind==='amount'?'amount':'')+'">'+esc(label)+'</span>').join('');
+}
+function balanceScene(left,right,explanation){
+ const pan=(side,data)=>{
+  let tokens='';
+  if(data.x)tokens+=tileHTML('x','variable',data.x);
+  if(data.xThird)tokens+=tileHTML('x/3','variable',data.xThird);
+  if(data.ones)tokens+=tileHTML('1','unit',data.ones);
+  if(data.thirds)tokens+=tileHTML('1/3','unit',data.thirds);
+  if(data.quotient)tokens+='<span class="balance-token amount">'+esc(data.quotient)+'</span>';
+  if(data.question)tokens+='<span class="balance-token amount">?</span>';
+  return '<div class="balance-pan"><strong>'+side+'</strong><div class="balance-tokens">'+tokens+'</div>'+
+   (data.note?'<div class="tile-note">'+esc(data.note)+'</div>':'')+'</div>';
+ };
+ return '<div class="balance-stage-visual"><div class="balance-scene">'+pan('LEFT PAN',left)+
+ '<span class="balance-scale-equals" aria-label="equal to">=</span>'+pan('RIGHT PAN',right)+'</div>'+
+ '<div style="height:13px;border-bottom:4px solid #7094aa;border-radius:0 0 9px 9px;margin:0 7px"></div>'+
+ '<div style="height:18px;width:0;border-left:4px solid #7094aa;margin:auto"></div>'+
+ '<p class="fine" style="margin:7px 0 0">'+esc(explanation||'Symbols show equal quantities; tiles are not drawn to scale.')+'</p></div>';
+}
+function algebraFeedbackHTML(w,expected,original){
+ if(w.finalCheck==='correct')return '<div class="answer-feedback correct" role="status">✓ Correct! '+esc(original)+'</div>';
+ if(w.finalCheck==='wrong')return '<div class="answer-feedback wrong" role="status">✗ Not quite. Substitute your number into the original equation. Are BOTH sides equal? Try again.</div>';
+ if(w.message)return '<div class="answer-feedback" role="status">'+esc(w.message)+'</div>';
+ return '';
+}
+function algebraAnswerHTML(r,mode){
+ const w=getWidget(r),finished=w.finalCheck==='correct';
+ return '<div class="fdiv-stage"><h3>Now find x yourself</h3>'+
+ '<p>Use the balance to work out the value of x. The visual tool will check your answer.</p>'+
+ '<label class="field" for="algebraModelAnswer">x =</label>'+
+ '<input id="algebraModelAnswer" class="fdiv-input" type="text" inputmode="numeric" autocomplete="off" placeholder="Type the value of x" value="'+esc(w.final||'')+'" '+(finished?'readonly':'')+'>'+
+ (finished?'': '<div class="fdiv-actions"><button type="button" class="btn" data-algebra-check="'+mode+'">Check final answer</button></div>')+
+ algebraFeedbackHTML(w,mode==='whole'?6:7,
+ mode==='whole'?'3 × 6 + 5 = 23, and 6 + 17 = 23. The two sides are equal.':'2 × 7 ÷ 3 = 14/3, equal to the right side.')+
+ (finished?'<p class="fine">Teacher follow-up: Why did applying the same operation to BOTH sides preserve equality?</p>':'')+'</div>';
+}
+function algebraOpsHTML(mode,stage){
+ const choices=mode==='whole'?
+  stage===0?['−x','+x','−5','÷2']:stage===1?['−5','+5','−x','÷2']:['÷2','×2','−2','+5']:
+  stage===0?['×3','÷3','×2','÷2']:['÷2','×2','×3','÷3'];
+ return '<div class="widget-controls">'+choices.map(op=>
+  '<button type="button" class="btn secondary" data-algebra-op="'+esc(op)+'" data-algebra-mode="'+mode+'">'+esc(op)+' on BOTH sides</button>').join('')+'</div>';
+}
+function wholeBalanceHTML(r){
+ const w=getWidget(r),stage=w.stage??0;
+ const scenes=[
+  [{x:3,ones:5},{x:1,ones:17}],
+  [{x:2,ones:5},{ones:17}],
+  [{x:2},{ones:12}],
+  [{x:1},{quotient:'12 ÷ 2'}]
  ];
- let controls=(stage===0||stage===2)?
- '<div class="widget-controls">'+['×3','÷3','×2','÷2'].map(op=>'<button type="button" class="btn secondary" data-balance-op="'+op+'">'+op+'</button>').join('')+'</div>':
- stage===1?'<div class="widget-controls"><button type="button" class="btn secondary" data-balance-step="simplify">Simplify 42/3</button></div>':
- stage===3?'<div class="widget-controls"><button type="button" class="btn secondary" data-balance-step="simplify">Simplify 14/2</button></div>':
- '<p class="widget-message">Now explain why both sides stayed equal at each step.</p>';
- return '<div class="widget-box"><div class="widget-top"><strong>⚖️ Step-by-step Balance</strong><span class="tag">Stage '+(stage+1)+'/5</span></div>'+
- '<div class="prompt" style="font-size:25px;text-align:center;background:#fff;margin:12px 0">'+lines[stage]+'</div>'+
- controls+'<div class="action-row">'+
- '<button type="button" class="btn outline" data-balance-step="undo" '+(stage===0?'disabled':'')+'>↶ Undo</button>'+
- '<button type="button" class="btn outline" data-balance-step="reset">Reset balance</button></div>'+
- '<p class="widget-message" role="status">'+esc(w.message||'Predict the operation that removes the denominator beneath x.')+'</p>'+
- '<p class="fine">Use whole-number operations on BOTH sides. Simplify the right-hand fraction when asked.</p></div>';
+ const equations=['3x + 5 = x + 17','2x + 5 = 17','2x = 12','x = 12 ÷ 2'];
+ const prompts=[
+  'There is an x-tile on BOTH sides. Which matching quantity can you remove from each pan?',
+  'Only the LEFT pan has five extra ones. How can you remove these without breaking equality?',
+  'Two equal x-tiles balance 12 ones. How do you find the value of ONE x?',
+  'The equation is simplified. Work out the value, then CHECK it.'
+ ];
+ return '<div class="widget-box" id="wholeAlgebraLab"><div class="widget-top"><strong>⚖️ Whole-Number Balance</strong><span class="tag">STEP '+(stage+1)+' OF 4</span></div>'+
+ '<p class="fine">First understand the equal quantities. Only then use inverse operations.</p>'+
+ balanceScene(...scenes[stage],'An x-tile represents the SAME unknown number everywhere. Unit tiles each represent 1.')+
+ '<div class="fdiv-formula">'+equations[stage]+'</div>'+
+ '<div class="balance-hints"><strong>Think before you click:</strong> '+prompts[stage]+'</div>'+
+ (stage<3?algebraOpsHTML('whole',stage)+algebraFeedbackHTML(w):algebraAnswerHTML(r,'whole'))+
+ '<div class="action-row" style="margin-top:12px"><button class="btn outline" type="button" data-algebra-step="undo" '+(stage===0?'disabled':'')+'>↶ Undo</button>'+
+ '<button class="btn outline" type="button" data-algebra-step="reset">Reset balance</button></div>'+
+ '<p class="fdiv-footer">Operations, incorrect attempts, answer checks and hints are recorded for your teacher.</p></div>';
+}
+function balanceHTML(r){
+ const w=getWidget(r),stage=w.stage??0;
+ const scenes=[
+  [{xThird:2},{thirds:14,note:'14 pieces of 1/3'}],
+  [{x:2},{thirds:42,note:'After multiplying both sides by 3'}],
+  [{x:2},{ones:14}],
+  [{x:1},{quotient:'14 ÷ 2'}],
+  [{x:1},{question:true}]
+ ];
+ const equations=[
+  frac('2x',3)+' = '+frac(14,3),
+  '2x = '+frac(42,3),
+  '2x = 14',
+  'x = '+frac(14,2),
+  'x = ?'
+ ];
+ const prompts=[
+  'Two x/3 portions equal 14 one-third pieces. Which whole-number operation removes the denominator below x?',
+  'There are 42 one-third pieces on the RIGHT. What whole number do they make?',
+  'Two x-tiles balance 14 ones. How do you find ONE x-tile?',
+  'The right side shows 14 ÷ 2. Simplify the numerical expression without changing x.',
+  'Write x yourself, then check whether it makes the ORIGINAL equation true.'
+ ];
+ let controls='';
+ if(stage===0||stage===2)controls=algebraOpsHTML('fraction',stage);
+ else if(stage===1)controls='<div class="widget-controls"><button class="btn secondary" type="button" data-algebra-step="simplify">Simplify 42/3</button></div>';
+ else if(stage===3)controls='<div class="widget-controls"><button class="btn secondary" type="button" data-algebra-step="simplify">Simplify 14/2</button></div>';
+ else controls=algebraAnswerHTML(r,'fraction');
+ return '<div class="widget-box" id="fractionAlgebraLab"><div class="widget-top"><strong>⚖️ Fraction Algebra Balance</strong><span class="tag">STEP '+(stage+1)+' OF 5</span></div>'+
+ '<p class="fine">This is an advanced review. Start with the denominator and use simple operations on BOTH sides, one step at a time.</p>'+
+ balanceScene(...scenes[stage],'Fraction chips represent thirds; x-chips represent equal unknown quantities. The tiles are symbolic, not drawn to scale.')+
+ '<div class="fdiv-formula">'+equations[stage]+'</div>'+
+ '<div class="balance-hints"><strong>Think before you click:</strong> '+prompts[stage]+'</div>'+
+ (stage!==4?controls+algebraFeedbackHTML(w):controls)+
+ '<div class="action-row" style="margin-top:12px"><button class="btn outline" type="button" data-algebra-step="undo" '+(stage===0?'disabled':'')+'>↶ Undo</button>'+
+ '<button class="btn outline" type="button" data-algebra-step="reset">Reset balance</button></div>'+
+ '<p class="fdiv-footer">This extends the whole-number balance. Use the thinking hint or teacher discussion if needed.</p></div>';
 }
 function buildRectHTML(r){
  let w=getWidget(r),a=w.a??4,b=w.b??4;
@@ -766,6 +855,7 @@ function fdivHTML(r){
 
 function widgetHTML(q,r){
  if(q.kind==='fractionDivisionModel')return fdivHTML(r);
+ if(q.kind==='wholeBalance')return wholeBalanceHTML(r);
  if(q.kind==='wholeBuilder')return wholeBuilderHTML(r);
  if(q.kind==='fractionStrips')return fractionStripsHTML(r);
  if(q.kind==='balance')return balanceHTML(r);
