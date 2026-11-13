@@ -1235,6 +1235,8 @@ function buildDiagnosticEmail(name){
    'Prompt: '+diagnosticQuestionText(q),
    'Student answer/model: '+selected(q,r),
    'Student explanation: '+(r.reasoning||'Not recorded'),
+   'Transfer challenge: '+(r.transferOpen?'Opened':'Not opened'),
+   'Transfer response: '+(r.transferResponse||'Not recorded'),
    'Teacher observation: '+(r.note||'Not recorded'),
    'Teacher score: '+(r.score===null?'Not assessed':r.score+'/2'),
    'Evidence observed: '+(signs.join('; ')||'None ticked'),
