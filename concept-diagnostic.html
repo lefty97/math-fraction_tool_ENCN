@@ -68,14 +68,14 @@ body.diagnostic-unlocked #accessGate{display:none!important}
 <header><h1>🔎 Maths Concept Diagnostic</h1><p class="lede">Four teacher-guided mini-assessments for a strong Year 4 student preparing for Year 5. Each section takes about 10–15 minutes and investigates understanding, not speed or memorized rules.</p></header>
 <section id="introPanel" class="card intro no-print">
 <div class="steps"><div class="step"><strong>1 · Predict</strong>Choose or write an answer before calculating when possible.</div><div class="step"><strong>2 · Explain</strong>Say WHY. Use words, drawings, examples or a number line.</div><div class="step"><strong>3 · Discuss</strong>The teacher reveals the guide and records understanding.</div></div>
-<p><strong>Four sections · 10–15 minutes each.</strong> Each section has four core investigations and one optional challenge. You may do one section per lesson. The 12-minute timer is optional and never submits or locks the assessment.</p>
+<p><strong>Four sections · 15–20 minutes each.</strong> Each section has four core investigations and one optional challenge. You may do one section per lesson. The 18-minute timer is optional and never submits or locks the assessment.</p>
 <p class="fine">Teacher rubric: <strong>2</strong> = independent, correct reasoning; <strong>1</strong> = partial reasoning or correct after prompting; <strong>0</strong> = not yet demonstrated. Record accuracy, explanations, models and transfer separately. Opening a hint is recorded. Responses are saved only in this browser; export your report to keep a copy.</p>
 <div class="action-row"><button class="btn" id="startBtn">Start Section 1</button><button class="btn secondary" id="showSummaryIntro">Teacher summary</button><button class="btn outline" id="clearBtnIntro">Clear this device's responses</button></div></section>
 <section id="sectionChooser" class="card no-print"><div class="headrow"><h2>Choose a short diagnostic section</h2><button type="button" class="btn secondary" id="sendReportFromSections">📨 View &amp; send results</button></div><p class="lede">Complete the four sections in any order. The fifth question in each section is optional. Responses and teacher observations are saved locally.</p><div class="section-grid" id="sectionCards"></div></section>
 <section id="questionView" class="hidden">
 <div class="card no-print">
 <div class="action-row"><button class="btn outline" id="sectionHomeBtn">← Four sections</button><span class="tag" id="activeSectionTag">Section 1</span><strong id="progressText">Question 1 of 5</strong><span class="muted" id="recordedText"></span></div>
-<div class="timer-tools"><span class="fine">Optional 12-minute pacing guide (not a speed test):</span><strong id="sectionClock">12:00</strong><button class="btn secondary" id="timerToggle">Start timer</button><button class="btn outline" id="timerReset">Reset</button></div>
+<div class="timer-tools"><span class="fine">Optional 18-minute pacing guide (not a speed test):</span><strong id="sectionClock">18:00</strong><button class="btn secondary" id="timerToggle">Start timer</button><button class="btn outline" id="timerReset">Reset</button></div>
 <div class="progress-wrap"><div id="progressFill" class="progress-fill" style="width:0%"></div></div>
 <div id="questionNav" class="question-nav" aria-label="Question navigation"></div>
 <div class="headrow"><div><span id="partTag" class="tag"></span><span id="domainTag" class="tag"></span></div><span class="fine" id="questionPosition"></span></div>
@@ -85,6 +85,7 @@ body.diagnostic-unlocked #accessGate{display:none!important}
 <div id="answerArea"></div>
 <label class="field" for="reasoning">Explain your thinking. Why does your answer make sense?</label>
 <textarea id="reasoning" placeholder="Explain in words, sketch on paper, or tell your teacher and ask them to type a short note here."></textarea>
+<div id="transferChallenge" class="widget-box" style="margin-top:15px"></div>
 <div class="under">Your teacher is looking for your reasoning, not just a correct answer.</div>
 <div class="action-row" style="margin-top:16px"><button class="btn secondary" id="hintBtn">💡 Need a thinking hint?</button><span class="fine" id="hintStatus"></span></div>
 <div id="hintBox" class="hint-box hidden" role="status"></div>
@@ -172,6 +173,12 @@ $('lockDiagnostic').addEventListener('click',()=>{
  $('gateCode').focus();
 });
 function frac(n,d){return '<span class="frac" aria-label="'+n+' over '+d+'"><b>'+n+'</b><i>'+d+'</i></span>';}
+function optionMath(s){
+ return String(s).split(/(\d+\s*\/\s*\d+)/g).map(part=>{
+  const match=part.match(/^(\d+)\s*\/\s*(\d+)$/);
+  return match?frac(match[1],match[2]):esc(part);
+ }).join('');
+}
 function esc(s){return String(s==null?'':s).replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));}
 var domains=[
 {id:'sense',label:'Number Sense & Estimation',next:'Use number lines, benchmarks (0, 1/2, 1) and estimation before exact calculation.'},
@@ -398,7 +405,7 @@ try{
 }catch(e){}
 function rec(id){if(!state.answers[id])state.answers[id]={answer:'',reasoning:'',note:'',score:null,hint:false,evidence:{},actions:[]};return state.answers[id];}
 function save(){try{localStorage.setItem(key,JSON.stringify(state));}catch(e){}}
-function hasAnswer(r){return String(r.answer||'').trim().length>0||String(r.reasoning||'').trim().length>0;}
+function hasAnswer(r){return String(r.answer||'').trim().length>0||String(r.reasoning||'').trim().length>0||String(r.transferResponse||'').trim().length>0;}
 function selected(q,r){
  if(r.answer==='')return 'Not answered';
  if(q.kind==='choice')return q.options[Number(r.answer)]||'Not answered';
@@ -946,22 +953,22 @@ function widgetHTML(q,r){
  return q.kind==='numberline'?lineGraphic():q.visual==='rectangles'?rectangles():q.visual==='halves'?halves():'';
 }
 
-const clock={section:0,remaining:720,running:false};
+const clock={section:0,remaining:1080,running:false};
 function drawTimer(){
  const m=Math.floor(clock.remaining/60),ss=clock.remaining%60;
  $('sectionClock').textContent=String(m).padStart(2,'0')+':'+String(ss).padStart(2,'0');
- $('timerToggle').textContent=clock.running?'Pause timer':clock.remaining===720?'Start 12-min timer':'Resume timer';
+ $('timerToggle').textContent=clock.running?'Pause timer':clock.remaining===1080?'Start 18-min timer':'Resume timer';
  $('timerToggle').disabled=clock.remaining===0;
 }
 function pauseClock(){clock.running=false;drawTimer();}
-function switchClock(sec){if(clock.section!==sec){clock.section=sec;clock.remaining=720;clock.running=false;}drawTimer();}
+function switchClock(sec){if(clock.section!==sec){clock.section=sec;clock.remaining=1080;clock.running=false;}drawTimer();}
 setInterval(()=>{if(clock.running&&view==='question'){clock.remaining=Math.max(0,clock.remaining-1);if(clock.remaining===0)clock.running=false;drawTimer();}},1000);
 function sectionInfo(id){return sections.find(z=>z.id===id);}
 function renderSections(){
  $('sectionCards').innerHTML=sections.map(sec=>{
   let qs=items.filter(x=>x.section===sec.id),core=qs.filter(q=>!q.extension&&rec(q.id).score!==null).length,extra=qs.filter(q=>q.extension&&rec(q.id).score!==null).length;
   let touched=qs.some(q=>hasAnswer(rec(q.id))||rec(q.id).score!==null);
-  return '<article class="section-tile"><span class="tag">SECTION '+sec.id+' · 10–15 MIN</span><h3>'+esc(sec.title)+'</h3>'+
+  return '<article class="section-tile"><span class="tag">SECTION '+sec.id+' · 15–20 MIN</span><h3>'+esc(sec.title)+'</h3>'+
    '<p>'+esc(sec.subtitle)+'</p><p class="fine"><strong>Diagnosis:</strong> '+esc(sec.goal)+'</p>'+
    '<p class="fine"><strong>'+core+'/4</strong> core observations recorded'+(extra?' · Optional challenge assessed':'')+'</p>'+
    '<button type="button" class="btn" data-section="'+sec.id+'">'+(touched?'Resume':'Start')+' Section '+sec.id+'</button></article>';
@@ -1001,11 +1008,20 @@ function renderQuestion(){
  $('questionVisual').innerHTML=widgetHTML(q,r);
  if(q.kind==='choice'){
    $('answerArea').innerHTML='<div class="ask">'+q.ask+'</div><div class="answer-grid">'+q.options.map((o,i)=>
-   '<button class="option '+(String(r.answer)===String(i)?'selected':'')+'" data-choice="'+i+'" aria-pressed="'+(String(r.answer)===String(i))+'"><span class="letter">'+String.fromCharCode(65+i)+'.</span> '+esc(o)+'</button>').join('')+'</div>';
+   '<button class="option '+(String(r.answer)===String(i)?'selected':'')+'" data-choice="'+i+'" aria-pressed="'+(String(r.answer)===String(i))+'"><span class="letter">'+String.fromCharCode(65+i)+'.</span> '+optionMath(o)+'</button>').join('')+'</div>';
  }else if(q.kind==='text'){
    $('answerArea').innerHTML='<label class="field" for="studentAnswer">'+q.ask+'</label>'+
    '<input id="studentAnswer" type="text" placeholder="'+esc(q.placeholder||'Your answer...')+'" autocomplete="off" value="'+esc(r.answer)+'">';
  }else $('answerArea').innerHTML='<div class="ask">'+q.ask+'</div>';
+ $('transferChallenge').innerHTML=
+ '<div class="widget-top"><strong>🔍 Reasoning Challenge · What if...?</strong><span class="tag">DEEPER THINKING</span></div>'+
+ '<p class="fine">After your first answer, try a new situation. Explain it without copying a rule. This follow-up is optional if you need more time.</p>'+
+ (r.transferOpen?
+ '<p class="balance-hints">'+esc(q.transfer)+'</p>'+
+ '<label class="field" for="transferResponse">Explain your new reasoning</label>'+
+ '<textarea id="transferResponse" placeholder="What changes? What stays the same? Why?">'+esc(r.transferResponse||'')+'</textarea>'+
+ '<p class="fine">Teacher: assess transfer separately from the original answer. An unanswered challenge is not a wrong answer.</p>':
+ '<button type="button" class="btn secondary" id="openTransferChallenge">Try the harder follow-up →</button>');
  if(q.kind==='numberline'&&r.answer!==''){$('lineSlider').value=r.answer;updateLineDisplay(r.answer);}
  if(q.kind==='decimalLine'&&r.answer!==''){$('decimalSlider').value=r.answer;updateDecimalDisplay(r.answer);}
  $('reasoning').value=r.reasoning||'';$('teacherNotes').value=r.note||'';
@@ -1045,7 +1061,7 @@ function sectionStats(sec){
 function evidenceLabels(){return {accuracy:'Accurate result',explanation:'Sound explanation',representation:'Meaningful model',transfer:'Transferred to follow-up'};}
 function teacherSummary(){
  let lines=['Maths Concept Diagnostic — Four-Section Teacher Summary','Formative, teacher-guided; NOT a standardized assessment or Year-level determination',
- 'Exported: '+new Date().toLocaleString(),'Each section has 4 core questions and 1 optional challenge. Suggested 10–15 minutes per section.',
+ 'Exported: '+new Date().toLocaleString(),'Each section has 4 core questions and 1 optional challenge. Suggested 15–20 minutes per section, with optional deeper-reasoning follow-ups.',
  'Rubric: 2 = independent and well reasoned; 1 = partial/prompted; 0 = not yet demonstrated; blank = not observed.',''];
  for(let sec of sections){
   let t=sectionStats(sec);lines.push('SECTION '+sec.id+' — '+sec.title+': '+t.core.length+'/4 core observed; '+
@@ -1064,7 +1080,7 @@ function teacherSummary(){
  for(let q of items){
   let r=rec(q.id),signs=Object.keys(labels).filter(k=>(r.evidence||{})[k]).map(k=>labels[k]);
   lines.push('Section '+q.section+' / #'+q.id+' '+q.title+(q.extension?' [optional]':''),
-  'Student answer/model: '+selected(q,r),'Explanation: '+(r.reasoning||'—'),'Teacher: '+(r.note||'—'),
+  'Student answer/model: '+selected(q,r),'Explanation: '+(r.reasoning||'—'),'Transfer challenge response: '+(r.transferResponse||'—'),'Teacher: '+(r.note||'—'),
   'Rubric: '+(r.score===null?'Not assessed':r.score+'/2')+'; Hint used: '+(r.hint?'Yes':'No'),
   'Evidence checked: '+(signs.join('; ')||'None recorded'),'Interactive actions: '+((r.actions||[]).join(' → ')||'—'),'');
  }
@@ -1117,12 +1133,12 @@ function download(filename,text,mime){let blob=new Blob([text],{type:mime||'text
 function csvCell(s){return '"'+String(s===undefined||s===null?'':s).replace(/"/g,'""')+'"';}
 
 function downloadCSV(){
- let cols=['Section','Question','Type','Domain','Question title','Student answer/model','Student reasoning','Teacher observation','Teacher score 0-2','Hint opened','Accuracy evidence','Explanation evidence','Representation evidence','Transfer evidence','Interactive actions'];
+ let cols=['Section','Question','Type','Domain','Question title','Student answer/model','Student reasoning','Transfer reasoning','Teacher observation','Teacher score 0-2','Hint opened','Accuracy evidence','Explanation evidence','Representation evidence','Transfer evidence','Interactive actions'];
  let arr=[cols];
  for(let q of items){
   let r=rec(q.id),e=r.evidence||{};
   arr.push([q.section,q.id,q.extension?'Optional':'Core',domains.find(d=>d.id===q.domain).label,
-  q.title,selected(q,r),r.reasoning,r.note,r.score===null?'':r.score,r.hint?'Yes':'No',
+  q.title,selected(q,r),r.reasoning,r.transferResponse||'',r.note,r.score===null?'':r.score,r.hint?'Yes':'No',
   e.accuracy?'Yes':'',e.explanation?'Yes':'',e.representation?'Yes':'',e.transfer?'Yes':'',(r.actions||[]).join(' → ')]);
  }
  download('benji-maths-concept-diagnostic-observations.csv','\ufeff'+arr.map(row=>row.map(csvCell).join(',')).join('\r\n'),'text/csv;charset=utf-8');
@@ -1284,7 +1300,7 @@ async function sendDiagnosticResults(event){
 
 function clearAll(){
  if(!confirm('Clear ALL answers, teacher notes, model states and scores on this device? Export a report first if needed.'))return;
- state=fresh();save();current=0;teacherOpen=false;clock.remaining=720;clock.section=0;clock.running=false;showSections();
+ state=fresh();save();current=0;teacherOpen=false;clock.remaining=1080;clock.section=0;clock.running=false;showSections();
 }
 $('startBtn').addEventListener('click',()=>startSection(1));
 $('sendReportFromSections').addEventListener('click',showSummary);
@@ -1309,6 +1325,15 @@ $('questionVisual').addEventListener('change',e=>{
  if(e.target.matches('[data-rectangle]'))handleWidgetInput(e);
 });
 $('reasoning').addEventListener('input',e=>{rec(items[current].id).reasoning=e.target.value;save();});
+$('transferChallenge').addEventListener('click',e=>{
+ if(e.target.id!=='openTransferChallenge')return;
+ const q=items[current],r=rec(q.id);
+ r.transferOpen=true;logAction(r,'Opened deeper reasoning transfer challenge');save();renderQuestion();
+});
+$('transferChallenge').addEventListener('input',e=>{
+ if(e.target.id!=='transferResponse')return;
+ const r=rec(items[current].id);r.transferResponse=e.target.value;save();
+});
 $('teacherNotes').addEventListener('input',e=>{rec(items[current].id).note=e.target.value;save();});
 $('hintBtn').addEventListener('click',()=>{
  const q=items[current],r=rec(q.id),w=getWidget(r),stage=w.stage??0;
@@ -1347,7 +1372,7 @@ $('timerToggle').addEventListener('click',()=>{
  if(clock.remaining<=0)return;
  clock.running=!clock.running;drawTimer();
 });
-$('timerReset').addEventListener('click',()=>{clock.running=false;clock.remaining=720;drawTimer();});
+$('timerReset').addEventListener('click',()=>{clock.running=false;clock.remaining=1080;drawTimer();});
 $('downloadBtn').addEventListener('click',()=>download('benji-maths-concept-diagnostic-summary.txt',teacherSummary()));
 $('csvBtn').addEventListener('click',downloadCSV);
 $('printBtn').addEventListener('click',()=>window.print());
