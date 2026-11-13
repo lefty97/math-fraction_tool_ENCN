@@ -65,7 +65,7 @@ body.diagnostic-unlocked #accessGate{display:none!important}
 <div id="protectedContent">
 <nav class="nav"><a href="index.html">🍕 Fraction Explorer</a><a href="practice-challenges.html">📝 Practice Challenges</a><a href="fraction-algebra.html">⚖️ Balance Lab</a><button class="btn" id="lockDiagnostic" type="button">🔒 Lock assessment</button></nav>
 <main>
-<header><h1>🔎 Maths Concept Diagnostic</h1><p class="lede">Four teacher-guided mini-assessments for a strong Year 4 student preparing for Year 5. Each section takes about 10–15 minutes and investigates understanding, not speed or memorized rules.</p></header>
+<header><h1>🔎 Maths Concept Diagnostic</h1><p class="lede">Four teacher-guided mini-assessments for a strong Year 4 student preparing for Year 5. Each section takes about 15–20 minutes and investigates understanding, not speed or memorized rules.</p></header>
 <section id="introPanel" class="card intro no-print">
 <div class="steps"><div class="step"><strong>1 · Predict</strong>Choose or write an answer before calculating when possible.</div><div class="step"><strong>2 · Explain</strong>Say WHY. Use words, drawings, examples or a number line.</div><div class="step"><strong>3 · Discuss</strong>The teacher reveals the guide and records understanding.</div></div>
 <p><strong>Four sections · 15–20 minutes each.</strong> Each section has four core investigations and one optional challenge. You may do one section per lesson. The 18-minute timer is optional and never submits or locks the assessment.</p>
@@ -1017,7 +1017,7 @@ function renderQuestion(){
  '<div class="widget-top"><strong>🔍 Reasoning Challenge · What if...?</strong><span class="tag">DEEPER THINKING</span></div>'+
  '<p class="fine">After your first answer, try a new situation. Explain it without copying a rule. This follow-up is optional if you need more time.</p>'+
  (r.transferOpen?
- '<p class="balance-hints">'+esc(q.transfer)+'</p>'+
+ '<p class="balance-hints">'+optionMath(q.transfer)+'</p>'+
  '<label class="field" for="transferResponse">Explain your new reasoning</label>'+
  '<textarea id="transferResponse" placeholder="What changes? What stays the same? Why?">'+esc(r.transferResponse||'')+'</textarea>'+
  '<p class="fine">Teacher: assess transfer separately from the original answer. An unanswered challenge is not a wrong answer.</p>':
